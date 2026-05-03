@@ -133,6 +133,7 @@ typedef struct
 	BYTE         Value;
 } PHEADER_DEFAULT_SUBCODE, * LPPHEADER_DEFAULT_SUBCODE;
 
+#pragma pack (1)
 //receive Character List 
 typedef struct 
 {
@@ -144,6 +145,7 @@ typedef struct
 	BYTE		 MoveCount;
 	BYTE         Value;
 } PHEADER_DEFAULT_CHARACTER_LIST, * LPPHEADER_DEFAULT_CHARACTER_LIST;
+#pragma pack ()
 
 #define CLASS_SUMMONER_CARD		0x01
 #define CLASS_DARK_LORD_CARD	0x02

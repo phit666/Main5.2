@@ -89,6 +89,7 @@ bool SEASON3B::CNewUIChatInputBox::Create(CNewUIManager* pNewUIMng, CNewUIChatLo
 	m_pChatInputBox->SetBackColor(0, 0, 0, 25);
 	m_pChatInputBox->SetFont(g_hFont);
 	m_pChatInputBox->SetState(UISTATE_HIDE);
+	m_pChatInputBox->SetTitle("chat-normal");
 
 	m_pWhsprIDInputBox = new CUITextInputBox;
 	m_pWhsprIDInputBox->Init(g_hWnd, 50, 14, 10);
@@ -98,6 +99,7 @@ bool SEASON3B::CNewUIChatInputBox::Create(CNewUIManager* pNewUIMng, CNewUIChatLo
 	m_pWhsprIDInputBox->SetBackColor(0, 0, 0, 25);
 	m_pWhsprIDInputBox->SetFont(g_hFont);
 	m_pWhsprIDInputBox->SetState(UISTATE_HIDE);
+	m_pWhsprIDInputBox->SetTitle("chat-whisper");
 
 	m_pChatInputBox->SetTabTarget(m_pWhsprIDInputBox);
 	m_pWhsprIDInputBox->SetTabTarget(m_pChatInputBox);

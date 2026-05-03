@@ -501,6 +501,11 @@ void ReceiveCharacterList( BYTE *ReceiveBuffer )
 		LPPRECEIVE_CHARACTER_LIST Data2 = (LPPRECEIVE_CHARACTER_LIST)(ReceiveBuffer+Offset);
 		
 		int iClass = gCharacterManager.ChangeServerClassTypeToClientClassType(Data2->Class);
+
+		char t[100] = { 0 };
+		sprintf(t, "[SDL-DEBUG] Count:%d Class:%d Name:%s Level:%d", 
+			Data->Value, iClass, Data2->ID, Data2->Level);
+		OutputDebugString(t);
 		
 		float fPos[2], fAngle = 0.0f;
 		
@@ -12759,10 +12764,12 @@ void ReceiveDarkside(BYTE* ReceiveBuffer)
 
 BOOL TranslateProtocol( int HeadCode, BYTE *ReceiveBuffer, int Size, BOOL bEncrypted)
 {
-	char t[100] = { 0 };
-	sprintf(t, "[SDL-DEBUG] TranslateProtocol, (%X) %X %X %X %X", HeadCode,
-		ReceiveBuffer[0], ReceiveBuffer[1], ReceiveBuffer[2], ReceiveBuffer[3]);
-	OutputDebugString(t);
+		char t[100] = { 0 };
+		sprintf(t, "[SDL-DEBUG] TranslateProtocol, (H:%X Size:%d) %X %X %X %X", HeadCode,
+			Size,
+			ReceiveBuffer[0], ReceiveBuffer[1], ReceiveBuffer[2], ReceiveBuffer[3]
+		);
+		OutputDebugString(t);
 
 	switch( HeadCode )
 	{

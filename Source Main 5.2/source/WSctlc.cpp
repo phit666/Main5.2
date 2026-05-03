@@ -205,6 +205,11 @@ BOOL CWsctlc::Close(SOCKET & socket)
 	return TRUE;
 }
 
+void CWsctlc::PushPacket(BYTE* data, int size) {
+	m_pPacketQueue->PushPacket(data, size);
+}
+
+
 SOCKET CWsctlc::GetSocket()
 {
 	return m_socket;

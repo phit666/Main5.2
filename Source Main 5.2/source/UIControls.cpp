@@ -3511,15 +3511,15 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 		{
 			char t[100] = { 0 };
 
-			sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseX %d >= %d && < %d.", this->m_title.c_str(), 
-				MouseX, m_iPos_x, m_iPos_x + m_iWidth);
+			//sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseX %d >= %d && < %d.", this->m_title.c_str(), 
+				//MouseX, m_iPos_x, m_iPos_x + m_iWidth);
 
-			OutputDebugStringA(t);
+			//OutputDebugStringA(t);
 
-			sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseY %d >= %d && < %d.", this->m_title.c_str(),
-				MouseY, m_iPos_y, m_iPos_y + m_iHeight);
+			//sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseY %d >= %d && < %d.", this->m_title.c_str(),
+				//MouseY, m_iPos_y, m_iPos_y + m_iHeight);
 
-			OutputDebugStringA(t);
+			//OutputDebugStringA(t);
 
 
 			if ((float)MouseX >= m_iPos_x &&
@@ -3848,9 +3848,10 @@ void CUITextInputBox::SetFont(HFONT hFont)
 {
 	if (m_hEditWnd == NULL || hFont == NULL)
 		return;
-
+#ifndef MU_USE_SDL
 	SendMessageW(m_hEditWnd, WM_SETFONT, (UINT)hFont, FALSE);
 	SelectObject(m_hMemDC, hFont);
+#endif
 }
 
 BOOL CUITextInputBox::DoMouseAction()

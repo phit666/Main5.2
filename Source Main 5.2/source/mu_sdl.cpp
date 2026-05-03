@@ -5,13 +5,18 @@
 #include "nuklear_sdl_gl2.h"
 #include "mu_sdl.h"
 #include "WSclient.h"
+#include "wsctlc.h"
+
 
 SDL_Window* gSDLWindow = nullptr;
 SDL_GLContext gGLContext = nullptr;
 
 bool gSDLRunning = true;
+static BYTE buffer[MAX_RECVBUF];
+static int bufferlen = 0;
 
 event_base* g_eventBase = nullptr;
+bufferevent* g_bev;
 event* g_socketReadEvent = nullptr;
 event* g_socketWriteEvent = nullptr;
 SOCKET g_socket = INVALID_SOCKET;
@@ -36,6 +41,7 @@ void MU_DisableSocketWrite()
 
 bool MU_InitNetworkEvent()
 {
+    memset(buffer, 0, MAX_RECVBUF);
     g_eventBase = event_base_new();
 
     if (!g_eventBase)
@@ -201,4 +207,115 @@ bool MU_RegisterSocketEvent(SOCKET s)
     event_add(g_socketReadEvent, nullptr);
 
     return true;
+}
+
+DWORD host2ip(const char* hostname)
+{
+    struct hostent* h = gethostbyname(hostname);
+    return (h != NULL) ? ntohl(*(DWORD*)h->h_addr) : 0;
+}
+
+
+static void
+conn_readcb(struct bufferevent* bev, void* user_data)
+{
+    size_t len;
+   len = bufferevent_read(bev, (char*)buffer + bufferlen,
+        MAX_RECVBUF - bufferlen);
+
+    if (len < 3)
+    {
+        bufferlen += len;
+        return;
+    }
+
+    bufferlen += len;
+    SocketClient.PushPacket(buffer, bufferlen);
+    bufferlen = 0;
+    memset(buffer, 0, MAX_RECVBUF);
+}
+
+static void
+conn_eventcb(struct bufferevent* bev, short events, void* user_data)
+{
+    if (events & BEV_EVENT_EOF)
+    {
+        bufferevent_free(g_bev);
+        g_bev = NULL;
+    }
+    else if (events & BEV_EVENT_ERROR)
+    {
+        bufferevent_free(g_bev);
+        g_bev = NULL;
+    }
+    else if (events & BEV_EVENT_CONNECTED)
+    {
+    }
+}
+
+int MU_Connect(char* serverip, unsigned short port)
+{
+    struct bufferevent* bev;
+    struct sockaddr_in remote_address;
+    int result;
+
+    if (!g_eventBase)
+        return -1;
+
+    bev = bufferevent_socket_new(g_eventBase, -1,
+        BEV_OPT_CLOSE_ON_FREE
+        | BEV_OPT_THREADSAFE
+        | BEV_OPT_UNLOCK_CALLBACKS
+        | BEV_OPT_DEFER_CALLBACKS
+    );
+
+    if (!bev)
+    {
+        return -1;
+    }
+
+    remote_address.sin_family = AF_INET;
+    remote_address.sin_addr.s_addr = htonl(host2ip(serverip));
+    remote_address.sin_port = htons(port);
+
+    result = bufferevent_socket_connect(bev, (struct sockaddr*)&remote_address, sizeof(remote_address));
+
+    if (result == -1) {
+        return -1;
+    }
+
+    g_bev = bev;
+
+    bufferevent_setcb(bev, conn_readcb, NULL, conn_eventcb, NULL);
+    bufferevent_enable(bev, EV_WRITE);
+    bufferevent_enable(bev, EV_READ);
+
+    return 1;
+}
+
+static void defer_free_cb(evutil_socket_t, short, void* arg)
+{
+    if (g_bev != NULL)
+    {
+        bufferevent_free(g_bev);
+        g_bev = NULL;
+    }
+}
+
+void MU_CloseBev()
+{
+    if (g_bev == NULL)
+        return;
+    int arg = 0;
+    timeval tv = { 0, 0 };
+    bufferevent_disable(g_bev, EV_WRITE || EV_READ);
+    bufferevent_setcb(g_bev, nullptr, nullptr, nullptr, nullptr);
+
+    evutil_socket_t fd = bufferevent_getfd(g_bev);
+
+    if (fd != EVUTIL_INVALID_SOCKET) {
+        shutdown(fd, SD_BOTH);
+    }
+
+    event_base_once(g_eventBase, -1, EV_TIMEOUT, defer_free_cb, (LPVOID)static_cast<int>(arg), &tv);
 }

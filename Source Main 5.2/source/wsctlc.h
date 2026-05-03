@@ -47,7 +47,8 @@ private :
 	BOOL ShutdownConnection(SOCKET sd);
 	
 public:
-	
+
+
 	CWsctlc(void);
 	~CWsctlc();
 
@@ -61,6 +62,8 @@ public:
 	BOOL Close(SOCKET & socket);
 	
 	BOOL Connect(char *ip_addr, unsigned short port, DWORD WinMsgNum);
+
+	void PushPacket(BYTE* data, int size);
 
 	int  sSend(SOCKET socket, char *buf, int len);
 	__forceinline int  sSend(char *buf, int len)
