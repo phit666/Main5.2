@@ -63,6 +63,7 @@ void CLoginWin::Create()
 	m_pIDInputBox->SetFont(g_hFixFont);
 	m_pIDInputBox->SetState(UISTATE_NORMAL);
 	m_pIDInputBox->SetText(m_ID);
+	m_pIDInputBox->SetTitle("login-username");
 
 	SAFE_DELETE(m_pPassInputBox);
 
@@ -72,6 +73,7 @@ void CLoginWin::Create()
 	m_pPassInputBox->SetTextColor(255, 255, 230, 210);
 	m_pPassInputBox->SetFont(g_hFixFont);
 	m_pPassInputBox->SetState(UISTATE_NORMAL);
+	m_pPassInputBox->SetTitle("login-password");
 
 	m_pIDInputBox->SetTabTarget(m_pPassInputBox);
 	m_pPassInputBox->SetTabTarget(m_pIDInputBox);
@@ -229,7 +231,7 @@ void CLoginWin::RequestLogin()
 			#else
 				SendRequestLogIn(szID, szPass);
 			#endif
- 			
+		
 		}
 	}
 }

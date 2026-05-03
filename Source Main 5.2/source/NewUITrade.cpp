@@ -9,6 +9,7 @@
 #include "NewUICustomMessageBox.h"
 #include "wsclientinline.h"
 #include "CComGem.h"
+#include "mu_sdl.h"
 
 using namespace SEASON3B;
 
@@ -397,7 +398,7 @@ void CNewUITrade::LoadImages()
 	LoadBitmap("Interface\\newui_Account_title.tga", IMAGE_TRADE_NICK_BACK, GL_LINEAR);
 	LoadBitmap("Interface\\newui_item_money.tga", IMAGE_TRADE_MONEY, GL_LINEAR);
 	LoadBitmap("Interface\\newui_Bt_accept.tga", IMAGE_TRADE_CONFIRM, GL_LINEAR);
-	LoadBitmap("Interface\\CursorSitDown.tga", IMAGE_TRADE_WARNING_ARROW, GL_LINEAR, GL_CLAMP);
+	LoadBitmap("Interface\\CursorSitDown.tga", IMAGE_TRADE_WARNING_ARROW, GL_LINEAR, GL_CLAMP_TO_EDGE);
 	LoadBitmap("Interface\\newui_exit_00.tga", IMAGE_TRADE_BTN_CLOSE, GL_LINEAR);
 	LoadBitmap("Interface\\newui_Bt_money01.tga", IMAGE_TRADE_BTN_ZEN_INPUT, GL_LINEAR);
 }

@@ -50,7 +50,22 @@ public:
 	bool IsEnable(){ return m_bEnable; }
 	void SetActive(bool bActive = true) { m_bActive = bActive; }
 //	bool IsActive(){ return m_bActive; }
-	bool IsClick(){ return m_bClick; }
+
+#ifdef MU_USE_SDL
+	bool IsClick()
+	{
+		if (m_bClick)
+		{
+			m_bClick = false;
+			return true;
+		}
+
+		return false;
+	}
+#else
+	bool IsClick() { return m_bClick; }
+#endif
+
 	void SetCheck(bool bCheck = true) { m_bCheck = bCheck; }
 	bool IsCheck(){ return m_bCheck; }
 	void SetText(const char* pszText, DWORD* adwColor);

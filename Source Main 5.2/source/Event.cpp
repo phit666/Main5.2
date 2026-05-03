@@ -74,8 +74,8 @@ void CXmasEvent::LoadXmasEvent()
 
 void CXmasEvent::LoadXmasEventEffect()
 {
-	LoadBitmap("Effect\\snowseff01.jpg", BITMAP_SNOW_EFFECT_1, GL_LINEAR, GL_CLAMP);
-	LoadBitmap("Effect\\snowseff02.jpg", BITMAP_SNOW_EFFECT_2, GL_LINEAR, GL_CLAMP);
+	LoadBitmap("Effect\\snowseff01.jpg", BITMAP_SNOW_EFFECT_1, GL_LINEAR, GL_CLAMP_TO_EDGE);
+	LoadBitmap("Effect\\snowseff02.jpg", BITMAP_SNOW_EFFECT_2, GL_LINEAR, GL_CLAMP_TO_EDGE);
 }
 
 

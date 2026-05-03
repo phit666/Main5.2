@@ -18,6 +18,7 @@
 #include "GMBattleCastle.h"
 #include "UIMng.h"
 #include "CameraMove.h"
+#include "mu_sdl.h"
 
 //BMD Models[MAX_MODELS];
 BMD *Models;
@@ -899,7 +900,7 @@ void BMD::BindLightMaps()
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-			glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,lmp->Width,lmp->Height,0,GL_RGB,GL_UNSIGNED_BYTE,lmp->Buffer);
+			glTexImage2D(GL_TEXTURE_2D,0, MU_GL_RGB_INTERNAL,lmp->Width,lmp->Height,0,GL_RGB,GL_UNSIGNED_BYTE,lmp->Buffer);
 		}
 	}
 	LightMapEnable = true;

@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "wsctlc.h"
 #include "wsctlc_addon.h"
+#include "mu_sdl.h"
+#include "mu_socket.h"
 
 typedef struct
 {
@@ -47,6 +49,7 @@ CWsctlc::~CWsctlc()
 
 BOOL CWsctlc::Startup()
 {
+#if MU_USE_LIBEVENT == 0
 	WORD wVersionRequested;
 	WSADATA wsaData;
 	int err;
@@ -73,12 +76,14 @@ BOOL CWsctlc::Startup()
 	m_socket = NULL;
 	m_iMaxSockets = wsaData.iMaxSockets;	
 	LogPrintOn();
+#endif
 	return TRUE;
 }
  
 
 BOOL CWsctlc::ShutdownConnection(SOCKET sd)
 {
+#ifndef MU_USE_SDL
     // Disallow any further data sends.  This will tell the other side
     // that we want to go away now.  If we skip this step, we don't
     // shut the connection down nicely.
@@ -111,7 +116,7 @@ BOOL CWsctlc::ShutdownConnection(SOCKET sd)
     if (closesocket(sd) == SOCKET_ERROR) {
         return false;
     }
-	
+#endif	
     return true;
 }
 
@@ -174,8 +179,17 @@ BOOL CWsctlc::Close()
 	}
 	g_ErrorReport.Write("[Socket Closed][Clear PacketQueue]\r\n");
 
+#if MU_USE_LIBEVENT == 1
+	le_close();
+#else
 	closesocket(m_socket);
 	m_socket = INVALID_SOCKET;
+#endif
+
+#ifdef MU_USE_SDL
+	MU_Close();
+#endif
+
 	return TRUE;
 }
 
@@ -201,11 +215,17 @@ int CWsctlc::Connect(char *ip_addr, unsigned short port, DWORD WinMsgNum)
 	sockaddr_in		addr;
 	int nResult;
 	struct hostent    *host = NULL;
-
+#ifndef MU_USE_SDL
 	if( m_hWnd == NULL ) {
 		MessageBox(NULL, "Connect Error", "Error", MB_OK);
 		return FALSE;
 	}
+#endif
+
+	char t[100] = { 0 };
+	sprintf(t, "[SDL-DEBUG] Connect, %s : %d", ip_addr, port);
+	OutputDebugStringA(t);
+
     addr.sin_family			= PF_INET;
     addr.sin_port			= htons( port );
     addr.sin_addr.s_addr	= inet_addr(ip_addr); 
@@ -239,18 +259,49 @@ int CWsctlc::Connect(char *ip_addr, unsigned short port, DWORD WinMsgNum)
 		}
     }
 
+#if MU_USE_SDL
+	if (!MU_RegisterSocketEvent(m_socket)) {
+		closesocket(m_socket);
+		return FALSE;
+	}
+#else
     nResult = WSAAsyncSelect( m_socket, m_hWnd, WinMsgNum, FD_READ | FD_WRITE | FD_CLOSE);
-    if( nResult == SOCKET_ERROR) 
+	if (nResult == SOCKET_ERROR)
 	{
-		closesocket(m_socket);		
+		closesocket(m_socket);
 		//cLogProc.Add("Client WSAAsyncSelect error %d", WSAGetLastError());
 		return FALSE;
-    }
-	return 1;
+	}
+#endif
+
+
+	return TRUE;
 }
 
 int CWsctlc::sSend(SOCKET socket, char *buf, int len)
 {	
+#if MU_USE_SDL
+
+	if (len <= 0 || buf == NULL)
+		return FALSE;
+
+	if ((m_nSendBufLen + len) > MAX_SENDBUF)
+	{
+		g_ConsoleDebug->Write(MCD_ERROR, "[Send Packet Error] SendBuffer Overflow");
+		g_ErrorReport.Write("[Send Packet Error] SendBuffer Overflow\r\n");
+		Close();
+		return FALSE;
+	}
+
+	memcpy(m_SendBuf + m_nSendBufLen, buf, len);
+	m_nSendBufLen += len;
+
+	MU_EnableSocketWrite();
+
+	if (m_LogPrint)
+		LogHexPrintS((BYTE*)buf, len);
+
+#else
 	int nResult;
 	
 	
@@ -301,6 +352,7 @@ int CWsctlc::sSend(SOCKET socket, char *buf, int len)
 		nLeft -= nResult;
 		if( nLeft <= 0 ) break;
 	}
+#endif
 	return TRUE;
 }
 

@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Global Compat Release|Win32">
+      <Configuration>Global Compat Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Global Debug|Win32">
       <Configuration>Global Debug</Configuration>
       <Platform>Win32</Platform>
@@ -18,14 +22,21 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Global Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -33,6 +44,10 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
   </ImportGroup>
@@ -60,8 +75,16 @@
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)source\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\thirdparty\SDL2_image-2.6.3\include;..\thirdparty\SDL2_mixer-2.6.3\include;..\thirdparty\libevent_vs2019\include;..\thirdparty\SDL2_gfx-1.0.4\includes;..\thirdparty\SDL2_ttf-2.20.2\include;..\thirdparty\SDL2-2.26.5\include;</IncludePath>
+    <LibraryPath>$(LibraryPath);..\thirdparty\SDL2_image-2.6.3\lib\x64;..\thirdparty\SDL2_mixer-2.6.3\lib\x64;..\thirdparty\SDL2-2.26.5\lib\x64;..\thirdparty\SDL2_ttf-2.20.2\lib\x64;..\thirdparty\SDL2_gfx-1.0.4\lib\x64;..\thirdparty\libevent_vs2019\lib;</LibraryPath>
+    <ExecutablePath>$(VC_ExecutablePath_x86);$(CommonExecutablePath)</ExecutablePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)source\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);thirdparty\SDL2_image-2.6.3\include;thirdparty\SDL2_mixer-2.6.3\include;thirdparty\libevent_vs2019\include;thirdparty\SDL2_gfx-1.0.4\includes;thirdparty\SDL2_ttf-2.20.2\include;thirdparty\SDL2-2.26.5\include</IncludePath>
+    <LibraryPath>$(LibraryPath);thirdparty\SDL2_image-2.6.3\lib\x86;thirdparty\SDL2_mixer-2.6.3\lib\x86;thirdparty\SDL2-2.26.5\lib\x86;thirdparty\SDL2_ttf-2.20.2\lib\x86;thirdparty\SDL2_gfx-1.0.4\lib\x86;thirdparty\libevent_vs2019\lib;</LibraryPath>
     <ExecutablePath>$(VC_ExecutablePath_x86);$(CommonExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Global Debug|Win32'">
@@ -191,6 +214,71 @@
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\tmp/Global_Release/Main.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)source\;$(SolutionDir)dependencies\include;$(SolutionDir)dependencies\include\asio</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>MU_USE_SDL;WIN32;NDEBUG;_WINDOWS;_FOREIGN_NDEBUG;_LANGUAGE_FOREIGN;_LANGUAGE_ENG;LDS_PATCH_GLOBAL_100520;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)Main.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>$(IntDir)</BrowseInformationFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>
+      </PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libevent.lib;libevent_core.lib;SDL2.lib;SDL2main.lib;SDL2_gfx.lib;SDL2_ttf.lib;SDL2_mixer.lib;SDL2_image.lib;imm32.lib;vfw32.lib;dsound.lib;dxguid.lib;jpeglib.lib;opengl32.lib;glu32.lib;winmm.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;version.lib;glprocs.lib;Jpeglib.lib;ShareMemory.lib;SimpleModulus.lib;wzAudio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(SolutionDir)\dependencies\lib;$(MU_SDK)\DXSDK\Lib;%(AdditionalLibraryDirectories);C:\Libraries\boost_1_75_0\stage\lib</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>$(OutDir)$(TargetName)</MapFileName>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\tmp/Global_Release/Main.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <Image Include="source\icon1.ico" />
     <Image Include="source\icon2.ico" />
@@ -199,12 +287,15 @@
     <ResourceCompile Include="source\resource.rc">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Global Debug|Win32'">source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile Include="source\resourceblue.rc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Global Debug|Win32'">true</ExcludedFromBuild>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Global Debug|Win32'">source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">true</ExcludedFromBuild>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
@@ -342,6 +433,8 @@
     <ClCompile Include="source\MovieScene.cpp" />
     <ClCompile Include="source\MsgWin.cpp" />
     <ClCompile Include="source\MultiLanguage.cpp" />
+    <ClCompile Include="source\mu_2d_renderer.cpp" />
+    <ClCompile Include="source\mu_sdl.cpp" />
     <ClCompile Include="source\NewBloodCastleSystem.cpp" />
     <ClCompile Include="source\NewChaosCastleSystem.cpp" />
     <ClCompile Include="source\NewUI3DRenderMng.cpp" />
@@ -459,11 +552,13 @@
     <ClCompile Include="source\Slider.cpp" />
     <ClCompile Include="source\SMD.cpp" />
     <ClCompile Include="source\SMD2BMD.cpp" />
+    <ClCompile Include="source\mu_socket.cpp" />
     <ClCompile Include="source\SocketSystem.cpp" />
     <ClCompile Include="source\Sprite.cpp" />
     <ClCompile Include="source\StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Global Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="source\SummonSystem.cpp" />
     <ClCompile Include="source\SysMenuWin.cpp" />
@@ -495,9 +590,13 @@
     <ClCompile Include="source\Winmain.cpp" />
     <ClCompile Include="source\WSclient.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">MaxSpeed</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">MaxSpeed</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">true</IntrinsicFunctions>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">true</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">Speed</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="source\WSctlc.cpp" />
     <ClCompile Include="source\w_BasePet.cpp" />
@@ -522,9 +621,13 @@
     <ClCompile Include="source\ZzzCharacter.cpp" />
     <ClCompile Include="source\ZzzEffect.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">MaxSpeed</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">MaxSpeed</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">true</IntrinsicFunctions>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">true</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">Speed</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="source\ZzzEffectBlurSpark.cpp" />
     <ClCompile Include="source\ZzzEffectFireLeave.cpp" />
@@ -538,15 +641,23 @@
     <ClCompile Include="source\ZzzInfomation.cpp" />
     <ClCompile Include="source\ZzzInterface.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">MaxSpeed</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">MaxSpeed</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">true</IntrinsicFunctions>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">true</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">Speed</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="source\ZzzInventory.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">MaxSpeed</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">MaxSpeed</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">true</IntrinsicFunctions>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">true</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">Speed</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="source\ZzzLodTerrain.cpp" />
     <ClCompile Include="source\zzzMixInvetory.cpp" />
@@ -556,9 +667,13 @@
     <ClCompile Include="source\zzzpath.cpp" />
     <ClCompile Include="source\ZzzScene.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">MaxSpeed</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">MaxSpeed</Optimization>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">AnySuitable</InlineFunctionExpansion>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">true</IntrinsicFunctions>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">true</IntrinsicFunctions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Release|Win32'">Speed</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="source\ZzzTexture.cpp" />
     <ClCompile Include="source\_GlobalFunctions.cpp" />
@@ -717,6 +832,10 @@
     <ClInclude Include="source\MovieScene.h" />
     <ClInclude Include="source\MsgWin.h" />
     <ClInclude Include="source\MultiLanguage.h" />
+    <ClInclude Include="source\mu_2d_renderer.h" />
+    <ClInclude Include="source\mu_file.h" />
+    <ClInclude Include="source\mu_gl.h" />
+    <ClInclude Include="source\mu_sdl.h" />
     <ClInclude Include="source\NewBloodCastleSystem.h" />
     <ClInclude Include="source\NewChaosCastleSystem.h" />
     <ClInclude Include="source\NewUI3DRenderMng.h" />
@@ -839,6 +958,7 @@
     <ClInclude Include="source\SlideInfo.h" />
     <ClInclude Include="source\Slider.h" />
     <ClInclude Include="source\SMD.h" />
+    <ClInclude Include="source\mu_socket.h" />
     <ClInclude Include="source\SocketSystem.h" />
     <ClInclude Include="source\Sprite.h" />
     <ClInclude Include="source\stdafx.h" />
@@ -889,6 +1009,7 @@
     <ClInclude Include="source\w_CursedTemple.h" />
     <ClInclude Include="source\w_MapHeaders.h" />
     <ClInclude Include="source\w_MapProcess.h" />
+    <ClInclude Include="source\w_nuklear.h" />
     <ClInclude Include="source\w_ObjectInfo.h" />
     <ClInclude Include="source\w_PetAction.h" />
     <ClInclude Include="source\w_PetActionCollecter.h" />

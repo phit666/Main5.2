@@ -8,6 +8,8 @@
 #include "./Time/Timer.h"
 #if	defined WINDOWMODE
 #include "UIManager.h"
+#include "mu_sdl.h"
+
 extern bool g_bWndActive;
 #endif
 extern CTimer*	g_pTimer;
@@ -30,6 +32,38 @@ CInput& CInput::Instance()
 
 bool CInput::Create(HWND hWnd, long lScreenWidth, long lScreenHeight)
 {
+#ifdef MU_USE_SDL
+	// SDL mode: no real HWND
+	m_hWnd = NULL;
+
+	m_lScreenWidth = lScreenWidth;
+	m_lScreenHeight = lScreenHeight;
+
+	m_ptCursor.x = 0;
+	m_ptCursor.y = 0;
+	m_ptFormerCursor = m_ptCursor;
+
+	m_bLeftHand = false;
+
+	// reasonable default, Windows default is usually 500ms
+	m_dDoubleClickTime = 500.0;
+
+	m_dBtn0LastClickTime = 0.0;
+	m_dBtn1LastClickTime = 0.0;
+	m_dBtn2LastClickTime = 0.0;
+
+	m_bFormerBtn0Dn = false;
+	m_bFormerBtn1Dn = false;
+	m_bFormerBtn2Dn = false;
+
+	m_bLBtnHeldDn = false;
+	m_bRBtnHeldDn = false;
+	m_bMBtnHeldDn = false;
+
+	m_bTextEditMode = false;
+
+	return true;
+#else
 	if (NULL == hWnd)
 		return false;
 
@@ -55,6 +89,7 @@ bool CInput::Create(HWND hWnd, long lScreenWidth, long lScreenHeight)
 	m_bTextEditMode	= false;
 
 	return true;
+#endif
 }
 
 void CInput::Update()
@@ -64,11 +99,18 @@ void CInput::Update()
 		= m_bLBtnDn = m_bRBtnDn = m_bMBtnDn
 		= m_bLBtnDbl = m_bRBtnDbl = m_bMBtnDbl = false;
 
+#ifdef MU_USE_SDL
+	int mx = 0, my = 0;
+	Uint32 btn = SDL_GetMouseState(&mx, &my);
+
+	m_ptCursor.x = LIMIT(mx, 0, m_lScreenWidth - 1);
+	m_ptCursor.y = LIMIT(my, 0, m_lScreenHeight - 1);
+#else
 	::GetCursorPos(&m_ptCursor);
 	::ScreenToClient(m_hWnd, &m_ptCursor);
-
 	m_ptCursor.x = LIMIT(m_ptCursor.x, 0, m_lScreenWidth - 1);
 	m_ptCursor.y = LIMIT(m_ptCursor.y, 0, m_lScreenHeight - 1);
+#endif
 
 	m_lDX = m_ptCursor.x - m_ptFormerCursor.x;
 	m_lDY = m_ptCursor.y - m_ptFormerCursor.y;

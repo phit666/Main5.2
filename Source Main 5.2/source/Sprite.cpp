@@ -10,6 +10,7 @@
 #include "ZzzOpenglUtil.h"
 
 #include <crtdbg.h>
+#include "mu_sdl.h"
 
 CSprite::CSprite()
 {
@@ -206,14 +207,24 @@ BOOL CSprite::PtInSprite(long lXPos, long lYPos)
 		long((m_fScrHeight - m_aScrCoord[RB].fY) * m_fScaleY)
 	};
 
+	//char t[100] = { 0 };
+	//sprintf(t, "[SDL-DEBUG] mouse %d %d rect %ld %ld %ld %ld", lXPos, lYPos, rc.left, rc.top, rc.right, rc.bottom);
+	//OutputDebugStringA(t);
+
+
 	return ::PtInRect(&rc, pt);
 }
 
 BOOL CSprite::CursorInObject()
 {
+#ifdef MU_USE_SDL_TMP
+	int mx, my;
+	SDL_GetMouseState(&mx, &my);
+	return PtInSprite(mx, my);
+#else
 	CInput& rInput = CInput::Instance();
-
 	return PtInSprite(rInput.GetCursorX(), rInput.GetCursorY());
+#endif
 }
 
 
@@ -287,44 +298,35 @@ void CSprite::Render()
 	if (!m_bShow)
 		return;
 
-	if (-1 < m_nTexID)
+	MU2DVertex v[4];
+
+	for (int i = LT; i < POS_MAX; ++i)
 	{
-		if (!TextureEnable) 
-		{
-			TextureEnable = true;
-			::glEnable(GL_TEXTURE_2D);
-		}
+		v[i].x = m_aScrCoord[i].fX * m_fScaleX;
+		v[i].y = m_aScrCoord[i].fY * m_fScaleY;
+		v[i].u = m_aTexCoord[i].fTU;
+		v[i].v = m_aTexCoord[i].fTV;
+	}
 
-		BindTexture(m_nTexID);
-
-		::glBegin(GL_TRIANGLE_FAN);
-
-		::glColor4ub(m_byRed, m_byGreen, m_byBlue, m_byAlpha);
-
-		for (int i = LT; i < POS_MAX; ++i)
-		{
-			::glTexCoord2f(m_aTexCoord[i].fTU, m_aTexCoord[i].fTV);
-			::glVertex2f(m_aScrCoord[i].fX * m_fScaleX,
-				m_aScrCoord[i].fY * m_fScaleY);
-		}
-
-		::glEnd();
+	if (m_nTexID >= 0)
+	{
+		MU_DrawTexturedQuad(
+			m_nTexID,
+			v,
+			m_byRed,
+			m_byGreen,
+			m_byBlue,
+			m_byAlpha
+		);
 	}
 	else
 	{
-		if (TextureEnable) 
-		{
-			TextureEnable = false;
-			::glDisable(GL_TEXTURE_2D);
-		}
-
-		::glBegin(GL_TRIANGLE_FAN);
-
-		::glColor4ub(m_byRed, m_byGreen, m_byBlue, m_byAlpha);
-		for (int i = LT; i < POS_MAX; ++i)
-			::glVertex2f(m_aScrCoord[i].fX * m_fScaleX,
-				m_aScrCoord[i].fY * m_fScaleY);
-
-		::glEnd();
+		MU_DrawColorQuad(
+			v,
+			m_byRed,
+			m_byGreen,
+			m_byBlue,
+			m_byAlpha
+		);
 	}
 }

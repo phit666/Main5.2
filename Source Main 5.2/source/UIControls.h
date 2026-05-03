@@ -3,6 +3,7 @@
 
 #include "zzzinfomation.h"
 #include "MultiLanguage.h"
+#include "w_nuklear.h"
 
 #ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM
 #define UIMAX_TEXT_LINE			150
@@ -819,6 +820,9 @@ public:
 	virtual void Render();
 	virtual void GiveFocus(BOOL bSel = FALSE);
 
+	virtual void RenderNuklear(struct nk_context* ctx);
+	virtual void SetTitle(char* title) { this->m_title = title; }
+
 	virtual void SetState(int iState);
 	virtual void SetFont(HFONT hFont);
 	virtual void SetMultiline(BOOL bUseFlag) { m_bUseMultiLine = bUseFlag; }
@@ -855,9 +859,13 @@ protected:
 	void WriteText(int iOffset, int iWidth, int iHeight);
 	void UploadText(int sx,int sy,int Width,int Height);
 
+	void enablekeyboard();
+	void disablekeyboard();
+
 public:
 	WNDPROC m_hOldProc;
 	int m_iCaretBlinkTemp;
+
 
 protected:
 	HWND m_hParentWnd;
@@ -895,6 +903,16 @@ protected:
 #ifdef PBG_ADD_INGAMESHOPMSGBOX
 	bool m_bUseScrollbarRender;
 #endif //PBG_ADD_INGAMESHOPMSGBOX
+
+	char m_szText[MAX_TEXT_LENGTH + 1];
+	int  m_iTextLength;
+	int  m_iMaxLength;
+
+	std::string m_title;
+	bool iskeyboardactive;
+	bool m_bShow;
+	bool m_bFocused;
+
 };
 
 class CUIChatInputBox

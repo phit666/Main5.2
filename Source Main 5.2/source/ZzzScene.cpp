@@ -65,6 +65,7 @@
 #include "ServerListManager.h"
 #include "ProtocolSend.h"
 #include "MapManager.h"
+#include "mu_sdl.h"
 
 
 extern CUITextInputBox * g_pSingleTextInputBox;
@@ -104,7 +105,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.0.104";
+char *szServerIpAddress = "192.168.1.19";
 //char *szServerIpAddress = "210.181.89.215";
 WORD g_ServerPort = 44405;
 
@@ -1516,7 +1517,13 @@ void LoadingScene(HDC hDC)
 	::EndBitmap();
 	::EndOpengl();
 	::glFlush();
+
+#ifdef MU_USE_SDL
+	nk_sdl_render(NK_ANTI_ALIASING_ON);
+	SDL_GL_SwapWindow(gSDLWindow);
+#else
 	::SwapBuffers(hDC);
+#endif
 
 	SAFE_DELETE(rUIMng.m_pLoadingScene);
 
@@ -2288,10 +2295,12 @@ void MainScene(HDC hDC)
 			break;
 
 		case CHARACTER_SCENE:
+			//OutputDebugStringA("[SDL-DEBUG] NewMoveCharacterScene");
 			NewMoveCharacterScene();
 			break;
 
 		case MAIN_SCENE:
+			//OutputDebugStringA("[SDL-DEBUG] MoveMainScene");
 			MoveMainScene();
 			break;
 		}
@@ -2445,7 +2454,12 @@ void MainScene(HDC hDC)
 	if(Success)
 	{
 		glFlush();
-		SwapBuffers(hDC);
+#ifdef MU_USE_SDL
+		nk_sdl_render(NK_ANTI_ALIASING_ON);
+		SDL_GL_SwapWindow(gSDLWindow);
+#else
+		::SwapBuffers(hDC);
+#endif
 	}
 
 	DifTimer = TimePrior - LastTimeCurrent;
@@ -2771,14 +2785,17 @@ void Scene(HDC hDC)
 		break;
 #endif // MOVIE_DIRECTSHOW
 	case WEBZEN_SCENE:
+		//OutputDebugStringA("[SDL-DEBUG] WebzenScene");
         WebzenScene(hDC);
 		break;
 	case LOADING_SCENE:
-      	LoadingScene(hDC);
+		//OutputDebugStringA("[SDL-DEBUG] LoadingScene");
+		LoadingScene(hDC);
 		break;
 	case LOG_IN_SCENE:
 	case CHARACTER_SCENE:
 	case MAIN_SCENE:
+		//OutputDebugStringA("[SDL-DEBUG] MainScene");
 		MainScene(hDC);
 		break;
 	}

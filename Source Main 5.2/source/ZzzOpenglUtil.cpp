@@ -10,6 +10,7 @@
 #include "zzzcharacter.h"
 #include "Zzzinfomation.h"
 #include "NewUISystem.h"
+#include "mu_sdl.h"
 
 int     OpenglWindowX;     
 int     OpenglWindowY;     
@@ -863,7 +864,7 @@ inline void TEXCOORD(float *c,float u,float v)
 	c[0] = u;
 	c[1] = v;
 }
-
+/*
 void RenderBox(float Matrix[3][4])
 {
 	vec3_t BoundingBoxMin;
@@ -926,7 +927,7 @@ void RenderBox(float Matrix[3][4])
 	glTexCoord2f( 0.0F, 0.0F); glVertex3fv(TransformVertices[2]);
 	glEnd();
 }
-
+*/
 void RenderPlane3D(float Width,float Height,float Matrix[3][4])
 {
 	vec3_t BoundingVertices[4];
@@ -1225,91 +1226,119 @@ void RenderColorBitmap(int Texture,float x,float y,float Width,float Height,floa
 	glEnd();
 }
 
-void RenderBitmap(int Texture,float x,float y,float Width,float Height,float u,float v,float uWidth,float vHeight,bool Scale,bool StartScale,float Alpha)
+void RenderBitmap(
+	int Texture,
+	float x,
+	float y,
+	float Width,
+	float Height,
+	float u,
+	float v,
+	float uWidth,
+	float vHeight,
+	bool Scale,
+	bool StartScale,
+	float Alpha)
 {
-	if(StartScale)
+	if (StartScale)
 	{
 		x = ConvertX(x);
 		y = ConvertY(y);
 	}
-	if(Scale)
+
+	if (Scale)
 	{
 		Width = ConvertX(Width);
 		Height = ConvertY(Height);
 	}
 
-    BindTexture(Texture);
-
-	float p[4][2];
-
 	y = WindowHeight - y;
-	
-	p[0][0] = x      ;p[0][1] = y;
-	p[1][0] = x      ;p[1][1] = y-Height;
-	p[2][0] = x+Width;p[2][1] = y-Height;
-	p[3][0] = x+Width;p[3][1] = y;
 
-	float c[4][2];
-	TEXCOORD(c[0],u       ,v        );
-	TEXCOORD(c[3],u+uWidth,v        );
-	TEXCOORD(c[2],u+uWidth,v+vHeight);
-	TEXCOORD(c[1],u       ,v+vHeight);
+	GLubyte alpha = 255;
 
-	glBegin(GL_TRIANGLE_FAN);
-	for(int i=0;i<4;i++)
+	if (Alpha > 0.0f)
 	{
-		if(Alpha > 0.f)
-		{
-			glColor4f(1.f,1.f,1.f,Alpha);
-		}
-		glTexCoord2f(c[i][0],c[i][1]);
-		glVertex2f(p[i][0],p[i][1]);
-		if(Alpha > 0.f)
-		{
-			glColor4f(1.f,1.f,1.f,1.f);
-		}
+		if (Alpha > 1.0f)
+			Alpha = 1.0f;
+
+		alpha = (GLubyte)(Alpha * 255.0f);
 	}
-	glEnd();
+
+	MU2DVertex quad[4];
+
+	quad[0] = { x,         y,          u,          v };
+	quad[1] = { x,         y - Height, u,          v + vHeight };
+	quad[2] = { x + Width, y - Height, u + uWidth, v + vHeight };
+	quad[3] = { x + Width, y,          u + uWidth, v };
+
+	MU_DrawTexturedQuad(
+		Texture,
+		quad,
+		255,
+		255,
+		255,
+		alpha
+	);
+
+	glColor4f(1.f, 1.f, 1.f, 1.f);
 }
 
-void RenderBitmapRotate(int Texture,float x,float y,float Width,float Height,float Rotate,float u,float v,float uWidth,float vHeight)
+void RenderBitmapRotate(
+	int Texture,
+	float x,
+	float y,
+	float Width,
+	float Height,
+	float Rotate,
+	float u,
+	float v,
+	float uWidth,
+	float vHeight)
 {
 	x = ConvertX(x);
 	y = ConvertY(y);
 	Width = ConvertX(Width);
 	Height = ConvertY(Height);
-	//x -= Width *0.5f;
-	//y -= Height*0.5f;
-    BindTexture(Texture);
-
-	vec3_t p[4],p2[4];
 
 	y = WindowHeight - y;
 
-	Vector(-Width*0.5f, Height*0.5f,0.f,p[0]);
-	Vector(-Width*0.5f,-Height*0.5f,0.f,p[1]);
-	Vector( Width*0.5f,-Height*0.5f,0.f,p[2]);
-	Vector( Width*0.5f, Height*0.5f,0.f,p[3]);
+	vec3_t p[4], p2[4];
+
+	Vector(-Width * 0.5f, Height * 0.5f, 0.f, p[0]);
+	Vector(-Width * 0.5f, -Height * 0.5f, 0.f, p[1]);
+	Vector(Width * 0.5f, -Height * 0.5f, 0.f, p[2]);
+	Vector(Width * 0.5f, Height * 0.5f, 0.f, p[3]);
 
 	vec3_t Angle;
-	Vector(0.f,0.f,Rotate,Angle);
+	Vector(0.f, 0.f, Rotate, Angle);
+
 	float Matrix[3][4];
-	AngleMatrix(Angle,Matrix);
+	AngleMatrix(Angle, Matrix);
 
-	float c[4][2];
-	TEXCOORD(c[0],u       ,v        );
-	TEXCOORD(c[3],u+uWidth,v        );
-	TEXCOORD(c[2],u+uWidth,v+vHeight);
-	TEXCOORD(c[1],u       ,v+vHeight);
+	MU2DVertex quad[4];
 
-	glBegin(GL_TRIANGLE_FAN);
-	for(int i=0;i<4;i++)
+	// same UV order as old code
+	quad[0].u = u;          quad[0].v = v;
+	quad[1].u = u;          quad[1].v = v + vHeight;
+	quad[2].u = u + uWidth; quad[2].v = v + vHeight;
+	quad[3].u = u + uWidth; quad[3].v = v;
+
+	for (int i = 0; i < 4; ++i)
 	{
-		glTexCoord2f(c[i][0],c[i][1]);
-     	VectorRotate(p[i],Matrix,p2[i]);
-		glVertex2f(p2[i][0]+x,p2[i][1]+y);
+		VectorRotate(p[i], Matrix, p2[i]);
+
+		quad[i].x = p2[i][0] + x;
+		quad[i].y = p2[i][1] + y;
 	}
-	glEnd();
+
+	MU_DrawTexturedQuad(
+		Texture,
+		quad,
+		255,
+		255,
+		255,
+		255
+	);
 }
 
 void RenderBitRotate(int Texture,float x,float y,float Width,float Height,float Rotate)

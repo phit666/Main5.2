@@ -3,6 +3,7 @@
 #include <cstdint>
 #include "ProtocolAsio.h"
 #include "./Utilities/Log/muConsoleDebug.h"
+#include "mu_sdl.h"
 
 enum class ProtocolHead : uint16_t
 {
@@ -140,8 +141,8 @@ public:
 	bool CheckConnected();
 	void SendPingTest();
 	void RecvMessage();
-	void SendPacket(ProtocolHead head,uint8_t* message, uint16_t size) { if(SocketConnect) SocketConnect->DataSend(head,message,size); }
-	void SendPacketClassic(uint8_t* message,uint16_t size) { if(SocketConnect) SocketConnect->DataSend(message,size);}
+	void SendPacket(ProtocolHead head,uint8_t* message, uint16_t size) { if(SocketConnect) SocketConnect->DataSend(head,message,size); MU_EnableSocketWrite(); }
+	void SendPacketClassic(uint8_t* message,uint16_t size) { if(SocketConnect) SocketConnect->DataSend(message,size); MU_EnableSocketWrite(); }
 	void SendCheckOnline();
 	void SendRequestLogInNew(char* account, char* password);
 	void SendRequestCharactersListNew();

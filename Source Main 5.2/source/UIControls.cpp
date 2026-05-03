@@ -20,7 +20,7 @@
 #include "CMVP1stDirection.h"
 #include "UIManager.h"
 #include "NewUISystem.h"
-
+#include "mu_sdl.h"
 
 extern BYTE m_CrywolfState;
 
@@ -2976,6 +2976,13 @@ CUITextInputBox::CUITextInputBox()
 	m_hBitmap = NULL;
 	m_pFontBuffer = NULL;
 
+	memset(m_szText, 0, sizeof(m_szText));
+	m_iTextLength = 0;
+	m_iMaxLength = MAX_TEXT_LENGTH;
+	m_bShow = false;
+	iskeyboardactive = false;
+	m_bFocused = false;
+
 	m_dwTextColor = _ARGB(255, 255, 255, 255);
 	m_dwBackColor = _ARGB(255, 0, 0, 0);
 	m_dwSelectBackColor = _ARGB(255, 150, 150, 150);
@@ -3209,8 +3216,14 @@ void CUITextInputBox::SetIMEPosition()
 
 void CUITextInputBox::GetText(char * pszText, int iGetLenght)
 {
+#ifdef MU_USE_SDL
+	if (pszText != NULL) {
+		strncpy(pszText, m_szText, iGetLenght - 1);
+	}
+#else
 	if (pszText == NULL) return;
 	GetWindowText(m_hEditWnd, pszText, iGetLenght);
+#endif
 }
 
 void CUITextInputBox::GetText(wchar_t * pwszText, int iGetLenght)
@@ -3236,11 +3249,19 @@ void CUITextInputBox::SetText(const char * pszText)
 
 void CUITextInputBox::SetTextLimit(int iLimit)
 {
+#ifdef MU_USE_SDL
+	m_iMaxLength = iLimit;
+#else
 	SendMessageW(m_hEditWnd, EM_SETLIMITTEXT, iLimit, 0);
+#endif
 }
 
 void CUITextInputBox::SetSize(int iWidth, int iHeight)
 {
+#ifdef MU_USE_SDL
+	iWidth = iWidth * 0.66;
+	iHeight = iHeight * 0.90;
+#endif
 	if(iWidth == 0 || iHeight == 0) return;
 	if(iWidth == m_iWidth && iHeight == m_iHeight) return;
 	
@@ -3307,6 +3328,24 @@ void CUITextInputBox::SetSize(int iWidth, int iHeight)
 
 void CUITextInputBox::Init(HWND hWnd, int iWidth, int iHeight, int iMaxLength, BOOL bIsPassword)
 {
+#ifdef MU_USE_SDL
+	// Nuklear/SDL mode: no HWND, no child edit control
+	m_hParentWnd = NULL;
+	m_hEditWnd = NULL;
+	m_hOldProc = NULL;
+
+	m_bPasswordInput = (bIsPassword == TRUE);
+
+	SetSize(iWidth, iHeight);
+	SetTextLimit(iMaxLength);
+
+	m_iRealWindowPos_x = (int)(m_iPos_x * g_fScreenRate_x);
+	m_iRealWindowPos_y = (int)(m_iPos_y * g_fScreenRate_y);
+
+	m_bShow = false; // same idea as old ShowWindow(..., SW_HIDE)
+
+	return;
+#else
 	m_hParentWnd = hWnd;
 	
 	DWORD dwOptionFlag = 0;
@@ -3341,22 +3380,30 @@ void CUITextInputBox::Init(HWND hWnd, int iWidth, int iHeight, int iMaxLength, B
 #ifdef PBG_ADD_INGAMESHOPMSGBOX
 	m_bUseScrollbarRender = true;
 #endif //PBG_ADD_INGAMESHOPMSGBOX
+#endif
 }
 
 void CUITextInputBox::SetState(int iState)
 {
+#ifndef MU_USE_SDL
 	if (m_hEditWnd == NULL) return;
+#endif
 	m_iState = iState;
 	if (m_iState == UISTATE_HIDE)
-		ShowWindow(m_hEditWnd, SW_HIDE);
+		m_bShow = false;// ShowWindow(m_hEditWnd, SW_HIDE);
 	else
 	{
-		ShowWindow(m_hEditWnd, SW_SHOW);
+		m_bShow = true;// ShowWindow(m_hEditWnd, SW_SHOW);
 	}
 }
 
 void CUITextInputBox::GiveFocus(BOOL SelectText)
 {
+#ifdef MU_USE_SDL
+	m_bFocused = true;
+	m_bShow = true;
+	SDL_StartTextInput();
+#else
 	if (m_hEditWnd == NULL) return;
 
 	if (g_iChatInputType == 1 && GetFocus() == g_hWnd && !CheckOption(UIOPTION_SERIALNUMBER) && !CheckOption(UIOPTION_NUMBERONLY))
@@ -3372,6 +3419,185 @@ void CUITextInputBox::GiveFocus(BOOL SelectText)
 		PostMessageW(m_hEditWnd, EM_SETSEL, ( WPARAM)0, ( LPARAM)-1);
 	else
 		PostMessageW(m_hEditWnd, EM_SETSEL, ( WPARAM)-2, ( LPARAM)-1);
+#endif
+}
+
+void CUITextInputBox::enablekeyboard() {
+#ifdef MU_USE_SDL
+	if (!this->iskeyboardactive) {
+		this->iskeyboardactive = true;
+		SDL_StartTextInput();
+	}
+#endif
+}
+
+void CUITextInputBox::disablekeyboard() {
+#ifdef MU_USE_SDL
+	if (this->iskeyboardactive) {
+		this->iskeyboardactive = false;
+		SDL_StopTextInput();
+	}
+#endif
+}
+
+static nk_color ARGBToNK(DWORD c)
+{
+	nk_color col;
+	col.a = (c >> 24) & 0xFF;
+	col.r = (c >> 16) & 0xFF;
+	col.g = (c >> 8) & 0xFF;
+	col.b = (c >> 0) & 0xFF;
+	return col;
+}
+
+void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
+{
+#ifdef MU_USE_SDL
+	if (!ctx || !m_bShow)
+		return;
+
+	if (m_iMaxLength <= 0 || m_iMaxLength > MAX_TEXT_LENGTH)
+		m_iMaxLength = MAX_TEXT_LENGTH;
+
+	if (m_iTextLength < 0)
+		m_iTextLength = 0;
+
+	if (m_iTextLength > m_iMaxLength)
+		m_iTextLength = m_iMaxLength;
+
+	m_szText[m_iTextLength] = '\0';
+
+
+	struct nk_rect bounds = nk_rect(
+		(float)(m_iPos_x * g_fScreenRate_x),
+		(float)(m_iPos_y * g_fScreenRate_y) - 3,
+		(float)(m_iWidth * g_fScreenRate_x),
+		(float)(m_iHeight * g_fScreenRate_y)
+	);
+
+	nk_color back = ARGBToNK(m_dwBackColor);
+	nk_color text = ARGBToNK(m_dwTextColor);
+
+	struct nk_style_window old_style = ctx->style.window;
+	ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
+	ctx->style.window.padding = nk_vec2(0, 0);
+	ctx->style.window.spacing = nk_vec2(0, 0);
+	ctx->style.window.border = 0;
+
+	nk_flags st;
+
+	if (nk_begin(ctx, m_title.c_str(), bounds,
+		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND))
+	{
+		nk_layout_row_dynamic(ctx, (float)(m_iHeight * g_fScreenRate_y), 1);
+
+		nk_flags flags = m_bUseMultiLine ? NK_EDIT_BOX : NK_EDIT_FIELD | NK_EDIT_SIG_ENTER | NK_EDIT_AUTO_SELECT;
+		if (m_bFocused)
+			flags |= NK_EDIT_ALWAYS_INSERT_MODE;
+
+		struct nk_style_edit old_edit = ctx->style.edit;
+		ctx->style.edit.normal = nk_style_item_color(nk_rgba(0, 0, 0, 0));
+		ctx->style.edit.hover = nk_style_item_color(nk_rgba(0, 0, 0, 0));
+		ctx->style.edit.active = nk_style_item_color(nk_rgba(0, 0, 0, 0));
+		ctx->style.edit.border = 0.0f;
+		ctx->style.edit.rounding = 0.0f;
+		ctx->style.edit.text_normal = text;
+		ctx->style.edit.text_hover = text;
+		ctx->style.edit.text_active = text;
+		ctx->style.edit.cursor_normal = text;
+		ctx->style.edit.cursor_hover = text;
+
+		if (MouseLButtonPush)
+		{
+			char t[100] = { 0 };
+
+			sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseX %d >= %d && < %d.", this->m_title.c_str(), 
+				MouseX, m_iPos_x, m_iPos_x + m_iWidth);
+
+			OutputDebugStringA(t);
+
+			sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseY %d >= %d && < %d.", this->m_title.c_str(),
+				MouseY, m_iPos_y, m_iPos_y + m_iHeight);
+
+			OutputDebugStringA(t);
+
+
+			if ((float)MouseX >= m_iPos_x &&
+				(float)MouseX < m_iPos_x + m_iWidth &&
+				(float)MouseY >= m_iPos_y &&
+				(float)MouseY < m_iPos_y + m_iHeight)
+			{
+				//char t[100] = { 0 };
+				//sprintf(t, "[SDL-DEBUG] RenderNuklear, set focus to %s.", this->m_title.c_str());
+				//OutputDebugStringA(t);
+				m_bFocused = true;
+				//this->enablekeyboard();
+				SDL_StartTextInput();
+			}
+			else
+			{
+				//char t[100] = { 0 };
+				//sprintf(t, "[SDL-DEBUG] RenderNuklear, unset focus to %s.", this->m_title.c_str());
+				//OutputDebugStringA(t);
+				m_bFocused = false;
+				//this->disablekeyboard();
+			}
+		}
+
+		if (m_bPasswordInput) {
+			static char masked[MAX_TEXT_LENGTH + 1];
+
+			int len = m_iTextLength;
+			if (len > MAX_TEXT_LENGTH)
+				len = MAX_TEXT_LENGTH;
+
+			memset(masked, '*', len);
+			masked[len] = '\0';
+			st = nk_edit_string(
+				ctx,
+				flags,
+				masked,
+				&m_iTextLength,
+				m_iMaxLength,
+				nk_filter_default
+			);
+
+			int realpasslen = strlen(m_szText);
+			if (m_iTextLength != realpasslen) {
+				if (realpasslen < m_iTextLength)
+					strcat(m_szText, &masked[m_iTextLength - 1]);
+				else if (realpasslen > m_iTextLength)
+					m_szText[m_iTextLength] = '\0';
+			}
+		}
+		else {
+			st = nk_edit_string(
+				ctx,
+				flags,
+				m_szText,
+				&m_iTextLength,
+				m_iMaxLength,
+				nk_filter_default
+			);
+		}
+
+		bool has_focus = (st & NK_EDIT_ACTIVE) != 0;
+
+		if (has_focus) {
+			this->enablekeyboard();
+		}
+		else {
+			//this->disablekeyboard();
+		}
+
+		ctx->style.edit = old_edit;
+
+		m_szText[m_iTextLength] = '\0';
+	}
+
+	nk_end(ctx);
+	ctx->style.window = old_style;
+#endif
 }
 
 void CUITextInputBox::UploadText(int sx,int sy,int Width,int Height)
@@ -3469,6 +3695,9 @@ void CUITextInputBox::WriteText(int iOffset, int iWidth, int iHeight)
 }
 void CUITextInputBox::Render()
 {
+#ifdef MU_USE_SDL
+	RenderNuklear(g_nk_ctx);
+#else
 	m_bIsReady = TRUE;
 	if (m_hEditWnd == NULL || IsWindowVisible(m_hEditWnd) == FALSE) return;
 
@@ -3570,10 +3799,12 @@ void CUITextInputBox::Render()
 	}
 
 	++m_iCaretBlinkTemp;
+#endif
 }
 
 void CUITextInputBox::RenderScrollbar()
 {
+#ifndef MU_USE_SDL
 	float fScrollPos = GetScrollPos(m_hEditWnd, SB_VERT);
 	float fLineNum = SendMessage(m_hEditWnd, EM_GETLINECOUNT, 0, 0);
 	//m_iNumLines = 15;
@@ -3610,7 +3841,7 @@ void CUITextInputBox::RenderScrollbar()
 		RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x+m_iWidth-m_fScrollBarWidth+1, m_fScrollBarPos_y,m_fScrollBarWidth-2, 1, 0.0f, 0.0f/32.0f, 11.0f/16.0f, 1.0f/32.0f);
 		RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x+m_iWidth-m_fScrollBarWidth+1, m_fScrollBarPos_y + m_fScrollBarHeight,m_fScrollBarWidth-2, 1, 0.0f, 2.0f/32.0f, 11.0f/16.0f, 1.0f/32.0f);
 	}
-
+#endif
 }
 
 void CUITextInputBox::SetFont(HFONT hFont)

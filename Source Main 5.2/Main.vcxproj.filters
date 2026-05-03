@@ -190,6 +190,9 @@
     <Filter Include="External Object\Leaf">
       <UniqueIdentifier>{3b92a23e-4343-428e-9736-2f625e9e74b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MU\Client\Compats">
+      <UniqueIdentifier>{e1768e54-2824-4c6c-8a39-38b3061472b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="source\icon1.ico">
@@ -1176,6 +1179,15 @@
     </ClCompile>
     <ClCompile Include="source\ExternalObject\Leaf\xstreambuf.cpp">
       <Filter>External Object\Leaf</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mu_sdl.cpp">
+      <Filter>MU\Client\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mu_2d_renderer.cpp">
+      <Filter>MU\Client\Compats</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mu_socket.cpp">
+      <Filter>MU\Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2246,6 +2258,24 @@
     </ClInclude>
     <ClInclude Include="source\ExternalObject\Leaf\xstreambuf.h">
       <Filter>External Object\Leaf</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_sdl.h">
+      <Filter>MU\Client\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_file.h">
+      <Filter>MU\Client\Compats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_gl.h">
+      <Filter>MU\Client\Compats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\w_nuklear.h">
+      <Filter>MU\Client\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_2d_renderer.h">
+      <Filter>MU\Client\Compats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_socket.h">
+      <Filter>MU\Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

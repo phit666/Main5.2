@@ -16,6 +16,7 @@
 #include "GameCensorship.h"
 #include "UIControls.h"
 #include "ServerListManager.h"
+#include "mu_sdl.h"
 
 #define	DOCK_EXTENT		10
 
@@ -174,7 +175,13 @@ void CUIMng::RenderTitleSceneUI(HDC hDC, DWORD dwNow, DWORD dwTotal)
 	::EndBitmap();
 	::EndOpengl();
 	::glFlush();
+
+#ifdef MU_USE_SDL
+	nk_sdl_render(NK_ANTI_ALIASING_ON);
+	SDL_GL_SwapWindow(gSDLWindow);
+#else
 	::SwapBuffers(hDC);
+#endif
 }
 
 void CUIMng::Create()
@@ -616,10 +623,18 @@ void CUIMng::Update(double dDeltaTick)
 
 	m_bCursorOnUI = false;
 
+
+
+	//if (rInput.IsLBtnDn())
+#ifdef MU_USE_SDL_TMP
+	if (MouseLButtonPush)
+#else
 	if (rInput.IsLBtnDn())
+#endif
 	{
 		bool bWinClick = false;
 		position = m_WinList.GetHeadPosition();
+
 		while (position)
 		{
 			pWin = (CWin*)m_WinList.GetNext(position);
@@ -638,7 +653,12 @@ void CUIMng::Update(double dDeltaTick)
 			pWin->Active(false);
 		}
 	}
+	//else if (rInput.IsLBtnUp())
+#ifdef MU_USE_SDL_TMP
+	else if (MouseLButtonPop)
+#else
 	else if (rInput.IsLBtnUp())
+#endif
 	{
 		m_bBlockCharMove = false;
 	}

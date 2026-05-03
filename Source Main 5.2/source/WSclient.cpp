@@ -74,6 +74,7 @@
 #ifdef PBG_ADD_NEWCHAR_MONK_SKILL
 #include "MonkSystem.h"
 #endif //PBG_ADD_NEWCHAR_MONK_SKILL
+#include "mu_socket.h"
 
 #define MAX_DEBUG_MAX 10
 
@@ -111,7 +112,7 @@ extern bool g_PetEnableDuel;
 MASTER_LEVEL_VALUE	Master_Level_Data;
 
 BYTE Version[SIZE_PROTOCOLVERSION] = {'1'+1, '0'+2, '4'+3, '0'+4, '5'+5};
-BYTE Serial[SIZE_PROTOCOLSERIAL+1] = {"TbYehR2hFUPBKgZj"};
+BYTE Serial[SIZE_PROTOCOLSERIAL+1] = {"k1Pk2jcET48mxL3b"};
 
 CWsctlc     SocketClient;
 CWsctlc*    g_pSocketClient = &SocketClient;
@@ -177,6 +178,16 @@ BOOL CreateSocket(char *IpAddr, unsigned short Port)
 
 	g_ConsoleDebug->Write(MCD_NORMAL, "[Connect to Server] ip address = %s, port = %d", IpAddr, Port);
 
+#if MU_USE_LIBEVENT == 1
+	if (le_connect(IpAddr, Port) != 1) {
+		g_ErrorReport.Write("Failed to connect. ");
+		g_ErrorReport.WriteCurrentTime();
+
+		CUIMng::Instance().PopUpMsgWin(MESSAGE_SERVER_LOST);
+
+		bResult = FALSE;
+	}
+#else
 	SocketClient.Create(g_hWnd, TRUE);
 	if( SocketClient.Connect(IpAddr,Port,WM_ASYNCSELECTMSG) == FALSE )
 	{
@@ -187,6 +198,7 @@ BOOL CreateSocket(char *IpAddr, unsigned short Port)
 		
 		bResult = FALSE;
 	}
+#endif
 	g_byPacketSerialSend = 0;
 	g_byPacketSerialRecv = 0;
 	
@@ -12747,6 +12759,11 @@ void ReceiveDarkside(BYTE* ReceiveBuffer)
 
 BOOL TranslateProtocol( int HeadCode, BYTE *ReceiveBuffer, int Size, BOOL bEncrypted)
 {
+	char t[100] = { 0 };
+	sprintf(t, "[SDL-DEBUG] TranslateProtocol, (%X) %X %X %X %X", HeadCode,
+		ReceiveBuffer[0], ReceiveBuffer[1], ReceiveBuffer[2], ReceiveBuffer[3]);
+	OutputDebugString(t);
+
 	switch( HeadCode )
 	{
 	case 0xF1:     			

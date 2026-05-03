@@ -78,6 +78,8 @@ bool CWin::CursorInWin(int nArea)
 	if (!m_bShow)
 		return false;
 
+	//char t[100] = { 0 };
+
 	CInput& rInput = CInput::Instance();
 	RECT rc = { 0, 0, 0, 0 };
 	NODE* position;
@@ -88,6 +90,10 @@ bool CWin::CursorInWin(int nArea)
 	case WA_ALL:
 		::SetRect(&rc, m_ptPos.x, m_ptPos.y, m_ptPos.x + m_Size.cx,
 			m_ptPos.y + m_Size.cy);
+
+		//sprintf(t, "[SDL-DEBUG] left %d right %d cursor %d %d", rc.left, rc.right, rInput.GetCursorPos().x, rInput.GetCursorPos().y);
+		//OutputDebugStringA(t);
+
 		if (::PtInRect(&rc, rInput.GetCursorPos()))
 			return true;
 		break;

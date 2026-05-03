@@ -18,6 +18,7 @@
 #include "wsclientinline.h"
 #include "UIControls.h"
 #include "ZzzOpenglUtil.h"
+#include "mu_sdl.h"
 
 #define	MW_OK		0
 #define	MW_CANCEL	1
@@ -156,7 +157,6 @@ bool CMsgWin::CursorInWin(int nArea)
 void CMsgWin::UpdateWhileActive(double dDeltaTick)
 {
 	CInput& rInput = CInput::Instance();
-
 	if (rInput.IsKeyDown(VK_RETURN))
 	{
 		if (m_eType > MWT_BTN_CANCEL)
@@ -200,7 +200,15 @@ void CMsgWin::UpdateWhileActive(double dDeltaTick)
 				{
 					g_ErrorReport.Write("> Menu - Exit game.");
 					g_ErrorReport.WriteCurrentTime();
+					//::PostMessage(g_hWnd, WM_CLOSE, 0, 0);
+
+#ifdef MU_USE_SDL
+					Destroy = true;
+					gSDLRunning = false;
+#else
 					::PostMessage(g_hWnd, WM_CLOSE, 0, 0);
+#endif
+
 				}
 				else
 				{
@@ -441,6 +449,23 @@ void CMsgWin::PopUp(int nMsgCode, char* pszMsg)
 	}
 
 	SetMsg(eType, lpszMsg, lpszMsg2);
+
+#ifdef MU_USE_SDL_TMP
+	int winW = 0;
+	int winH = 0;
+
+	SDL_GetWindowSize(gSDLWindow, &winW, &winH);
+
+	SetPosition(
+		(winW - m_sprBack.GetWidth()) / 2,
+		(winH - m_sprBack.GetHeight()) / 2
+	);
+
+	char t[100] = { 0 };
+	sprintf(t, "[SDL-DEBUG] PopUp %d, w:%d h:%d / %d %d", m_nMsgCode, winW, winH, (winW - m_sprBack.GetWidth()) / 2, (winH - m_sprBack.GetHeight()) / 2);
+	OutputDebugStringA(t);
+#endif
+
 	rUIMng.ShowWin(this);
 }
 
@@ -449,10 +474,22 @@ void CMsgWin::ManageOKClick()
 	CUIMng& rUIMng = CUIMng::Instance();
 	rUIMng.HideWin(this);
 
+	char t[100] = { 0 };
+	sprintf(t, "[SDL-DEBUG] ManageOKClick(), m_nMsgCode %d",
+		m_nMsgCode);
+	OutputDebugStringA(t);
+
+
 	switch (m_nMsgCode)
 	{
 	case RECEIVE_LOG_IN_FAIL_VERSION:
+		//::PostMessage(g_hWnd, WM_CLOSE, 0, 0);
+#ifdef MU_USE_SDL
+		Destroy = true;
+		gSDLRunning = false;
+#else
 		::PostMessage(g_hWnd, WM_CLOSE, 0, 0);
+#endif
 		break;
 	case MESSAGE_SERVER_LOST:
 	case MESSAGE_VERSION:
@@ -476,12 +513,14 @@ void CMsgWin::ManageOKClick()
 		rUIMng.ShowWin(&rUIMng.m_LoginWin);
 		CUIMng::Instance().m_LoginWin.GetIDInputBox()->GiveFocus(TRUE);
 		CurrentProtocolState = RECEIVE_JOIN_SERVER_SUCCESS;
+		SDL_StartTextInput();
 		break;
 	case MESSAGE_INPUT_PASSWORD:
 	case RECEIVE_LOG_IN_FAIL_PASSWORD:
 		rUIMng.ShowWin(&rUIMng.m_LoginWin);
 		CUIMng::Instance().m_LoginWin.GetPassInputBox()->GiveFocus(TRUE);
 		CurrentProtocolState = RECEIVE_JOIN_SERVER_SUCCESS;
+		SDL_StartTextInput();
 		break;
 	case MESSAGE_DELETE_CHARACTER_CONFIRM:
 		PopUp(MESSAGE_DELETE_CHARACTER_RESIDENT);

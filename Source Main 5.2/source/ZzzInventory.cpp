@@ -49,7 +49,7 @@
 #include "MapManager.h"
 #include "CharacterManager.h"
 #include "SkillManager.h"
-
+#include "mu_sdl.h"
 
 extern CUITextInputBox * g_pSingleTextInputBox;
 extern int g_iChatInputType;
@@ -11840,7 +11840,7 @@ void CreateCastleMark ( int Type, BYTE* buffer, bool blend )
 	}
     glBindTexture(GL_TEXTURE_2D,b->TextureNumber);
 
-    glTexImage2D(GL_TEXTURE_2D,0,3,Width,Height,0,GL_RGBA,GL_UNSIGNED_BYTE,b->Buffer);
+    glTexImage2D(GL_TEXTURE_2D,0, MU_GL_RGB_INTERNAL,Width,Height,0,GL_RGBA,GL_UNSIGNED_BYTE,b->Buffer);
 }
 
 

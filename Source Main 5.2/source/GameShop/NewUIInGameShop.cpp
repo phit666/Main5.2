@@ -14,6 +14,7 @@
 #include "MsgBoxIGSGiftStorageItemInfo.h"
 #include "MsgBoxIGSDeleteItemConfirm.h"
 #include "MapManager.h"
+#include "mu_sdl.h"
 
 using namespace SEASON3B;
 
@@ -662,7 +663,7 @@ void CNewUIInGameShop::InitBanner(unicode::t_char* pszFileName, unicode::t_char*
 	if( Bitmaps.Convert_Format(pszFileName) == false)
 		return;
 
-	if( LoadBitmap(pszFileName, IMAGE_IGS_BANNER, GL_LINEAR, GL_CLAMP, true, true) == true)
+	if( LoadBitmap(pszFileName, IMAGE_IGS_BANNER, GL_LINEAR, GL_CLAMP_TO_EDGE, true, true) == true)
 	{
 		m_bLoadBanner = true;
 

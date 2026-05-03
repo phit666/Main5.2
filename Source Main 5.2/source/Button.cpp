@@ -80,6 +80,76 @@ BOOL CButton::CursorInObject()
 	return CSprite::CursorInObject();
 }
 
+#ifdef MU_USE_SDL_TMP
+void CButton::Update()
+{
+
+	if (!CSprite::m_bShow)
+		return;
+
+	m_fTextAddYPos = 0.5f;
+	m_bClick = false;
+
+	BOOL cursorIn = CursorInObject();
+
+	if (m_bEnable)
+	{
+		if (cursorIn && MouseLButtonPush)
+			m_pBtnHeld = this;
+
+		if (MouseLButtonPop)
+		{
+			if (cursorIn && this == m_pBtnHeld)
+			{
+				m_bClick = true;
+				::PlayBuffer(SOUND_CLICK01);
+
+				if (-1 < m_anImgMap[BTN_UP_CHECK])
+					m_bCheck = !m_bCheck;
+			}
+
+			if (this == m_pBtnHeld)
+				m_pBtnHeld = NULL;
+		}
+
+		if (cursorIn && NULL == m_pBtnHeld)
+		{
+			if (m_bCheck)
+				CSprite::SetNowFrame(m_anImgMap[BTN_ACTIVE_CHECK]);
+			else
+				CSprite::SetNowFrame(m_anImgMap[BTN_ACTIVE]);
+		}
+		else if (cursorIn && this == m_pBtnHeld)
+		{
+			m_fTextAddYPos = 1.5f;
+
+			if (m_bCheck)
+				CSprite::SetNowFrame(m_anImgMap[BTN_DOWN_CHECK]);
+			else
+				CSprite::SetNowFrame(m_anImgMap[BTN_DOWN]);
+		}
+		else
+		{
+			if (m_bCheck)
+				CSprite::SetNowFrame(m_anImgMap[BTN_UP_CHECK]);
+			else
+				CSprite::SetNowFrame(m_anImgMap[BTN_UP]);
+		}
+	}
+	else
+	{
+		m_bClick = false;
+
+		if (MouseLButtonPop && this == m_pBtnHeld)
+			m_pBtnHeld = NULL;
+
+		if (m_bCheck)
+			CSprite::SetNowFrame(m_anImgMap[BTN_DISABLE_CHECK]);
+		else
+			CSprite::SetNowFrame(m_anImgMap[BTN_DISABLE]);
+	}
+}
+#else
 void CButton::Update()
 {
 	if (!CSprite::m_bShow)
@@ -94,9 +164,9 @@ void CButton::Update()
 		if (CursorInObject() && rInput.IsLBtnDn())
 			m_pBtnHeld = this;
 
-		m_bClick = false;
+		//m_bClick = false;
 
-		if(rInput.IsLBtnUp())
+		if(rInput.IsLBtnUp() || MouseLButtonPush)
 		{
 			if(CursorInObject() && this == m_pBtnHeld)
 			{
@@ -178,6 +248,7 @@ void CButton::Update()
 
 //	CSprite::Update(dDeltaTick);	// ¹öÆ° Animation.
 }
+#endif
 
 void CButton::Render()
 {

@@ -60,6 +60,9 @@
 
 #include "MultiLanguage.h"
 
+#include "mu_sdl.h"
+#include "mu_socket.h"
+
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
 CUITextInputBox * g_pSinglePasswdInputBox = NULL;
@@ -899,7 +902,7 @@ bool CreateOpenglWindow()
 
 HWND StartWindow(HINSTANCE hCurrentInst,int nCmdShow)
 {
-    char *windowName = "MU - Louis";
+    char *windowName = "MU";
 
     WNDCLASS wndClass;
     HWND hWnd;
@@ -1143,6 +1146,8 @@ BOOL OpenInitFile()
 	}
 	RegCloseKey( hKey);
 
+	//m_Resolution = 2;
+
 	switch(m_Resolution)
 	{
 	case 0:WindowWidth=640 ;WindowHeight=480 ;break;
@@ -1315,9 +1320,21 @@ bool ExceptionCallback(_EXCEPTION_POINTERS* pExceptionInfo )
 	return true;
 }
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int nCmdShow)
+void MU_ProcessSDLEvents();
+
+#if _WIN32 == 1
+int APIENTRY WinMain(HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPTSTR    szCmdLine,
+	int       nCmdShow)
+#else
+int main(int argc, char* argv[])
+#endif
 {
+
+#ifndef MU_USE_SDL
 	MSG msg;
+#endif
 
 	leaf::AttachExceptionHandler(ExceptionCallback);
 
@@ -1356,14 +1373,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLin
 	g_ErrorReport.AddSeparator();
 
 	// PKD_ADD_BINARY_PROTECTION
-	VM_START
-	WORD wPortNumber;	
-	if ( GetConnectServerInfo( szCmdLine, g_lpszCmdURL, &wPortNumber))
-	{
-		szServerIpAddress = g_lpszCmdURL;
-		g_ServerPort = wPortNumber;
-	}
-	VM_END
+	//VM_START
+	//WORD wPortNumber;	
+	//if ( GetConnectServerInfo( szCmdLine, g_lpszCmdURL, &wPortNumber))
+	//{
+		//szServerIpAddress = "192.168.1.19"; //g_lpszCmdURL;
+		//g_ServerPort = 44405;// wPortNumber;
+	//}
+	//VM_END
 
 	if ( !OpenMainExe())
 	{
@@ -1371,10 +1388,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLin
 	}
 
 	// PKD_ADD_BINARY_PROTECTION
-	VM_START
+	//VM_START
 	g_SimpleModulusCS.LoadEncryptionKey( "Data\\Enc1.dat");
 	g_SimpleModulusSC.LoadDecryptionKey( "Data\\Dec2.dat");
-	VM_END
+	//VM_END
 
 	g_ErrorReport.Write( "> To read config.ini.\r\n");
 	if( OpenInitFile() == FALSE )
@@ -1432,14 +1449,25 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLin
 
 	g_ErrorReport.Write( "> Screen size = %d x %d.\r\n", WindowWidth, WindowHeight);
 
-    g_hInst = hInstance;
-    g_hWnd = StartWindow(hInstance,nCmdShow);
+	g_hInst = hInstance;
+
+
+#ifdef MU_USE_SDL
+	if (!MU_InitSDL(WindowWidth, WindowHeight)) {
+		return FALSE;
+	}
+#else
+	g_hWnd = StartWindow(hInstance, nCmdShow);
+#endif
+
 	g_ErrorReport.Write( "> Start window success.\r\n");
 
+#ifndef MU_USE_SDL
     if ( !CreateOpenglWindow())
 	{
 		return FALSE;
 	}
+#endif
 
 	g_ErrorReport.Write( "> OpenGL init success.\r\n");
 	g_ErrorReport.AddSeparator();
@@ -1447,9 +1475,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLin
 	g_ErrorReport.AddSeparator();
 	g_ErrorReport.WriteSoundCardInfo(); 
 
+#ifndef MU_USE_SDL
     ShowWindow(g_hWnd, nCmdShow);
     UpdateWindow(g_hWnd);
-
+#endif
 	//g_ErrorReport.WriteImeInfo( g_hWnd);
 	g_ErrorReport.AddSeparator();
 	
@@ -1612,7 +1641,52 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLin
 	ProtectSysKey::AttachProtectSysKey(g_hInst, g_hWnd);
 #endif // !FOR_WORK
 #endif // PROTECT_SYSTEMKEY && NDEBUG
-	
+
+#ifdef MU_USE_SDL
+#if MU_USE_LIBEVENT == 1
+	SDL_CreateThread(le_start, "Libevent Thread", NULL);
+#endif
+	while (!Destroy && gSDLRunning)
+	{
+		nk_input_begin(g_nk_ctx);
+		MU_ProcessSDLEvents();
+		nk_input_end(g_nk_ctx);
+
+		if (g_eventBase)
+			event_base_loop(g_eventBase, EVLOOP_NONBLOCK);
+
+#if (defined WINDOWMODE)
+		if (g_bUseWindowMode == TRUE)
+		{
+			Scene(g_hDC); // later remove g_hDC
+		}
+		else if (g_bWndActive)
+		{
+			Scene(g_hDC);
+		}
+#else
+		if (g_bWndActive)
+		{
+			Scene(g_hDC);
+		}
+#endif
+
+#ifdef NEW_PROTOCOL_SYSTEM
+		if (SceneFlag < CHARACTER_SCENE)
+			ProtocolCompiler();
+
+		g_pChatRoomSocketList->ProtocolCompile();
+		gProtocolSend.RecvMessage();
+#else
+		ProtocolCompiler();
+		g_pChatRoomSocketList->ProtocolCompile();
+#endif
+
+		//SDL_Delay(1);
+	}
+
+	MU_ShutdownSDL();
+#else
     while( 1 )
     {
         if( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) )
@@ -1680,9 +1754,152 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLin
 
 		
     } // while( 1 )
-
 	DestroyWindow();
+#endif
 
-    return msg.wParam;
+
+	return 0;// msg.wParam;
+}
+
+
+void MU_ProcessSDLEvents()
+{
+	SDL_Event e;
+
+	MouseLButtonDBClick = false;
+
+	if (MouseLButtonPop == true &&
+		(g_iMousePopPosition_x != MouseX || g_iMousePopPosition_y != MouseY))
+	{
+		MouseLButtonPop = false;
+	}
+
+	while (SDL_PollEvent(&e))
+	{
+		nk_sdl_handle_event(&e);
+
+		switch (e.type)
+		{
+		case SDL_QUIT:
+			Destroy = true;
+			gSDLRunning = false;
+			break;
+
+		case SDL_WINDOWEVENT:
+			switch (e.window.event)
+			{
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				g_bWndActive = true;
+				break;
+
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+				g_bWndActive = false;
+
+				if (g_bUseWindowMode == TRUE)
+				{
+					MouseLButton = false;
+					MouseLButtonPop = false;
+					MouseRButton = false;
+					MouseRButtonPop = false;
+					MouseRButtonPush = false;
+					MouseLButtonDBClick = false;
+					MouseMButton = false;
+					MouseMButtonPop = false;
+					MouseMButtonPush = false;
+					MouseWheel = 0;
+				}
+				break;
+
+			case SDL_WINDOWEVENT_MINIMIZED:
+				if (g_bUseWindowMode == FALSE)
+				{
+					// ignore old anti-minimize / anti-cheat logic for now
+				}
+				break;
+			}
+			break;
+
+		case SDL_MOUSEMOTION:
+			MouseX = (float)e.motion.x / g_fScreenRate_x;
+			MouseY = (float)e.motion.y / g_fScreenRate_y;
+
+			if (MouseX < 0) MouseX = 0;
+			if (MouseX > 640) MouseX = 640;
+			if (MouseY < 0) MouseY = 0;
+			if (MouseY > 480) MouseY = 480;
+			break;
+
+		case SDL_MOUSEBUTTONDOWN:
+			g_iNoMouseTime = 0;
+
+			if (e.button.button == SDL_BUTTON_LEFT)
+			{
+				MouseLButtonPop = false;
+				if (!MouseLButton)
+					MouseLButtonPush = true;
+
+				MouseLButton = true;
+			}
+			else if (e.button.button == SDL_BUTTON_RIGHT)
+			{
+				MouseRButtonPop = false;
+				if (!MouseRButton)
+					MouseRButtonPush = true;
+
+				MouseRButton = true;
+			}
+			else if (e.button.button == SDL_BUTTON_MIDDLE)
+			{
+				MouseMButtonPop = false;
+				if (!MouseMButton)
+					MouseMButtonPush = true;
+
+				MouseMButton = true;
+			}
+			break;
+
+		case SDL_MOUSEBUTTONUP:
+			g_iNoMouseTime = 0;
+
+			if (e.button.button == SDL_BUTTON_LEFT)
+			{
+				MouseLButtonPush = false;
+				MouseLButtonPop = true;
+				MouseLButton = false;
+				g_iMousePopPosition_x = MouseX;
+				g_iMousePopPosition_y = MouseY;
+			}
+			else if (e.button.button == SDL_BUTTON_RIGHT)
+			{
+				MouseRButtonPush = false;
+				if (MouseRButton)
+					MouseRButtonPop = true;
+
+				MouseRButton = false;
+			}
+			else if (e.button.button == SDL_BUTTON_MIDDLE)
+			{
+				MouseMButtonPush = false;
+				if (MouseMButton)
+					MouseMButtonPop = true;
+
+				MouseMButton = false;
+			}
+			break;
+
+		case SDL_MOUSEWHEEL:
+			MouseWheel = e.wheel.y;
+			break;
+
+		case SDL_KEYDOWN:
+			if (e.key.keysym.sym == SDLK_RETURN)
+				SetEnterPressed(true);
+			break;
+
+		case SDL_TEXTINPUT:
+			// later: send e.text.text to your chat/textbox system
+			break;
+		}
+	}
 }
 
