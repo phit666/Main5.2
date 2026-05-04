@@ -41,7 +41,7 @@
 
 #include "CSChaosCastle.h"
 #include "GMHellas.h"
-#include <io.h>
+#include "mu_win_compat.h"
 #include "Input.h"
 #include "./Time/Timer.h"
 #include "UIMng.h"
@@ -112,7 +112,7 @@ CErrorReport g_ErrorReport;
 BOOL g_bMinimizedEnabled = FALSE;
 int g_iScreenSaverOldValue = 60*15;
 
-extern float g_fScreenRate_x;	// ¡Ø
+extern float g_fScreenRate_x;	// ï¿½ï¿½
 extern float g_fScreenRate_y;
 
 #if defined USER_WINDOW_MODE || (defined WINDOWMODE)
@@ -177,6 +177,7 @@ void CheckHack( void)
 	#endif
 }
 
+
 GLvoid KillGLWindow(GLvoid)								
 {
 	if (g_hRC)
@@ -221,7 +222,6 @@ GLvoid KillGLWindow(GLvoid)
 #endif //ENABLE_FULLSCREEN
 #endif	//WINDOWMODE(#else)
 }
-
 
 BOOL GetFileNameOfFilePath( char *lpszFile, char *lpszPath)
 {
@@ -1094,6 +1094,13 @@ BOOL OpenInitFile()
 	HKEY hKey;
 	DWORD dwDisp;
 	DWORD dwSize;
+
+#ifdef MU_USE_SDL
+	g_bUseWindowMode = TRUE;
+	strcpy(g_aszMLSelection, "Eng");
+	g_strSelectedML = g_aszMLSelection;
+	m_Resolution = 2;
+#else
 	if ( ERROR_SUCCESS == RegCreateKeyEx(HKEY_CURRENT_USER, "SOFTWARE\\Webzen\\Mu\\Config", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, & hKey, &dwDisp))
 	{
 		dwSize = 11;
@@ -1145,8 +1152,7 @@ BOOL OpenInitFile()
 		g_strSelectedML = g_aszMLSelection;
 	}
 	RegCloseKey( hKey);
-
-	//m_Resolution = 2;
+#endif
 
 	switch(m_Resolution)
 	{
@@ -1158,7 +1164,7 @@ BOOL OpenInitFile()
 	case 4:WindowWidth=1600;WindowHeight=1200;break;
 	}
 	
-	g_fScreenRate_x = (float)WindowWidth / 640;		// ¡Ø
+	g_fScreenRate_x = (float)WindowWidth / 640;		// ï¿½ï¿½
 	g_fScreenRate_y = (float)WindowHeight / 480;
 
 	return TRUE;
@@ -1183,7 +1189,7 @@ BOOL Util_CheckOption( char *lpszCommandLine, unsigned char cOption, char *lpszS
 	{
 		lpFound = ( unsigned char*)strchr( ( char*)( lpFound + 1), nFind);
 		if ( lpFound && ( *( lpFound + 1) == cComp[0] || *( lpFound + 1) == cComp[1]))
-		{	// ¹ß°ß
+		{	// ï¿½ß°ï¿½
 			if ( lpszString)
 			{
 				int nCount = 0;
@@ -1210,7 +1216,7 @@ BOOL UpdateFile( char *lpszOld, char *lpszNew)
 	DWORD dwStartTickCount = ::GetTickCount();
 	while(::GetTickCount() - dwStartTickCount < 5000) {
 		if ( CopyFile( lpszOld, lpszNew, FALSE))
-		{	// ¼º°ø
+		{	// ï¿½ï¿½ï¿½ï¿½
 			DeleteFile( lpszOld);
 			return ( TRUE);
 		}
@@ -1517,6 +1523,10 @@ int main(int argc, char* argv[])
 	if(m_SoundOnOff)
 	{
 		InitDirectSound(g_hWnd);
+
+#ifdef MU_USE_SDL
+		DWORD value = 2;
+#else
 		leaf::CRegKey regkey;
 		regkey.SetKey(leaf::CRegKey::_HKEY_CURRENT_USER, "SOFTWARE\\Webzen\\Mu\\Config");
 		DWORD value;
@@ -1527,12 +1537,14 @@ int main(int argc, char* argv[])
 		}
 		if(value<0 || value>=10)
 			value = 5;
-		
+#endif		
 		g_pOption->SetVolumeLevel(int(value));
 		SetEffectVolumeLevel(g_pOption->GetVolumeLevel());
 	}
 
+#ifndef MU_USE_SDL
 	SetTimer(g_hWnd, HACK_TIMER, 20*1000, NULL);
+#endif
 
 	srand((unsigned)time(NULL));
 	for(int i=0;i<100;i++)
@@ -1621,10 +1633,10 @@ int main(int argc, char* argv[])
 	if (g_bUseWindowMode == FALSE)
 	{
 #endif	// ACTIVE_FOCUS_OUT
-		int nOldVal; // °ªÀÌ µé¾î°¥ ÇÊ¿ä°¡ ¾øÀ½
-		SystemParametersInfo(SPI_SCREENSAVERRUNNING, 1, &nOldVal, 0);  // ´ÜÃàÅ°¸¦ ¸ø¾²°Ô ÇÔ
-		SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &g_iScreenSaverOldValue, 0);  // ½ºÅ©¸°¼¼ÀÌ¹ö Â÷´Ü
-		SystemParametersInfo(SPI_SETSCREENSAVETIMEOUT, 300*60, NULL, 0);  // ½ºÅ©¸°¼¼ÀÌ¹ö Â÷´Ü
+		int nOldVal; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½î°¥ ï¿½Ê¿ä°¡ ï¿½ï¿½ï¿½ï¿½
+		SystemParametersInfo(SPI_SCREENSAVERRUNNING, 1, &nOldVal, 0);  // ï¿½ï¿½ï¿½ï¿½Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+		SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &g_iScreenSaverOldValue, 0);  // ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½
+		SystemParametersInfo(SPI_SETSCREENSAVETIMEOUT, 300*60, NULL, 0);  // ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½
 #ifdef ACTIVE_FOCUS_OUT
 	}
 #endif	// ACTIVE_FOCUS_OUT
@@ -1685,6 +1697,11 @@ int main(int argc, char* argv[])
 		//SDL_Delay(1);
 	}
 
+	DestroySound();
+#ifdef _WIN32
+	KillGLWindow();
+	CloseMainExe();
+#endif
 	MU_ShutdownSDL();
 #else
     while( 1 )

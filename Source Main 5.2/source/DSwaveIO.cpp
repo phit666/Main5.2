@@ -1,4 +1,7 @@
 #include "stdafx.h"
+
+#ifndef MU_USE_SDL_AUDIO
+
 #include "DSwaveIO.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -242,3 +245,5 @@ bool waveIO::WriteWaveHeader(char *szFilename, PCMWAVEFORMAT wf, int nWaveDataSi
 
 	return true;
 }
+
+#endif

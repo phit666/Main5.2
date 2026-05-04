@@ -1,8 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include <windows.h>
-#include <mmsystem.h>
+#include "mu_win_compat.h"
 #include "LauncherHelper.h"
 
 #pragma comment(lib, "Winmm.lib")

@@ -3,8 +3,7 @@
 
 //. soyaviper
 
-#include <windows.h>
-
+#include "mu_win_compat.h"
 #pragma warning(disable : 4786)
 #include <string>
 

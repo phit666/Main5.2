@@ -9,6 +9,7 @@
 #ifndef WAVE_READ_H
 #define WAVE_READ_H
 
+#ifndef MU_USE_SDL_AUDIO
 
 #include <mmreg.h>
 
@@ -36,6 +37,7 @@ public:
 
 };
 
+#endif
 
 #endif WAVE_READ_H
 

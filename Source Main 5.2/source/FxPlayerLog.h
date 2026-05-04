@@ -19,7 +19,7 @@ THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR ANY PURPOSE.
 #include "GMsgFormat.h"
 
 #ifdef GFC_OS_WIN32
-#include <Windows.h>
+#include "mu_win_compat.h"
 #endif
 
 // We support color-formatted log only on PC/MAC/Linux platforms,

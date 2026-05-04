@@ -1,97 +1,196 @@
+// mu_win_compat.h
 #pragma once
 
-// MU client portability shim. Include this instead of <windows.h> on non-Windows builds.
-// Goal: compile large legacy code first, then replace subsystems progressively.
-
 #ifdef _WIN32
-  #include <windows.h>
-  #include <winsock2.h>
-  #include <ws2tcpip.h>
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+#include <process.h>
+#include <tchar.h>
+
 #else
 
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
 
-using BYTE   = uint8_t;
-using WORD   = uint16_t;
-using DWORD  = uint32_t;
-using UINT   = unsigned int;
-using BOOL   = int;
-using LONG   = long;
-using ULONG  = unsigned long;
-using INT    = int;
-using CHAR   = char;
-using WCHAR  = wchar_t;
-using HANDLE = void*;
-using HINSTANCE = void*;
-using HMODULE = void*;
-using HWND   = void*;
-using HDC    = void*;
-using HBRUSH = void*;
-using HKEY   = void*;
-using HMENU  = void*;
-using HICON  = void*;
-using HCURSOR= void*;
-using HBITMAP= void*;
-using WPARAM = uintptr_t;
-using LPARAM = intptr_t;
-using LRESULT= intptr_t;
-using LPVOID = void*;
-using LPCVOID= const void*;
-using LPSTR  = char*;
-using LPCSTR = const char*;
-using LPBYTE = BYTE*;
-using LPCTSTR= const char*;
-using LPTSTR = char*;
-using HRESULT= long;
+#include <SDL.h>
+
+// ======================================================
+// Basic Win32 types
+// ======================================================
+
+typedef int                 BOOL;
+typedef uint8_t             BYTE;
+typedef uint8_t*             PBYTE;
+typedef uint16_t            WORD;
+typedef uint32_t            DWORD;
+typedef int32_t             LONG;
+typedef uint32_t            ULONG;
+typedef uint64_t            QWORD;
+typedef uint64_t            ULONGLONG;
+
+typedef int INT;
+typedef void VOID;
+typedef uint32_t* LPDWORD;
+
+typedef unsigned int        UINT;
+typedef uintptr_t           UINT_PTR;
+typedef intptr_t            LONG_PTR;
+typedef uintptr_t           WPARAM;
+typedef intptr_t            LPARAM;
+typedef intptr_t            LRESULT;
+
+typedef const char*         LPCSTR;
+typedef char*               LPSTR;
+typedef const wchar_t*      LPCWSTR;
+typedef wchar_t*            LPWSTR;
+typedef const void*         LPCVOID;
+typedef void*               LPVOID;
+typedef void*               PVOID;
+typedef char                TCHAR;
+typedef const TCHAR*        LPCTSTR;
+typedef TCHAR*              LPTSTR;
+typedef void* PVOID;
+typedef const void* PCVOID;
+typedef void*               HANDLE;
+typedef void*               HWND;
+typedef void*               HINSTANCE;
+typedef void*               HMODULE;
+typedef void*               HDC;
+typedef void*               HGLRC;
+typedef void*               HBITMAP;
+typedef void*               HFONT;
+typedef void*               HICON;
+typedef void*               HCURSOR;
+typedef void*               HMENU;
+typedef void*               HGDIOBJ;
+typedef void*               HBRUSH;
+typedef void*               HPEN;
+typedef void*               HFILE;
+typedef short               SHORT;
+typedef int64_t             __int64;
+
+typedef unsigned int        SOCKET;
+typedef LRESULT (*WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 
 #ifndef TRUE
 #define TRUE 1
+#endif
+
+#ifndef FALSE
 #define FALSE 0
 #endif
+
 #ifndef NULL
 #define NULL 0
 #endif
+
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET ((SOCKET)(~0))
+#endif
+
+#ifndef SOCKET_ERROR
+#define SOCKET_ERROR (-1)
+#endif
+
+#ifndef CALLBACK
+#define CALLBACK
+#endif
+
+#ifndef WINAPI
+#define WINAPI
+#endif
+
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+
+#ifndef PASCAL
+#define PASCAL
+#endif
+
+#ifndef FAR
+#define FAR
+#endif
+
+#ifndef NEAR
+#define NEAR
+#endif
+
+#ifndef CONST
+#define CONST const
+#endif
+
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
 
-#define WINAPI
-#define CALLBACK
-#define PASCAL
-#define FAR
-#define NEAR
-#define __stdcall
-#define __cdecl
-#ifndef __forceinline
-#define __forceinline inline
+#ifndef S_OK
+#define S_OK ((HRESULT)0)
 #endif
-#define CONST const
 
-#define S_OK 0
-#define E_FAIL 0x80004005L
-#define FAILED(hr) (((HRESULT)(hr)) < 0)
-#define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+#ifndef E_FAIL
+#define E_FAIL ((HRESULT)0x80004005L)
+#endif
 
-#define ERROR_SUCCESS 0L
-#define ERROR_FILE_NOT_FOUND 2L
-#define ERROR_INVALID_PARAMETER 87L
-#define ERROR_MORE_DATA 234L
+typedef LONG HRESULT;
 
-#define LOWORD(l) ((WORD)((uintptr_t)(l) & 0xffff))
-#define HIWORD(l) ((WORD)((uintptr_t)(l) >> 16))
-#define LOBYTE(w) ((BYTE)((uintptr_t)(w) & 0xff))
-#define HIBYTE(w) ((BYTE)(((uintptr_t)(w) >> 8) & 0xff))
-#define MAKELONG(a,b) ((LONG)(((WORD)(a)) | ((DWORD)((WORD)(b))) << 16))
-#define MAKELPARAM(l,h) ((LPARAM)(intptr_t)MAKELONG(l,h))
-#define MAKEWPARAM(l,h) ((WPARAM)(uintptr_t)MAKELONG(l,h))
+// ======================================================
+// Structs
+// ======================================================
 
-#define CopyMemory  memcpy
-#define ZeroMemory(p,n) memset((p),0,(n))
-#define FillMemory(p,n,v) memset((p),(v),(n))
+struct POINT
+{
+    LONG x;
+    LONG y;
+};
 
-// Common Win32 messages/constants used by MU client.
-#define WM_USER             0x0400
+struct SIZE
+{
+    LONG cx;
+    LONG cy;
+};
+
+struct RECT
+{
+    LONG left;
+    LONG top;
+    LONG right;
+    LONG bottom;
+};
+
+typedef POINT* LPPOINT;
+typedef const POINT* LPCPOINT;
+
+typedef SIZE* LPSIZE;
+typedef const SIZE* LPCSIZE;
+
+typedef RECT* LPRECT;
+typedef const RECT* LPCRECT;
+
+struct MSG
+{
+    HWND hwnd;
+    UINT message;
+    WPARAM wParam;
+    LPARAM lParam;
+    DWORD time;
+    POINT pt;
+};
+
+// ======================================================
+// Windows messages
+// ======================================================
+
 #define WM_NULL             0x0000
 #define WM_CREATE           0x0001
 #define WM_DESTROY          0x0002
@@ -100,127 +199,577 @@ using HRESULT= long;
 #define WM_ACTIVATE         0x0006
 #define WM_SETFOCUS         0x0007
 #define WM_KILLFOCUS        0x0008
+#define WM_ENABLE           0x000A
+#define WM_SETREDRAW        0x000B
+#define WM_SETTEXT          0x000C
+#define WM_GETTEXT          0x000D
+#define WM_GETTEXTLENGTH    0x000E
 #define WM_PAINT            0x000F
 #define WM_CLOSE            0x0010
 #define WM_QUIT             0x0012
 #define WM_ERASEBKGND       0x0014
-#define WM_SETCURSOR        0x0020
-#define WM_TIMER            0x0113
+
+#define WM_KEYDOWN          0x0100
+#define WM_KEYUP            0x0101
 #define WM_CHAR             0x0102
+
 #define WM_MOUSEMOVE        0x0200
 #define WM_LBUTTONDOWN      0x0201
 #define WM_LBUTTONUP        0x0202
 #define WM_LBUTTONDBLCLK    0x0203
 #define WM_RBUTTONDOWN      0x0204
 #define WM_RBUTTONUP        0x0205
+#define WM_RBUTTONDBLCLK    0x0206
 #define WM_MBUTTONDOWN      0x0207
 #define WM_MBUTTONUP        0x0208
 #define WM_MOUSEWHEEL       0x020A
-#define WM_IME_NOTIFY       0x0282
-#define WM_CTLCOLOREDIT     0x0133
 
-#define WA_INACTIVE         0
-#define SIZE_RESTORED       0
-#define SIZE_MINIMIZED      1
-#define WHEEL_DELTA         120
-#define VK_RETURN           0x0D
-#define MB_OK               0x00000000L
-#define BLACK_BRUSH         4
+// ======================================================
+// ShowWindow flags
+// ======================================================
 
-#define WS_CHILD            0x40000000L
-#define WS_VISIBLE          0x10000000L
-#define WS_BORDER           0x00800000L
-#define WS_VSCROLL          0x00200000L
-#define WS_HSCROLL          0x00100000L
-#define ES_LEFT             0x0000L
-#define ES_MULTILINE        0x0004L
-#define GWL_WNDPROC         (-4)
+#define SW_HIDE             0
+#define SW_SHOWNORMAL       1
+#define SW_SHOW             5
 
-struct PAINTSTRUCT { HDC hdc; BOOL fErase; };
-struct RECT { LONG left, top, right, bottom; };
-struct POINT { LONG x, y; };
-using WNDPROC = LRESULT (CALLBACK *)(HWND, UINT, WPARAM, LPARAM);
+// ======================================================
+// Virtual keys
+// ======================================================
 
-// Registry constants.
-#define HKEY_CURRENT_USER   ((HKEY)(intptr_t)0x80000001)
-#define HKEY_LOCAL_MACHINE  ((HKEY)(intptr_t)0x80000002)
-#define REG_OPTION_NON_VOLATILE 0
-#define KEY_ALL_ACCESS      0xF003F
-#define REG_DWORD           4
-#define REG_SZ              1
+#define VK_BACK      0x08
+#define VK_TAB       0x09
+#define VK_RETURN    0x0D
+#define VK_SHIFT     0x10
+#define VK_CONTROL   0x11
+#define VK_MENU      0x12
+#define VK_PAUSE     0x13
+#define VK_ESCAPE    0x1B
+#define VK_SPACE     0x20
+#define VK_PRIOR     0x21
+#define VK_NEXT      0x22
+#define VK_END       0x23
+#define VK_HOME      0x24
+#define VK_LEFT      0x25
+#define VK_UP        0x26
+#define VK_RIGHT     0x27
+#define VK_DOWN      0x28
+#define VK_INSERT    0x2D
+#define VK_DELETE    0x2E
 
-// INI/path/time.
-UINT  GetCurrentDirectoryA(UINT nBufferLength, LPSTR lpBuffer);
-UINT  GetPrivateProfileStringA(LPCSTR section, LPCSTR key, LPCSTR def, LPSTR out, UINT size, LPCSTR file);
-UINT  GetPrivateProfileIntA(LPCSTR section, LPCSTR key, int def, LPCSTR file);
-LPSTR GetCommandLineA();
-DWORD GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
-DWORD GetTickCount();
-DWORD timeGetTime();
-void  Sleep(DWORD ms);
+#define VK_LBUTTON   0x01
+#define VK_RBUTTON   0x02
+#define VK_MBUTTON   0x04
 
-#define GetCurrentDirectory GetCurrentDirectoryA
-#define GetPrivateProfileString GetPrivateProfileStringA
-#define GetPrivateProfileInt GetPrivateProfileIntA
-#define GetCommandLine GetCommandLineA
-#define GetModuleFileName GetModuleFileNameA
+#define VK_0         0x30
+#define VK_1         0x31
+#define VK_2         0x32
+#define VK_3         0x33
+#define VK_4         0x34
+#define VK_5         0x35
+#define VK_6         0x36
+#define VK_7         0x37
+#define VK_8         0x38
+#define VK_9         0x39
 
-// Registry-as-file emulation.
-LONG RegCreateKeyExA(HKEY root, LPCSTR subkey, DWORD reserved, LPSTR cls, DWORD options, DWORD sam, LPVOID sec, HKEY* result, DWORD* disp);
-LONG RegOpenKeyExA(HKEY root, LPCSTR subkey, DWORD options, DWORD sam, HKEY* result);
-LONG RegQueryValueExA(HKEY key, LPCSTR valueName, DWORD* reserved, DWORD* type, LPBYTE data, DWORD* size);
-LONG RegSetValueExA(HKEY key, LPCSTR valueName, DWORD reserved, DWORD type, const BYTE* data, DWORD size);
-LONG RegDeleteKeyA(HKEY root, LPCSTR subkey);
-LONG RegDeleteValueA(HKEY key, LPCSTR valueName);
-LONG RegCloseKey(HKEY key);
-#define RegCreateKeyEx RegCreateKeyExA
-#define RegOpenKeyEx RegOpenKeyExA
-#define RegQueryValueEx RegQueryValueExA
-#define RegSetValueEx RegSetValueExA
-#define RegDeleteKey RegDeleteKeyA
-#define RegDeleteValue RegDeleteValueA
+#define VK_A         0x41
+#define VK_B         0x42
+#define VK_C         0x43
+#define VK_D         0x44
+#define VK_E         0x45
+#define VK_F         0x46
+#define VK_G         0x47
+#define VK_H         0x48
+#define VK_I         0x49
+#define VK_J         0x4A
+#define VK_K         0x4B
+#define VK_L         0x4C
+#define VK_M         0x4D
+#define VK_N         0x4E
+#define VK_O         0x4F
+#define VK_P         0x50
+#define VK_Q         0x51
+#define VK_R         0x52
+#define VK_S         0x53
+#define VK_T         0x54
+#define VK_U         0x55
+#define VK_V         0x56
+#define VK_W         0x57
+#define VK_X         0x58
+#define VK_Y         0x59
+#define VK_Z         0x5A
 
-// Dynamic library subset.
-HMODULE LoadLibraryA(LPCSTR path);
-LPVOID  GetProcAddress(HMODULE mod, LPCSTR name);
-BOOL    FreeLibrary(HMODULE mod);
-#define LoadLibrary LoadLibraryA
+#define GET_X_LPARAM(lp) ((int)(short)((lp) & 0xffff))
+#define GET_Y_LPARAM(lp) ((int)(short)(((lp) >> 16) & 0xffff))
 
-// Window/GDI stubs for compile-first pass. Replace with SDL later.
-LRESULT DefWindowProcA(HWND, UINT, WPARAM, LPARAM);
-BOOL    PostMessageA(HWND, UINT, WPARAM, LPARAM);
-void    PostQuitMessage(int code);
-UINT    SetTimer(HWND, UINT, UINT, void*);
-BOOL    KillTimer(HWND, UINT);
-int     MessageBoxA(HWND, LPCSTR text, LPCSTR caption, UINT type);
-HDC     BeginPaint(HWND, PAINTSTRUCT*);
-BOOL    EndPaint(HWND, const PAINTSTRUCT*);
-BOOL    ShowCursor(BOOL show);
-HWND    GetFocus();
-HWND    SetFocus(HWND);
-HWND    SetCapture(HWND);
-BOOL    ReleaseCapture();
-void    SetBkColor(HDC, DWORD);
-void    SetTextColor(HDC, DWORD);
-HBRUSH  GetStockObject(int obj);
-LONG    SetWindowLongA(HWND, int, LONG);
-LONG    GetWindowLongA(HWND, int);
-HWND    CreateWindowA(LPCSTR, LPCSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID);
-HWND    CreateWindowExA(DWORD, LPCSTR, LPCSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID);
-#define DefWindowProc DefWindowProcA
-#define PostMessage PostMessageA
-#define MessageBox MessageBoxA
-#define SetWindowLong SetWindowLongA
-#define GetWindowLong GetWindowLongA
-#define CreateWindow CreateWindowA
-#define CreateWindowEx CreateWindowExA
-#define RGB(r,g,b) ((DWORD)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
+// ======================================================
+// RECT helpers
+// ======================================================
 
-// Critical section.
-struct CRITICAL_SECTION;
-void InitializeCriticalSection(CRITICAL_SECTION*);
-void EnterCriticalSection(CRITICAL_SECTION*);
-void LeaveCriticalSection(CRITICAL_SECTION*);
-void DeleteCriticalSection(CRITICAL_SECTION*);
+inline BOOL PtInRect(const RECT* rc, POINT pt)
+{
+    if (!rc)
+        return FALSE;
 
-#endif // !_WIN32
+    return (pt.x >= rc->left &&
+            pt.x <  rc->right &&
+            pt.y >= rc->top &&
+            pt.y <  rc->bottom) ? TRUE : FALSE;
+}
+
+inline void SetRect(RECT* rc, LONG left, LONG top, LONG right, LONG bottom)
+{
+    if (!rc)
+        return;
+
+    rc->left   = left;
+    rc->top    = top;
+    rc->right  = right;
+    rc->bottom = bottom;
+}
+
+inline BOOL IsRectEmpty(const RECT* rc)
+{
+    if (!rc)
+        return TRUE;
+
+    return (rc->right <= rc->left || rc->bottom <= rc->top) ? TRUE : FALSE;
+}
+
+// ======================================================
+// Timing
+// ======================================================
+
+inline void Sleep(DWORD ms)
+{
+    SDL_Delay(ms);
+}
+
+inline DWORD GetTickCount()
+{
+    return SDL_GetTicks();
+}
+
+inline ULONGLONG GetTickCount64()
+{
+    return (ULONGLONG)SDL_GetTicks64();
+}
+
+// ======================================================
+// Dummy window/message API
+// ======================================================
+
+inline LRESULT SendMessage(HWND, UINT, WPARAM, LPARAM)
+{
+    return 0;
+}
+
+inline BOOL PostMessage(HWND, UINT, WPARAM, LPARAM)
+{
+    return TRUE;
+}
+
+inline BOOL PeekMessage(MSG*, HWND, UINT, UINT, UINT)
+{
+    return FALSE;
+}
+
+inline BOOL GetMessage(MSG*, HWND, UINT, UINT)
+{
+    return FALSE;
+}
+
+inline BOOL TranslateMessage(const MSG*)
+{
+    return TRUE;
+}
+
+inline LRESULT DispatchMessage(const MSG*)
+{
+    return 0;
+}
+
+inline HWND CreateWindowA(...)
+{
+    return nullptr;
+}
+
+inline HWND CreateWindowExA(...)
+{
+    return nullptr;
+}
+
+inline BOOL DestroyWindow(HWND)
+{
+    return TRUE;
+}
+
+inline BOOL ShowWindow(HWND, int)
+{
+    return TRUE;
+}
+
+inline BOOL SetForegroundWindow(HWND)
+{
+    return TRUE;
+}
+
+inline HWND GetFocus()
+{
+    return nullptr;
+}
+
+inline HWND SetFocus(HWND)
+{
+    return nullptr;
+}
+
+inline LONG_PTR SetWindowLongPtrA(HWND, int, LONG_PTR)
+{
+    return 0;
+}
+
+inline LONG_PTR GetWindowLongPtrA(HWND, int)
+{
+    return 0;
+}
+
+inline LONG SetWindowLongA(HWND, int, LONG)
+{
+    return 0;
+}
+
+inline LONG GetWindowLongA(HWND, int)
+{
+    return 0;
+}
+
+inline char* itoa(int value, char* str, int base)
+{
+    if (base == 10)
+    {
+        sprintf(str, "%d", value);
+    }
+    else if (base == 16)
+    {
+        sprintf(str, "%x", value);
+    }
+    else
+    {
+        // simple fallback
+        sprintf(str, "%d", value);
+    }
+    return str;
+}
+
+#define SetWindowLongPtr SetWindowLongPtrA
+#define GetWindowLongPtr GetWindowLongPtrA
+#define SetWindowLong    SetWindowLongA
+#define GetWindowLong    GetWindowLongA
+
+// ======================================================
+// Cursor/input dummy API
+// ======================================================
+
+inline BOOL GetCursorPos(POINT*)
+{
+    return FALSE;
+}
+
+inline BOOL ScreenToClient(HWND, POINT*)
+{
+    return FALSE;
+}
+
+inline short GetAsyncKeyState(int)
+{
+    return 0;
+}
+
+inline short GetKeyState(int)
+{
+    return 0;
+}
+
+inline BOOL GetKeyboardState(BYTE*)
+{
+    return FALSE;
+}
+
+inline int ShowCursor(BOOL)
+{
+    return 0;
+}
+
+inline HCURSOR SetCursor(HCURSOR)
+{
+    return nullptr;
+}
+
+inline HCURSOR LoadCursorA(HINSTANCE, LPCSTR)
+{
+    return nullptr;
+}
+
+// ======================================================
+// GDI dummy API
+// ======================================================
+
+inline HDC GetDC(HWND)
+{
+    return nullptr;
+}
+
+inline int ReleaseDC(HWND, HDC)
+{
+    return 1;
+}
+
+inline HDC CreateCompatibleDC(HDC)
+{
+    return nullptr;
+}
+
+inline HBITMAP CreateCompatibleBitmap(HDC, int, int)
+{
+    return nullptr;
+}
+
+inline HGDIOBJ SelectObject(HDC, HGDIOBJ)
+{
+    return nullptr;
+}
+
+inline BOOL DeleteObject(HGDIOBJ)
+{
+    return TRUE;
+}
+
+inline BOOL DeleteDC(HDC)
+{
+    return TRUE;
+}
+
+inline BOOL BitBlt(...)
+{
+    return FALSE;
+}
+
+inline BOOL StretchBlt(...)
+{
+    return FALSE;
+}
+
+inline int SetBkMode(HDC, int)
+{
+    return 0;
+}
+
+inline DWORD SetTextColor(HDC, DWORD)
+{
+    return 0;
+}
+
+inline DWORD SetBkColor(HDC, DWORD)
+{
+    return 0;
+}
+
+inline BOOL TextOutA(HDC, int, int, LPCSTR, int)
+{
+    return TRUE;
+}
+
+inline BOOL GetTextExtentPointA(HDC, LPCSTR, int, LPSIZE lpSize)
+{
+    if (lpSize)
+    {
+        lpSize->cx = 0;
+        lpSize->cy = 0;
+    }
+
+    return TRUE;
+}
+
+inline BOOL GetTextExtentPoint32A(HDC, LPCSTR, int, LPSIZE lpSize)
+{
+    return GetTextExtentPointA(nullptr, nullptr, 0, lpSize);
+}
+
+inline HFONT CreateFontA(...)
+{
+    return nullptr;
+}
+
+inline HFONT CreateFontIndirectA(...)
+{
+    return nullptr;
+}
+
+// ======================================================
+// File/path dummy API
+// ======================================================
+
+#define INVALID_HANDLE_VALUE ((HANDLE)(intptr_t)-1)
+
+inline HANDLE CreateFileA(...)
+{
+    return INVALID_HANDLE_VALUE;
+}
+
+inline BOOL ReadFile(...)
+{
+    return FALSE;
+}
+
+inline BOOL WriteFile(...)
+{
+    return FALSE;
+}
+
+inline BOOL CloseHandle(HANDLE)
+{
+    return TRUE;
+}
+
+inline DWORD GetModuleFileNameA(HMODULE, LPSTR buffer, DWORD size)
+{
+    if (buffer && size > 0)
+        buffer[0] = '\0';
+
+    return 0;
+}
+
+inline DWORD GetCurrentDirectoryA(DWORD size, LPSTR buffer)
+{
+    if (buffer && size > 0)
+        buffer[0] = '\0';
+
+    return 0;
+}
+
+inline BOOL SetCurrentDirectoryA(LPCSTR)
+{
+    return FALSE;
+}
+
+// ======================================================
+// Shell / registry dummy API
+// ======================================================
+
+inline void* ShellExecuteA(...)
+{
+    return nullptr;
+}
+
+inline LONG RegOpenKeyExA(...)
+{
+    return -1;
+}
+
+inline LONG RegSetValueExA(...)
+{
+    return -1;
+}
+
+inline LONG RegQueryValueExA(...)
+{
+    return -1;
+}
+
+inline LONG RegCloseKey(...)
+{
+    return 0;
+}
+
+// ======================================================
+// Thread / sync dummy API
+// ======================================================
+
+typedef unsigned int (__stdcall *PTHREAD_START)(void*);
+
+#ifndef __stdcall
+#define __stdcall
+#endif
+
+inline uintptr_t _beginthreadex(
+        void*,
+        unsigned,
+        unsigned int (__stdcall *)(void*),
+        void*,
+        unsigned,
+        unsigned*)
+{
+    return 0;
+}
+
+inline HANDLE CreateThread(...)
+{
+    return nullptr;
+}
+
+inline DWORD WaitForSingleObject(HANDLE, DWORD)
+{
+    return 0;
+}
+
+inline void InitializeCriticalSection(void*)
+{
+}
+
+inline void EnterCriticalSection(void*)
+{
+}
+
+inline void LeaveCriticalSection(void*)
+{
+}
+
+inline void DeleteCriticalSection(void*)
+{
+}
+
+// ======================================================
+// Winsock compatibility
+// ======================================================
+
+#define SD_BOTH 2
+#define WSAEWOULDBLOCK 10035
+
+inline int WSAStartup(WORD, void*)
+{
+    return 0;
+}
+
+inline int WSACleanup()
+{
+    return 0;
+}
+
+inline int WSAGetLastError()
+{
+    return 0;
+}
+
+inline int closesocket(SOCKET)
+{
+    return 0;
+}
+
+// ======================================================
+// TCHAR compatibility
+// ======================================================
+
+#define _T(x) x
+#define TEXT(x) x
+
+#define strcpy_s(dst, size, src)        strncpy((dst), (src), (size))
+#define strcat_s(dst, size, src)        strncat((dst), (src), (size) - strlen(dst) - 1)
+#define sprintf_s                      snprintf
+#define _stricmp                       strcasecmp
+#define _strnicmp                      strncasecmp
+
+// OTHER
+#define IN
+#define OUT
+
+#endif

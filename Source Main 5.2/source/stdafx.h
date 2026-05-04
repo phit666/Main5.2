@@ -1,6 +1,7 @@
 // stdafx.h : include file for standard system include files,
 #pragma once
 
+
 //warining
 #pragma warning( disable : 4067 ) 
 #pragma warning( disable : 4786 ) 
@@ -38,14 +39,18 @@
 
 #pragma warning( push, 3 )
 
-#include <windows.h>
-
-//windows
-#include <WinSock2.h>
-#include <mmsystem.h>
-#include <shellapi.h>
+#include "mu_win_compat.h"
 
 //c runtime
+#ifdef __ANDROID__
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>   // instead of memory.h
+#include <assert.h>
+#include <time.h>
+#include <math.h>
+#include <stdarg.h>
+#else
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
@@ -57,6 +62,7 @@
 #include <math.h>
 #include <stdarg.h>
 #include <conio.h>
+#endif
 
 #include <string>
 #include <list>
@@ -66,11 +72,14 @@
 #include <vector>
 #include <queue>
 
+#ifdef __ANDROID__
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#else
 #pragma warning( pop )
-
-//opengl
-#include <gl/glew.h>
-#include <gl/gl.h>
+#include <GL/glew.h>
+#include <GL/gl.h>
+#endif
 
 //patch
 //winmain

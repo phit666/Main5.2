@@ -15,8 +15,7 @@
 #include "FTPConnecter.h"
 #include <GameShop\ShopListManager\interface\PathMethod\\Path.h>
 
-#include <process.h>
-
+#include "mu_win_compat.h"
 FileDownloader::FileDownloader(IDownloaderStateEvent* pStateEvent,
                                DownloadServerInfo* pServerInfo,
                                DownloadFileInfo* pFileInfo) // OK

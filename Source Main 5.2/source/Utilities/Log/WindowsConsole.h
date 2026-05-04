@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <windows.h>
+#include "mu_win_compat.h"
 #include "./Time/Timer.h"
 
 #pragma warning(disable : 4786)

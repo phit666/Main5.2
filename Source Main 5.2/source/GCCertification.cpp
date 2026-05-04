@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include <windows.h>
+#include "mu_win_compat.h"
 #include <conio.h>
 #include "GCCertification.h"
 

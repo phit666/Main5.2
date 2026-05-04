@@ -7,7 +7,7 @@
 //*****************************************************************************
 
 #include "stdafx.h"
-#include <windows.h>
+#include "mu_win_compat.h"
 #include "UsefulDef.h"
 #include "UIControls.h"
 

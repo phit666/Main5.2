@@ -12,11 +12,13 @@
 * Created:	 2004.04.
 *
 ***********************************************************************/
-
+#ifdef MU_USE_SDL_AUDIO
+#pragma once
+#else
 # ifdef __cplusplus
 extern "C" {
 # endif
-
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // constants
@@ -29,12 +31,12 @@ extern "C" {
 #define WZAOP_EQUALIZER			8	// equalizer on/off option
 
 // Mixer mode
-enum enMixerMode
-{
-	_mmMasterVolume, // system default master volume control
-	_mmWaveVolume,	// system wave mixer
-	_mmInternalVolume // wzAudio internal volume control
-} m_enMixerMode;
+    enum enMixerMode
+    {
+        _mmMasterVolume, // system default master volume control
+        _mmWaveVolume,	// system wave mixer
+        _mmInternalVolume // wzAudio internal volume control
+    };// m_enMixerMode;
 
 // Equalizer Bank slots
 enum enEq
@@ -178,9 +180,9 @@ void wzAudioSetEqualizer(const int Slider[MAX_EQ_BANKSLOTS]);
 
 
 //int wzAudioConvertToWave(char* lpszSrcpath, char* lpszDestpath);
-
+#ifndef MU_USE_SDL_AUDIO
 # ifdef __cplusplus
 }
 # endif
-
+#endif
 #endif //__WZAUDIO_H__

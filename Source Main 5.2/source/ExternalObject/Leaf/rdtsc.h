@@ -4,8 +4,7 @@
 #ifndef _RDTSC_H_
 #define _RDTSC_H_
 
-#include <windows.h>
-
+#include "mu_win_compat.h"
 namespace leaf {
 
 	inline bool IsSupportRdtsc()

@@ -10,6 +10,9 @@
 #define INPUT	0
 #define OUTPUT	1
 
+#ifndef MU_USE_SDL_AUDIO
+
+
 class waveIO  
 {
 public:
@@ -31,4 +34,5 @@ private:
 	bool			m_IO;
 };
 
+#endif
 #endif // !defined(AFX_WAVEIO_H__A0449D63_0097_11D4_A092_A64970C5F176__INCLUDED_)

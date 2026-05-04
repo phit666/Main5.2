@@ -26,6 +26,8 @@ typedef struct
 SDL_Window* gSDLWindow = nullptr;
 SDL_GLContext gGLContext = nullptr;
 
+bool gIsMixerInit = false;
+
 bool gSDLRunning = true;
 static BYTE buffer[MAX_RECVBUF];
 static int bufferlen = 0;

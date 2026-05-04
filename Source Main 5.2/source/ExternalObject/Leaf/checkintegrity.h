@@ -2,8 +2,7 @@
 #ifndef _CHECKINTEGRITY_H_
 #define _CHECKINTEGRITY_H_
 
-#include <windows.h>
-
+#include "mu_win_compat.h"
 #pragma warning(disable : 4786)
 #include <string>
 #include <vector>

@@ -2,7 +2,7 @@
 #ifndef _XORTRANS_H_
 #define _XORTRANS_H_
 
-#include <windows.h>
+#include "mu_win_compat.h"
 #include "xstreambuf.h"
 
 namespace leaf {

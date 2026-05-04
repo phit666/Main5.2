@@ -9,8 +9,7 @@
 #include <string>
 #include <vector>
 
-#include <windows.h>
-
+#include "mu_win_compat.h"
 #ifndef __IMAGE_COR20_HEADER_DEFINED__		//. for .NET
 #define __IMAGE_COR20_HEADER_DEFINED__
 

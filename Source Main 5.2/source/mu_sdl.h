@@ -9,7 +9,8 @@
 #include <thread>
 #include <chrono>
 
-#define USE_LIBEVENT 1
+extern bool gIsMixerInit;
+
 
 extern SDL_Window* gSDLWindow;
 extern SDL_GLContext gGLContext;

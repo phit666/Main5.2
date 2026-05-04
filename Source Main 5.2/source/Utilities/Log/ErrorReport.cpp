@@ -8,7 +8,7 @@
 #include <ddraw.h>
 #include <dinput.h>
 #include <dmusicc.h>
-#include <windows.h>
+#include "mu_win_compat.h"
 #include <eh.h>
 #include <imagehlp.h>
 #include "ErrorReport.h"

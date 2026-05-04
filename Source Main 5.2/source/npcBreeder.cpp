@@ -2,7 +2,7 @@
 //  npcBreeder.cpp
 //////////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
-#include <process.h>
+#include "mu_win_compat.h"
 #include "UIManager.h"
 #include "ZzzOpenglUtil.h"
 #include "ZzzBMD.h"

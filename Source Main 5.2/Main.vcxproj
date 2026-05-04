@@ -227,7 +227,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)source\;$(SolutionDir)dependencies\include;$(SolutionDir)dependencies\include\asio</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MU_USE_SDL;WIN32;NDEBUG;_WINDOWS;_FOREIGN_NDEBUG;_LANGUAGE_FOREIGN;_LANGUAGE_ENG;LDS_PATCH_GLOBAL_100520;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MU_USE_SDL_AUDIO=1;MU_USE_SDL=1;USE_LIBEVENT=1;WIN32;NDEBUG;_WINDOWS;_FOREIGN_NDEBUG;_LANGUAGE_FOREIGN;_LANGUAGE_ENG;LDS_PATCH_GLOBAL_100520;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <RuntimeTypeInfo>
       </RuntimeTypeInfo>
@@ -327,6 +327,7 @@
     <ClCompile Include="source\CSWaterTerrain.cpp" />
     <ClCompile Include="source\DialogInfo.cpp" />
     <ClCompile Include="source\DSplaysound.cpp" />
+    <ClCompile Include="source\DSPlaySound_SDL.cpp" />
     <ClCompile Include="source\DSwaveIO.cpp" />
     <ClCompile Include="source\DuelMgr.cpp" />
     <ClCompile Include="source\Event.cpp" />
@@ -599,6 +600,7 @@
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Global Compat Release|Win32'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="source\WSctlc.cpp" />
+    <ClCompile Include="source\wzAudio_SDL.cpp" />
     <ClCompile Include="source\w_BasePet.cpp" />
     <ClCompile Include="source\w_Buff.cpp" />
     <ClCompile Include="source\w_BuffScriptLoader.cpp" />
@@ -836,6 +838,7 @@
     <ClInclude Include="source\mu_file.h" />
     <ClInclude Include="source\mu_gl.h" />
     <ClInclude Include="source\mu_sdl.h" />
+    <ClInclude Include="source\mu_win_compat.h" />
     <ClInclude Include="source\NewBloodCastleSystem.h" />
     <ClInclude Include="source\NewChaosCastleSystem.h" />
     <ClInclude Include="source\NewUI3DRenderMng.h" />

@@ -1189,6 +1189,12 @@
     <ClCompile Include="source\mu_socket.cpp">
       <Filter>MU\Network</Filter>
     </ClCompile>
+    <ClCompile Include="source\DSPlaySound_SDL.cpp">
+      <Filter>MU\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="source\wzAudio_SDL.cpp">
+      <Filter>MU\Sound</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\BlackWin.h">
@@ -2276,6 +2282,9 @@
     </ClInclude>
     <ClInclude Include="source\mu_socket.h">
       <Filter>MU\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_win_compat.h">
+      <Filter>MU\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

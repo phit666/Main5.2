@@ -7,8 +7,7 @@
 
 #pragma once
 
-#include <windows.h>
-
+#include "mu_win_compat.h"
 class CTimer  
 {
 	BOOL	m_bUsePerformanceCounter;	// use performance counter or multimedia timer?

@@ -28,11 +28,11 @@ namespace unicode
 	}
 
 	inline BOOL _GetTextExtentPoint(HDC hdc, LPCSTR lpString, int cbString, LPSIZE lpSize)
-	{ return GetTextExtentPointA(hdc, lpString, cbString, lpSize); }
+	{ return TRUE;/*GetTextExtentPointA(hdc, lpString, cbString, lpSize);*/ }
 	inline BOOL _GetTextExtentPoint32(HDC hdc, LPCSTR lpString, int cbString, LPSIZE lpSize)
-	{ return GetTextExtentPoint32A(hdc, lpString, cbString, lpSize); }
+	{ return TRUE;/*GetTextExtentPoint32A(hdc, lpString, cbString, lpSize);*/ }
 	inline BOOL _TextOut(HDC hdc, int nXStart, int nYStart, LPCSTR lpString, int cbString)
-	{ return TextOutA(hdc, nXStart, nYStart, lpString, cbString); }
+	{ return TRUE;/*TextOutA(hdc, nXStart, nYStart, lpString, cbString);*/ }
 }
 
 typedef float vec_t;

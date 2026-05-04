@@ -11,8 +11,7 @@
 #include "stdafx.h"
 #ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM
 #include "ListManager.h"
-#include <process.h>
-
+#include "mu_win_compat.h"
 CListManager::CListManager() // OK
 {
 	this->m_pFTPDownLoader = NULL;

@@ -5,8 +5,7 @@
 #ifndef _PLIST_H_
 #define _PLIST_H_
 
-#include <windows.h>
-
+#include "mu_win_compat.h"
 struct NODE
 {
 	NODE* pNext;					

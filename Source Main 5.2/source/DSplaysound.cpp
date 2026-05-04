@@ -11,9 +11,11 @@
 // Copyright (c) 1999 Microsoft Corp. All rights reserved.
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
-#include <objbase.h>
+
+#ifndef MU_USE_SDL_AUDIO
+
+#include "mu_win_compat.h"
 //#include <initguid.h>
-#include <commdlg.h>
 #include <mmreg.h>
 #include <dsound.h>
 #include "DSwaveio.h"
@@ -571,3 +573,5 @@ void Set3DSoundPosition()
 		}
 	}
 }
+
+#endif

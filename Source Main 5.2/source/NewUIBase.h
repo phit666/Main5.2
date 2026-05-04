@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include <windows.h>
-
+#include "mu_win_compat.h"
 namespace SEASON3B
 {
 	class INewUIBase
