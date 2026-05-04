@@ -1830,6 +1830,7 @@ void MU_ProcessSDLEvents()
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
+
 			g_iNoMouseTime = 0;
 
 			if (e.button.button == SDL_BUTTON_LEFT)

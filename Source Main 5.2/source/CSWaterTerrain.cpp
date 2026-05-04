@@ -68,27 +68,87 @@ void    CSWaterTerrain::Render ( void )
 
     EnableAlphaTest ();
 	BindTexture ( BITMAP_MAPTILE );
-	glBegin ( GL_TRIANGLES );
-    glColor3f ( 0.2f, 0.5f, 0.65f );
-	for ( j=0; j<m_iTriangleListNum; j++ )
-	{
-        offset = m_iTriangleList[j];
-		glTexCoord2f ( g_chrome[offset][1], g_chrome[offset][0] );
-        glVertex3fv ( m_Vertices[offset] );
-	}
-	glEnd();
+
+
+    std::vector<MU3DVertex> verts(m_iTriangleListNum);
+
+    for (j = 0; j < m_iTriangleListNum; j++)
+    {
+        int offset = m_iTriangleList[j];
+
+        verts[j].x = m_Vertices[offset][0];
+        verts[j].y = m_Vertices[offset][1];
+        verts[j].z = m_Vertices[offset][2];
+
+        verts[j].u = g_chrome[offset][1];
+        verts[j].v = g_chrome[offset][0];
+    }
+
+    glColor3f(0.2f, 0.5f, 0.65f);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    glVertexPointer(3, GL_FLOAT, sizeof(MU3DVertex), &verts[0].x);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DVertex), &verts[0].u);
+
+    glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
+
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+
+    glColor4f(1.f, 1.f, 1.f, 1.f);
+
+
     EnableAlphaBlend ();
 	BindTexture ( BITMAP_MAPTILE+1 );
-	glBegin ( GL_TRIANGLES );
-	for ( j=0; j<m_iTriangleListNum; j++ )
-	{
-        offset = m_iTriangleList[j];
-        alpha = 1.f-DotProduct ( m_Normals[offset], m_vLightVector );
-        glColor3f( alpha, alpha*2.5f, alpha*3.f );//, alpha );
-		glTexCoord2f ( g_chrome[offset][1], g_chrome[offset][0] );
-        glVertex3fv ( m_Vertices[offset] );
-	}
-	glEnd();
+
+
+    std::vector<MU3DColorVertex> colorverts(m_iTriangleListNum);
+
+    for (j = 0; j < m_iTriangleListNum; j++)
+    {
+        int offset = m_iTriangleList[j];
+
+        float alpha = 1.f - DotProduct(m_Normals[offset], m_vLightVector);
+
+        // clamp before converting
+        float r = alpha;
+        float g = alpha * 2.5f;
+        float b = alpha * 3.f;
+
+        if (r < 0.f) r = 0.f; if (r > 1.f) r = 1.f;
+        if (g < 0.f) g = 0.f; if (g > 1.f) g = 1.f;
+        if (b < 0.f) b = 0.f; if (b > 1.f) b = 1.f;
+
+        colorverts[j].x = m_Vertices[offset][0];
+        colorverts[j].y = m_Vertices[offset][1];
+        colorverts[j].z = m_Vertices[offset][2];
+
+        colorverts[j].u = g_chrome[offset][1];
+        colorverts[j].v = g_chrome[offset][0];
+
+        colorverts[j].r = (GLubyte)(r * 255.f);
+        colorverts[j].g = (GLubyte)(g * 255.f);
+        colorverts[j].b = (GLubyte)(b * 255.f);
+        colorverts[j].a = 255;
+    }
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &colorverts[0].x);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &colorverts[0].u);
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &colorverts[0].r);
+
+    glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+
+    glColor4f(1.f, 1.f, 1.f, 1.f);
 }
 
 void    CSWaterTerrain::CreateTerrain ( int x, int y )
@@ -364,45 +424,78 @@ void CSWaterTerrain::RenderWaterAlphaBitmap ( int Texture, float xf, float yf, f
 	}
 }
 
-void    CSWaterTerrain::RenderWaterBitmapTile(float xf,float yf,float lodf,int lodi,vec3_t c[4],bool LightEnable,float Alpha,float Height)
+void CSWaterTerrain::RenderWaterBitmapTile(
+    float xf, float yf, float lodf, int lodi,
+    vec3_t c[4], bool LightEnable, float Alpha, float Height)
 {
     vec3_t TerrainVertex[4];
-	int xi = (int)xf;
+
+    int xi = (int)xf;
     int yi = (int)yf;
-	if(xi<0 || yi<0 || xi>=TERRAIN_SIZE_MASK || yi>=TERRAIN_SIZE_MASK) return;
-	float TileScale = WAVE_SCALE;
-    float sx = xf*WAVE_SCALE;
-    float sy = yf*WAVE_SCALE;
-	int TerrainIndex1 = xi+(yi*WATER_TERRAIN_SIZE);
-	int TerrainIndex2 = xi+lodi+(yi*WATER_TERRAIN_SIZE);
-	int TerrainIndex3 = xi+lodi+((yi+lodi)*WATER_TERRAIN_SIZE);
-	int TerrainIndex4 = xi+((yi+lodi)*WATER_TERRAIN_SIZE);
-	Vector(sx          ,sy          ,m_iWaveHeight[0][TerrainIndex1]+400.f+Height,TerrainVertex[0]);
-	Vector(sx+TileScale,sy          ,m_iWaveHeight[0][TerrainIndex2]+400.f+Height,TerrainVertex[1]);
-	Vector(sx+TileScale,sy+TileScale,m_iWaveHeight[0][TerrainIndex3]+400.f+Height,TerrainVertex[2]);
-	Vector(sx          ,sy+TileScale,m_iWaveHeight[0][TerrainIndex4]+400.f+Height,TerrainVertex[3]);
 
-	vec3_t Light[4];
-	if(LightEnable)
-	{
-		VectorCopy(PrimaryTerrainLight[TerrainIndex1],Light[0]);
-		VectorCopy(PrimaryTerrainLight[TerrainIndex2],Light[1]);
-		VectorCopy(PrimaryTerrainLight[TerrainIndex3],Light[2]);
-		VectorCopy(PrimaryTerrainLight[TerrainIndex4],Light[3]);
-	}
+    if (xi < 0 || yi < 0 || xi >= TERRAIN_SIZE_MASK || yi >= TERRAIN_SIZE_MASK)
+        return;
 
-	glBegin(GL_TRIANGLE_FAN);
-	for(int i=0;i<4;i++)
-	{
-		if(LightEnable)
-		{
-			if(Alpha==1.f)
-				glColor3fv(Light[i]);
-			else
-				glColor4f(Light[i][0],Light[i][1],Light[i][2],Alpha);
-		}
-		glTexCoord2f(c[i][0],c[i][1]);
-		glVertex3fv(TerrainVertex[i]);
-	}
-	glEnd();
+    float TileScale = WAVE_SCALE;
+    float sx = xf * WAVE_SCALE;
+    float sy = yf * WAVE_SCALE;
+
+    int TerrainIndex1 = xi + (yi * WATER_TERRAIN_SIZE);
+    int TerrainIndex2 = xi + lodi + (yi * WATER_TERRAIN_SIZE);
+    int TerrainIndex3 = xi + lodi + ((yi + lodi) * WATER_TERRAIN_SIZE);
+    int TerrainIndex4 = xi + ((yi + lodi) * WATER_TERRAIN_SIZE);
+
+    Vector(sx, sy, m_iWaveHeight[0][TerrainIndex1] + 400.f + Height, TerrainVertex[0]);
+    Vector(sx + TileScale, sy, m_iWaveHeight[0][TerrainIndex2] + 400.f + Height, TerrainVertex[1]);
+    Vector(sx + TileScale, sy + TileScale, m_iWaveHeight[0][TerrainIndex3] + 400.f + Height, TerrainVertex[2]);
+    Vector(sx, sy + TileScale, m_iWaveHeight[0][TerrainIndex4] + 400.f + Height, TerrainVertex[3]);
+
+    vec3_t Light[4];
+
+    if (LightEnable)
+    {
+        VectorCopy(PrimaryTerrainLight[TerrainIndex1], Light[0]);
+        VectorCopy(PrimaryTerrainLight[TerrainIndex2], Light[1]);
+        VectorCopy(PrimaryTerrainLight[TerrainIndex3], Light[2]);
+        VectorCopy(PrimaryTerrainLight[TerrainIndex4], Light[3]);
+    }
+
+    GLfloat oldColor[4];
+    glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+    MU3DColorVertex quad[4];
+
+    for (int i = 0; i < 4; ++i)
+    {
+        quad[i].x = TerrainVertex[i][0];
+        quad[i].y = TerrainVertex[i][1];
+        quad[i].z = TerrainVertex[i][2];
+
+        quad[i].u = c[i][0];
+        quad[i].v = c[i][1];
+
+        if (LightEnable)
+        {
+            quad[i].r = MU_FloatToColorByte(Light[i][0]);
+            quad[i].g = MU_FloatToColorByte(Light[i][1]);
+            quad[i].b = MU_FloatToColorByte(Light[i][2]);
+
+            // glColor3fv keeps previous alpha
+            if (Alpha == 1.f)
+                quad[i].a = MU_FloatToColorByte(oldColor[3]);
+            else
+                quad[i].a = MU_FloatToColorByte(Alpha);
+        }
+        else
+        {
+            quad[i].r = MU_FloatToColorByte(oldColor[0]);
+            quad[i].g = MU_FloatToColorByte(oldColor[1]);
+            quad[i].b = MU_FloatToColorByte(oldColor[2]);
+            quad[i].a = MU_FloatToColorByte(oldColor[3]);
+        }
+    }
+
+    MU_DrawTexturedColorQuad3D_Bound(quad);
+
+    glColor4fv(oldColor);
 }

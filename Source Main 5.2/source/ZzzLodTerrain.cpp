@@ -1393,16 +1393,54 @@ void RenderFace(int Texture,int mx,int my)
 	   	DisableAlphaBlend();
 	BindTexture(BITMAP_MAPTILE+Texture);
 
-	glBegin(GL_TRIANGLE_FAN);
-	Vertex0();
-	Vertex1();
-	Vertex2();
-	Vertex3();
-	glEnd();
+	MU3DColorVertex quad[4];
+
+	quad[0].x = TerrainVertex[0][0];
+	quad[0].y = TerrainVertex[0][1];
+	quad[0].z = TerrainVertex[0][2];
+	quad[0].u = TerrainTextureCoord[0][0];
+	quad[0].v = TerrainTextureCoord[0][1];
+	quad[0].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][0]);
+	quad[0].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][1]);
+	quad[0].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][2]);
+	quad[0].a = 255;
+
+	quad[1].x = TerrainVertex[1][0];
+	quad[1].y = TerrainVertex[1][1];
+	quad[1].z = TerrainVertex[1][2];
+	quad[1].u = TerrainTextureCoord[1][0];
+	quad[1].v = TerrainTextureCoord[1][1];
+	quad[1].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][0]);
+	quad[1].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][1]);
+	quad[1].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][2]);
+	quad[1].a = 255;
+
+	quad[2].x = TerrainVertex[2][0];
+	quad[2].y = TerrainVertex[2][1];
+	quad[2].z = TerrainVertex[2][2];
+	quad[2].u = TerrainTextureCoord[2][0];
+	quad[2].v = TerrainTextureCoord[2][1];
+	quad[2].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][0]);
+	quad[2].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][1]);
+	quad[2].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][2]);
+	quad[2].a = 255;
+
+	quad[3].x = TerrainVertex[3][0];
+	quad[3].y = TerrainVertex[3][1];
+	quad[3].z = TerrainVertex[3][2];
+	quad[3].u = TerrainTextureCoord[3][0];
+	quad[3].v = TerrainTextureCoord[3][1];
+	quad[3].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][0]);
+	quad[3].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][1]);
+	quad[3].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][2]);
+	quad[3].a = 255;
+
+	MU_DrawTexturedColorQuad3D_Bound(quad);
 }
 
 void RenderFace_After(int Texture, int mx, int my)
 {
+#ifndef MU_USE_SDL
 	if(Texture == 100)
 		EnableAlphaTest();
 	else if( Texture == 101)
@@ -1418,30 +1456,125 @@ void RenderFace_After(int Texture, int mx, int my)
 		Vertex2();
 		Vertex3();
 	glEnd();
+#endif
 }
 
 void RenderFaceAlpha(int Texture,int mx,int my)
 {
     EnableAlphaTest();
 	BindTexture(BITMAP_MAPTILE+Texture);
-	glBegin(GL_TRIANGLE_FAN);
-	VertexAlpha0();
-	VertexAlpha1();
-	VertexAlpha2();
-	VertexAlpha3();
-	glEnd();
+
+	MU3DColorVertex quad[4];
+
+	// VertexAlpha0
+	quad[0].x = TerrainVertex[0][0];
+	quad[0].y = TerrainVertex[0][1];
+	quad[0].z = TerrainVertex[0][2];
+	quad[0].u = TerrainTextureCoord[0][0];
+	quad[0].v = TerrainTextureCoord[0][1];
+	quad[0].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][0]);
+	quad[0].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][1]);
+	quad[0].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][2]);
+	quad[0].a = MU_FloatToColorByte(TerrainMappingAlpha[TerrainIndex1]);
+
+	// VertexAlpha1
+	quad[1].x = TerrainVertex[1][0];
+	quad[1].y = TerrainVertex[1][1];
+	quad[1].z = TerrainVertex[1][2];
+	quad[1].u = TerrainTextureCoord[1][0];
+	quad[1].v = TerrainTextureCoord[1][1];
+	quad[1].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][0]);
+	quad[1].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][1]);
+	quad[1].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][2]);
+	quad[1].a = MU_FloatToColorByte(TerrainMappingAlpha[TerrainIndex2]);
+
+	// VertexAlpha2
+	quad[2].x = TerrainVertex[2][0];
+	quad[2].y = TerrainVertex[2][1];
+	quad[2].z = TerrainVertex[2][2];
+	quad[2].u = TerrainTextureCoord[2][0];
+	quad[2].v = TerrainTextureCoord[2][1];
+	quad[2].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][0]);
+	quad[2].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][1]);
+	quad[2].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][2]);
+	quad[2].a = MU_FloatToColorByte(TerrainMappingAlpha[TerrainIndex3]);
+
+	// VertexAlpha3
+	quad[3].x = TerrainVertex[3][0];
+	quad[3].y = TerrainVertex[3][1];
+	quad[3].z = TerrainVertex[3][2];
+	quad[3].u = TerrainTextureCoord[3][0];
+	quad[3].v = TerrainTextureCoord[3][1];
+	quad[3].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][0]);
+	quad[3].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][1]);
+	quad[3].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][2]);
+	quad[3].a = MU_FloatToColorByte(TerrainMappingAlpha[TerrainIndex4]);
+
+	MU_DrawTexturedColorQuad3D_Bound(quad);
 }
 
 void RenderFaceBlend(int Texture,int mx,int my)
 {
 	EnableAlphaBlend();
 	BindTexture(BITMAP_MAPTILE+Texture);
-	glBegin(GL_TRIANGLE_FAN);
-	VertexBlend0();
-	VertexBlend1();
-	VertexBlend2();
-	VertexBlend3();
-	glEnd();
+
+	MU3DColorVertex quad[4];
+
+	float l0 = TerrainMappingAlpha[TerrainIndex1];
+	float l1 = TerrainMappingAlpha[TerrainIndex2];
+	float l2 = TerrainMappingAlpha[TerrainIndex3];
+	float l3 = TerrainMappingAlpha[TerrainIndex4];
+
+	GLubyte c0 = MU_FloatToColorByte(l0);
+	GLubyte c1 = MU_FloatToColorByte(l1);
+	GLubyte c2 = MU_FloatToColorByte(l2);
+	GLubyte c3 = MU_FloatToColorByte(l3);
+
+	// VertexBlend0
+	quad[0].x = TerrainVertex[0][0];
+	quad[0].y = TerrainVertex[0][1];
+	quad[0].z = TerrainVertex[0][2];
+	quad[0].u = TerrainTextureCoord[0][0];
+	quad[0].v = TerrainTextureCoord[0][1];
+	quad[0].r = c0;
+	quad[0].g = c0;
+	quad[0].b = c0;
+	quad[0].a = 255;
+
+	// VertexBlend1
+	quad[1].x = TerrainVertex[1][0];
+	quad[1].y = TerrainVertex[1][1];
+	quad[1].z = TerrainVertex[1][2];
+	quad[1].u = TerrainTextureCoord[1][0];
+	quad[1].v = TerrainTextureCoord[1][1];
+	quad[1].r = c1;
+	quad[1].g = c1;
+	quad[1].b = c1;
+	quad[1].a = 255;
+
+	// VertexBlend2
+	quad[2].x = TerrainVertex[2][0];
+	quad[2].y = TerrainVertex[2][1];
+	quad[2].z = TerrainVertex[2][2];
+	quad[2].u = TerrainTextureCoord[2][0];
+	quad[2].v = TerrainTextureCoord[2][1];
+	quad[2].r = c2;
+	quad[2].g = c2;
+	quad[2].b = c2;
+	quad[2].a = 255;
+
+	// VertexBlend3
+	quad[3].x = TerrainVertex[3][0];
+	quad[3].y = TerrainVertex[3][1];
+	quad[3].z = TerrainVertex[3][2];
+	quad[3].u = TerrainTextureCoord[3][0];
+	quad[3].v = TerrainTextureCoord[3][1];
+	quad[3].r = c3;
+	quad[3].g = c3;
+	quad[3].b = c3;
+	quad[3].a = 255;
+
+	MU_DrawTexturedColorQuad3D_Bound(quad);
 }
 
 void FaceTexture(int Texture,float xf,float yf,bool Water,bool Scale)
@@ -1611,20 +1744,50 @@ void RenderTerrainFace(float xf,float yf,int xi,int yi,float lodf)
 #ifdef ASG_ADD_MAP_KARUTAN
 				}
 #endif	// ASG_ADD_MAP_KARUTAN
-				glBegin(GL_QUADS);
-				glTexCoord2f(TerrainTextureCoord[0][0],TerrainTextureCoord[0][1]);
-				glColor3fv(PrimaryTerrainLight[TerrainIndex1]);
-				glVertex3fv(TerrainVertex[0]);
-				glTexCoord2f(TerrainTextureCoord[1][0],TerrainTextureCoord[1][1]);
-				glColor3fv(PrimaryTerrainLight[TerrainIndex2]);
-				glVertex3fv(TerrainVertex[1]);
-				glTexCoord2f(TerrainTextureCoord[2][0],TerrainTextureCoord[2][1]);
-				glColor3fv(PrimaryTerrainLight[TerrainIndex3]);
-				glVertex3fv(TerrainVertex[2]);
-				glTexCoord2f(TerrainTextureCoord[3][0],TerrainTextureCoord[3][1]);
-				glColor3fv(PrimaryTerrainLight[TerrainIndex4]);
-				glVertex3fv(TerrainVertex[3]);
-				glEnd();
+
+				MU3DColorVertex quad[4];
+
+				quad[0].x = TerrainVertex[0][0];
+				quad[0].y = TerrainVertex[0][1];
+				quad[0].z = TerrainVertex[0][2];
+				quad[0].u = TerrainTextureCoord[0][0];
+				quad[0].v = TerrainTextureCoord[0][1];
+				quad[0].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][0]);
+				quad[0].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][1]);
+				quad[0].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][2]);
+				quad[0].a = 255;
+
+				quad[1].x = TerrainVertex[1][0];
+				quad[1].y = TerrainVertex[1][1];
+				quad[1].z = TerrainVertex[1][2];
+				quad[1].u = TerrainTextureCoord[1][0];
+				quad[1].v = TerrainTextureCoord[1][1];
+				quad[1].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][0]);
+				quad[1].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][1]);
+				quad[1].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][2]);
+				quad[1].a = 255;
+
+				quad[2].x = TerrainVertex[2][0];
+				quad[2].y = TerrainVertex[2][1];
+				quad[2].z = TerrainVertex[2][2];
+				quad[2].u = TerrainTextureCoord[2][0];
+				quad[2].v = TerrainTextureCoord[2][1];
+				quad[2].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][0]);
+				quad[2].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][1]);
+				quad[2].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][2]);
+				quad[2].a = 255;
+
+				quad[3].x = TerrainVertex[3][0];
+				quad[3].y = TerrainVertex[3][1];
+				quad[3].z = TerrainVertex[3][2];
+				quad[3].u = TerrainTextureCoord[3][0];
+				quad[3].v = TerrainTextureCoord[3][1];
+				quad[3].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][0]);
+				quad[3].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][1]);
+				quad[3].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][2]);
+				quad[3].a = 255;
+
+				MU_DrawTexturedColorQuad3D_Bound(quad);
 
 				if(gMapManager.IsPKField() || IsDoppelGanger2())
 					DisableAlphaBlend();
@@ -1806,46 +1969,76 @@ void RenderTerrainTile_After(float xf,float yf,int xi,int yi,float lodf,int lodi
 	}
 }
 
-void RenderTerrainBitmapTile(float xf,float yf,float lodf,int lodi,vec3_t c[4],bool LightEnable,float Alpha,float Height=0.f)
+void RenderTerrainBitmapTile(float xf, float yf, float lodf, int lodi,
+	vec3_t c[4], bool LightEnable, float Alpha, float Height = 0.f)
 {
 	int xi = (int)xf;
-    int yi = (int)yf;
-	if(xi<0 || yi<0 || xi>=TERRAIN_SIZE_MASK || yi>=TERRAIN_SIZE_MASK) return;
-	float TileScale = TERRAIN_SCALE*lodf;
-    float sx = xf*TERRAIN_SCALE;
-    float sy = yf*TERRAIN_SCALE;
-	TerrainIndex1 = TERRAIN_INDEX(xi     ,yi     );
-	TerrainIndex2 = TERRAIN_INDEX(xi+lodi,yi     );
-	TerrainIndex3 = TERRAIN_INDEX(xi+lodi,yi+lodi);
-	TerrainIndex4 = TERRAIN_INDEX(xi     ,yi+lodi);
-	Vector(sx          ,sy          ,BackTerrainHeight[TerrainIndex1]+Height,TerrainVertex[0]);
-	Vector(sx+TileScale,sy          ,BackTerrainHeight[TerrainIndex2]+Height,TerrainVertex[1]);
-	Vector(sx+TileScale,sy+TileScale,BackTerrainHeight[TerrainIndex3]+Height,TerrainVertex[2]);
-	Vector(sx          ,sy+TileScale,BackTerrainHeight[TerrainIndex4]+Height,TerrainVertex[3]);
+	int yi = (int)yf;
+
+	if (xi < 0 || yi < 0 || xi >= TERRAIN_SIZE_MASK || yi >= TERRAIN_SIZE_MASK)
+		return;
+
+	float TileScale = TERRAIN_SCALE * lodf;
+	float sx = xf * TERRAIN_SCALE;
+	float sy = yf * TERRAIN_SCALE;
+
+	TerrainIndex1 = TERRAIN_INDEX(xi, yi);
+	TerrainIndex2 = TERRAIN_INDEX(xi + lodi, yi);
+	TerrainIndex3 = TERRAIN_INDEX(xi + lodi, yi + lodi);
+	TerrainIndex4 = TERRAIN_INDEX(xi, yi + lodi);
+
+	Vector(sx, sy, BackTerrainHeight[TerrainIndex1] + Height, TerrainVertex[0]);
+	Vector(sx + TileScale, sy, BackTerrainHeight[TerrainIndex2] + Height, TerrainVertex[1]);
+	Vector(sx + TileScale, sy + TileScale, BackTerrainHeight[TerrainIndex3] + Height, TerrainVertex[2]);
+	Vector(sx, sy + TileScale, BackTerrainHeight[TerrainIndex4] + Height, TerrainVertex[3]);
 
 	vec3_t Light[4];
-	if(LightEnable)
+
+	if (LightEnable)
 	{
-		VectorCopy(PrimaryTerrainLight[TerrainIndex1],Light[0]);
-		VectorCopy(PrimaryTerrainLight[TerrainIndex2],Light[1]);
-		VectorCopy(PrimaryTerrainLight[TerrainIndex3],Light[2]);
-		VectorCopy(PrimaryTerrainLight[TerrainIndex4],Light[3]);
+		VectorCopy(PrimaryTerrainLight[TerrainIndex1], Light[0]);
+		VectorCopy(PrimaryTerrainLight[TerrainIndex2], Light[1]);
+		VectorCopy(PrimaryTerrainLight[TerrainIndex3], Light[2]);
+		VectorCopy(PrimaryTerrainLight[TerrainIndex4], Light[3]);
 	}
 
-	glBegin(GL_TRIANGLE_FAN);
-	for(int i=0;i<4;i++)
+	GLfloat oldColor[4];
+	glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+	MU3DColorVertex quad[4];
+
+	for (int i = 0; i < 4; ++i)
 	{
-		if(LightEnable)
+		quad[i].x = TerrainVertex[i][0];
+		quad[i].y = TerrainVertex[i][1];
+		quad[i].z = TerrainVertex[i][2];
+
+		quad[i].u = c[i][0];
+		quad[i].v = c[i][1];
+
+		if (LightEnable)
 		{
-			if(Alpha==1.f)
-				glColor3fv(Light[i]);
+			quad[i].r = MU_FloatToColorByte(Light[i][0]);
+			quad[i].g = MU_FloatToColorByte(Light[i][1]);
+			quad[i].b = MU_FloatToColorByte(Light[i][2]);
+
+			if (Alpha == 1.f)
+				quad[i].a = MU_FloatToColorByte(oldColor[3]);
 			else
-				glColor4f(Light[i][0],Light[i][1],Light[i][2],Alpha);
+				quad[i].a = MU_FloatToColorByte(Alpha);
 		}
-		glTexCoord2f ( c[i][0], c[i][1] );
-		glVertex3fv ( TerrainVertex[i] );
+		else
+		{
+			quad[i].r = MU_FloatToColorByte(oldColor[0]);
+			quad[i].g = MU_FloatToColorByte(oldColor[1]);
+			quad[i].b = MU_FloatToColorByte(oldColor[2]);
+			quad[i].a = MU_FloatToColorByte(oldColor[3]);
+		}
 	}
-	glEnd();
+
+	MU_DrawTexturedColorQuad3D_Bound(quad);
+
+	glColor4fv(oldColor);
 }
 
 void RenderTerrainBitmap(int Texture,int mxi,int myi,float Rotation)

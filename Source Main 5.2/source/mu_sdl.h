@@ -3,8 +3,6 @@
 #include <SDL.h>
 #include "w_nuklear.h"
 #include "mu_file.h"
-#include "mu_gl.h"
-#include "mu_2d_renderer.h"
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
 #include <event2/event.h>

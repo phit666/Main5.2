@@ -1243,115 +1243,177 @@ void BMD::RenderMesh(int i,int RenderFlag,float Alpha,int BlendMesh,float BlendM
 		}
 	}
 
-    // ver 1.0 (triangle)
-	glBegin(GL_TRIANGLES);
-	for(int j=0;j<m->NumTriangles;j++)
+	std::vector<MU3DColorVertex> verts;
+	verts.reserve(m->NumTriangles * 3);
+
+	GLfloat oldColor[4];
+	glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+	for (int j = 0; j < m->NumTriangles; j++)
 	{
-		Triangle_t *tp = &m->Triangles[j];
-		for(int k=0;k<tp->Polygon;k++)
+		Triangle_t* tp = &m->Triangles[j];
+
+		for (int k = 0; k < tp->Polygon; k++)
 		{
-			int vi = tp->VertexIndex[k];  
-			switch(Render)
+			int vi = tp->VertexIndex[k];
+
+			MU3DColorVertex vtx = {};
+
+			float cr = oldColor[0];
+			float cg = oldColor[1];
+			float cb = oldColor[2];
+			float ca = oldColor[3];
+
+			switch (Render)
 			{
-
 			case RENDER_TEXTURE:
-				{
-					TexCoord_t *texp = &m->TexCoords[tp->TexCoordIndex[k]];
-					if(EnableWave)
-					{
-						glTexCoord2f(texp->TexCoordU+BlendMeshTexCoordU,texp->TexCoordV+BlendMeshTexCoordV);
-					}
-					else
-					{
-						glTexCoord2f(texp->TexCoordU,texp->TexCoordV);
-					}
-					
-					if(EnableLight)
-					{
-						int ni = tp->NormalIndex[k];
-	
-						if(Alpha >= 0.99f)
-						{
-							glColor3fv(LightTransform[i][ni]);
-						}
-						else
-						{
-							float *Light = LightTransform[i][ni];
-							glColor4f(Light[0],Light[1],Light[2],Alpha);
-						}
-					}
-					break;
-				}
-			case RENDER_CHROME:
-				{
-					if(Alpha >= 0.99f)
-						glColor3fv(BodyLight);
-					else
-						glColor4f(BodyLight[0],BodyLight[1],BodyLight[2],Alpha);
-					int ni = tp->NormalIndex[k];  
-					glTexCoord2f(g_chrome[ni][0],g_chrome[ni][1]);
-					break;
-				}
-            case RENDER_CHROME4:
-				{
-					if(Alpha >= 0.99f)
-						glColor3fv(BodyLight);
-					else
-						glColor4f(BodyLight[0],BodyLight[1],BodyLight[2],Alpha);
-					int ni = tp->NormalIndex[k];  
-					glTexCoord2f(g_chrome[ni][0]+BlendMeshTexCoordU,g_chrome[ni][1]+BlendMeshTexCoordV);
-//					glTexCoord2f(BlendMeshTexCoordU,BlendMeshTexCoordV);
-				}
-                break;
+			{
+				TexCoord_t* texp = &m->TexCoords[tp->TexCoordIndex[k]];
 
-			case RENDER_OIL:
+				if (EnableWave)
 				{
-					if(Alpha >= 0.99f)
-						glColor3fv(BodyLight);
-					else
-						glColor4f(BodyLight[0],BodyLight[1],BodyLight[2],Alpha);
-					TexCoord_t *texp = &m->TexCoords[tp->TexCoordIndex[k]];
-					int ni = tp->VertexIndex[k];  
-					glTexCoord2f(g_chrome[ni][0]*texp->TexCoordU+BlendMeshTexCoordU,g_chrome[ni][1]*texp->TexCoordV+BlendMeshTexCoordV);
-					break;
+					vtx.u = texp->TexCoordU + BlendMeshTexCoordU;
+					vtx.v = texp->TexCoordV + BlendMeshTexCoordV;
 				}
+				else
+				{
+					vtx.u = texp->TexCoordU;
+					vtx.v = texp->TexCoordV;
+				}
+
+				if (EnableLight)
+				{
+					int ni = tp->NormalIndex[k];
+					float* Light = LightTransform[i][ni];
+
+					cr = Light[0];
+					cg = Light[1];
+					cb = Light[2];
+
+					if (Alpha < 0.99f)
+						ca = Alpha;
+				}
+
+				break;
 			}
 
-            if ( (RenderFlag&RENDER_SHADOWMAP)==RENDER_SHADOWMAP )
-            {
-                int vi = tp->VertexIndex[k];  
-                vec3_t Position;
-                VectorSubtract(VertexTransform[i][vi],BodyOrigin,Position);
-
-                Position[0] += Position[2]*(Position[0]+2000.f)/(Position[2]-4000.f);
-                Position[2] = 5.f;
-                
-                VectorAdd(Position,BodyOrigin,Position);
-                glVertex3fv(Position);
-            }
-			else if((RenderFlag&RENDER_WAVE)==RENDER_WAVE)
+			case RENDER_CHROME:
 			{
-				float vPos[3];
-				float fParam = ( float)( ( int)WorldTime + vi * 931)*0.007f;
-				float fSin = sinf( fParam);
-				float fCos = cosf( fParam);
+				cr = BodyLight[0];
+				cg = BodyLight[1];
+				cb = BodyLight[2];
+
+				if (Alpha < 0.99f)
+					ca = Alpha;
 
 				int ni = tp->NormalIndex[k];
-				Normal_t *np = &m->Normals[ni];
-				float *Normal = NormalTransform[i][ni];
-				for ( int iCoord = 0; iCoord < 3; ++iCoord)
-				{
-					vPos[iCoord] = VertexTransform[i][vi][iCoord] + Normal[iCoord]*fSin*28.0f;
-				}
-				glVertex3fv(vPos);
+				vtx.u = g_chrome[ni][0];
+				vtx.v = g_chrome[ni][1];
+
+				break;
 			}
-            else
+
+			case RENDER_CHROME4:
 			{
-				glVertex3fv(VertexTransform[i][vi]);
+				cr = BodyLight[0];
+				cg = BodyLight[1];
+				cb = BodyLight[2];
+
+				if (Alpha < 0.99f)
+					ca = Alpha;
+
+				int ni = tp->NormalIndex[k];
+				vtx.u = g_chrome[ni][0] + BlendMeshTexCoordU;
+				vtx.v = g_chrome[ni][1] + BlendMeshTexCoordV;
+
+				break;
 			}
+
+			case RENDER_OIL:
+			{
+				cr = BodyLight[0];
+				cg = BodyLight[1];
+				cb = BodyLight[2];
+
+				if (Alpha < 0.99f)
+					ca = Alpha;
+
+				TexCoord_t* texp = &m->TexCoords[tp->TexCoordIndex[k]];
+				int ni = tp->VertexIndex[k];
+
+				vtx.u = g_chrome[ni][0] * texp->TexCoordU + BlendMeshTexCoordU;
+				vtx.v = g_chrome[ni][1] * texp->TexCoordV + BlendMeshTexCoordV;
+
+				break;
+			}
+			}
+
+			if ((RenderFlag & RENDER_SHADOWMAP) == RENDER_SHADOWMAP)
+			{
+				vec3_t Position;
+				VectorSubtract(VertexTransform[i][vi], BodyOrigin, Position);
+
+				Position[0] += Position[2] * (Position[0] + 2000.f) / (Position[2] - 4000.f);
+				Position[2] = 5.f;
+
+				VectorAdd(Position, BodyOrigin, Position);
+
+				vtx.x = Position[0];
+				vtx.y = Position[1];
+				vtx.z = Position[2];
+			}
+			else if ((RenderFlag & RENDER_WAVE) == RENDER_WAVE)
+			{
+				float vPos[3];
+				float fParam = (float)((int)WorldTime + vi * 931) * 0.007f;
+				float fSin = sinf(fParam);
+
+				int ni = tp->NormalIndex[k];
+				float* Normal = NormalTransform[i][ni];
+
+				for (int iCoord = 0; iCoord < 3; ++iCoord)
+				{
+					vPos[iCoord] = VertexTransform[i][vi][iCoord] + Normal[iCoord] * fSin * 28.0f;
+				}
+
+				vtx.x = vPos[0];
+				vtx.y = vPos[1];
+				vtx.z = vPos[2];
+			}
+			else
+			{
+				vtx.x = VertexTransform[i][vi][0];
+				vtx.y = VertexTransform[i][vi][1];
+				vtx.z = VertexTransform[i][vi][2];
+			}
+
+			vtx.r = MU_FloatToColorByte(cr);
+			vtx.g = MU_FloatToColorByte(cg);
+			vtx.b = MU_FloatToColorByte(cb);
+			vtx.a = MU_FloatToColorByte(ca);
+
+			verts.push_back(vtx);
 		}
 	}
-	glEnd();
+
+	if (!verts.empty())
+	{
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glEnableClientState(GL_COLOR_ARRAY);
+
+		glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
+
+		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+
+	glColor4fv(oldColor);
 }
 
 void BMD::RenderMeshAlternative( int iRndExtFlag, int iParam, int i,int RenderFlag,float Alpha,int BlendMesh,float BlendMeshLight,float BlendMeshTexCoordU,float BlendMeshTexCoordV,int MeshTexture)
@@ -1624,69 +1686,140 @@ void BMD::RenderMeshAlternative( int iRndExtFlag, int iParam, int i,int RenderFl
     	Render = RENDER_TEXTURE;
 	}
 
-	// ver 1.0 (triangle)
-	glBegin(GL_TRIANGLES);
-	for(int j=0;j<m->NumTriangles;j++)
+	std::vector<MU3DColorVertex> verts;
+	verts.reserve(m->NumTriangles * 3);
+
+	GLfloat oldColor[4];
+	glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+	for (int j = 0; j < m->NumTriangles; j++)
 	{
-		Triangle_t *tp = &m->Triangles[j];
-		for(int k=0;k<tp->Polygon;k++)
+		Triangle_t* tp = &m->Triangles[j];
+
+		for (int k = 0; k < tp->Polygon; k++)
 		{
-			int vi = tp->VertexIndex[k];  
-			switch(Render)
+			int vi = tp->VertexIndex[k];
+
+			MU3DColorVertex vtx = {};
+
+			float cr = oldColor[0];
+			float cg = oldColor[1];
+			float cb = oldColor[2];
+			float ca = oldColor[3];
+
+			switch (Render)
 			{
 			case RENDER_TEXTURE:
+			{
+				TexCoord_t* texp = &m->TexCoords[tp->TexCoordIndex[k]];
+
+				if (EnableWave)
 				{
-					TexCoord_t *texp = &m->TexCoords[tp->TexCoordIndex[k]];
-					if(EnableWave)
-						glTexCoord2f(texp->TexCoordU+BlendMeshTexCoordU,texp->TexCoordV+BlendMeshTexCoordV);
-					else
-						glTexCoord2f(texp->TexCoordU,texp->TexCoordV);
-					if(EnableLight)
-					{
-						int ni = tp->NormalIndex[k];
-						if(Alpha >= 0.99f)
-						{
-							glColor3fv(LightTransform[i][ni]);
-						}
-						else
-						{
-							float *Light = LightTransform[i][ni];
-							glColor4f(Light[0],Light[1],Light[2],Alpha);
-						}
-					}
-					break;
+					vtx.u = texp->TexCoordU + BlendMeshTexCoordU;
+					vtx.v = texp->TexCoordV + BlendMeshTexCoordV;
 				}
-			case RENDER_CHROME:
+				else
 				{
-					if(Alpha >= 0.99f)
-						glColor3fv(BodyLight);
-					else
-						glColor4f(BodyLight[0],BodyLight[1],BodyLight[2],Alpha);
-					int ni = tp->NormalIndex[k];  
-					glTexCoord2f(g_chrome[ni][0],g_chrome[ni][1]);
-					break;
+					vtx.u = texp->TexCoordU;
+					vtx.v = texp->TexCoordV;
 				}
+
+				if (EnableLight)
+				{
+					int ni = tp->NormalIndex[k];
+					float* Light = LightTransform[i][ni];
+
+					cr = Light[0];
+					cg = Light[1];
+					cb = Light[2];
+
+					if (Alpha < 0.99f)
+						ca = Alpha;
+				}
+
+				break;
 			}
-			if ( (iRndExtFlag&RNDEXT_WAVE) )
+
+			case RENDER_CHROME:
+			{
+				if (Alpha >= 0.99f)
+				{
+					cr = BodyLight[0];
+					cg = BodyLight[1];
+					cb = BodyLight[2];
+				}
+				else
+				{
+					cr = BodyLight[0];
+					cg = BodyLight[1];
+					cb = BodyLight[2];
+					ca = Alpha;
+				}
+
+				int ni = tp->NormalIndex[k];
+
+				vtx.u = g_chrome[ni][0];
+				vtx.v = g_chrome[ni][1];
+
+				break;
+			}
+			}
+
+			if (iRndExtFlag & RNDEXT_WAVE)
 			{
 				float vPos[3];
-				float fParam = ( float)( ( int)WorldTime + vi * 931)*0.007f;
-				float fSin = sinf( fParam);
+
+				float fParam = (float)((int)WorldTime + vi * 931) * 0.007f;
+				float fSin = sinf(fParam);
+
 				int ni = tp->NormalIndex[k];
-				float *Normal = NormalTransform[i][ni];
-				for ( int iCoord = 0; iCoord < 3; ++iCoord)
+				float* Normal = NormalTransform[i][ni];
+
+				for (int iCoord = 0; iCoord < 3; ++iCoord)
 				{
-					vPos[iCoord] = VertexTransform[i][vi][iCoord] + Normal[iCoord]*fSin*28.0f;
+					vPos[iCoord] =
+						VertexTransform[i][vi][iCoord] +
+						Normal[iCoord] * fSin * 28.0f;
 				}
-				glVertex3fv(vPos);
+
+				vtx.x = vPos[0];
+				vtx.y = vPos[1];
+				vtx.z = vPos[2];
 			}
 			else
 			{
-				glVertex3fv(VertexTransform[i][vi]);
+				vtx.x = VertexTransform[i][vi][0];
+				vtx.y = VertexTransform[i][vi][1];
+				vtx.z = VertexTransform[i][vi][2];
 			}
+
+			vtx.r = MU_FloatToColorByte(cr);
+			vtx.g = MU_FloatToColorByte(cg);
+			vtx.b = MU_FloatToColorByte(cb);
+			vtx.a = MU_FloatToColorByte(ca);
+
+			verts.push_back(vtx);
 		}
 	}
-	glEnd();
+
+	if (!verts.empty())
+	{
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glEnableClientState(GL_COLOR_ARRAY);
+
+		glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
+
+		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+
+	glColor4fv(oldColor);
 }
 
 
@@ -2114,56 +2247,111 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
     	Render = RENDER_TEXTURE;
 	}
 
-	glBegin(GL_TRIANGLES);
-	for(int j=0;j<m->NumTriangles;j++)
+	std::vector<MU3DColorVertex> verts;
+	verts.reserve(m->NumTriangles * 3);
+
+	GLfloat oldColor[4];
+	glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+	for (int j = 0; j < m->NumTriangles; j++)
 	{
-        vec3_t  pos;
-		Triangle_t *tp = &m->Triangles[j];
-		for(int k=0;k<tp->Polygon;k++)
+		vec3_t pos;
+		Triangle_t* tp = &m->Triangles[j];
+
+		for (int k = 0; k < tp->Polygon; k++)
 		{
-			int vi = tp->VertexIndex[k];  
-			switch(Render)
+			int vi = tp->VertexIndex[k];
+
+			MU3DColorVertex vtx = {};
+
+			float cr = oldColor[0];
+			float cg = oldColor[1];
+			float cb = oldColor[2];
+			float ca = oldColor[3];
+
+			switch (Render)
 			{
 			case RENDER_TEXTURE:
-				{
-					TexCoord_t *texp = &m->TexCoords[tp->TexCoordIndex[k]];
-					if(EnableWave)
-						glTexCoord2f(texp->TexCoordU+BlendMeshTexCoordU,texp->TexCoordV+BlendMeshTexCoordV);
-					else
-						glTexCoord2f(texp->TexCoordU,texp->TexCoordV);
-					if(EnableLight)
-					{
-						int ni = tp->NormalIndex[k];
-						if(Alpha >= 0.99f)
-						{
-							glColor3fv(LightTransform[i][ni]);
-						}
-						else
-						{
-							float *Light = LightTransform[i][ni];
-							glColor4f(Light[0],Light[1],Light[2],Alpha);
-						}
-					}
-					break;
-				}
-			case RENDER_CHROME:
-				{
-					if(Alpha >= 0.99f)
-						glColor3fv(BodyLight);
-					else
-						glColor4f(BodyLight[0],BodyLight[1],BodyLight[2],Alpha);
-					int ni = tp->NormalIndex[k];  
-					glTexCoord2f(g_chrome[ni][0],g_chrome[ni][1]);
-					break;
-				}
-			}
 			{
-				VectorAdd(VertexTransform[i][vi],BodyOrigin,pos);
-				glVertex3fv(pos);
+				TexCoord_t* texp = &m->TexCoords[tp->TexCoordIndex[k]];
+
+				if (EnableWave)
+				{
+					vtx.u = texp->TexCoordU + BlendMeshTexCoordU;
+					vtx.v = texp->TexCoordV + BlendMeshTexCoordV;
+				}
+				else
+				{
+					vtx.u = texp->TexCoordU;
+					vtx.v = texp->TexCoordV;
+				}
+
+				if (EnableLight)
+				{
+					int ni = tp->NormalIndex[k];
+					float* Light = LightTransform[i][ni];
+
+					cr = Light[0];
+					cg = Light[1];
+					cb = Light[2];
+
+					if (Alpha < 0.99f)
+						ca = Alpha;
+				}
+
+				break;
 			}
+
+			case RENDER_CHROME:
+			{
+				cr = BodyLight[0];
+				cg = BodyLight[1];
+				cb = BodyLight[2];
+
+				if (Alpha < 0.99f)
+					ca = Alpha;
+
+				int ni = tp->NormalIndex[k];
+				vtx.u = g_chrome[ni][0];
+				vtx.v = g_chrome[ni][1];
+
+				break;
+			}
+			}
+
+			VectorAdd(VertexTransform[i][vi], BodyOrigin, pos);
+
+			vtx.x = pos[0];
+			vtx.y = pos[1];
+			vtx.z = pos[2];
+
+			vtx.r = MU_FloatToColorByte(cr);
+			vtx.g = MU_FloatToColorByte(cg);
+			vtx.b = MU_FloatToColorByte(cb);
+			vtx.a = MU_FloatToColorByte(ca);
+
+			verts.push_back(vtx);
 		}
 	}
-	glEnd();
+
+	if (!verts.empty())
+	{
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glEnableClientState(GL_COLOR_ARRAY);
+
+		glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
+		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
+
+		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+
+	glColor4fv(oldColor);
 }
 
 void BMD::RenderBodyTranslate(int Flag,float Alpha,int BlendMesh,float BlendMeshLight,float BlendMeshTexCoordU,float BlendMeshTexCoordV,int HiddenMesh,int Texture)
@@ -2218,22 +2406,43 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 			Mesh_t *m = &Meshs[i];
 			if(m->NumTriangles > 0 && m->Texture != BlendMesh)
 			{
-				glBegin(GL_TRIANGLES);
-				for(int j=0;j<m->NumTriangles;j++)
+
+				std::vector<GLfloat> verts;
+				verts.reserve(m->NumTriangles * 3 * 3);
+
+				for (int j = 0; j < m->NumTriangles; j++)
 				{
-					Triangle_t *tp = &m->Triangles[j];
-					for(int k=0;k<tp->Polygon;k++)
+					Triangle_t* tp = &m->Triangles[j];
+
+					for (int k = 0; k < tp->Polygon; k++)
 					{
-						int vi = tp->VertexIndex[k];  
+						int vi = tp->VertexIndex[k];
+
 						vec3_t Position;
-						VectorSubtract(VertexTransform[i][vi],BodyOrigin,Position);
-						Position[0] += Position[2]*(Position[0]+sx)/(Position[2]-sy);
+						VectorSubtract(VertexTransform[i][vi], BodyOrigin, Position);
+
+						Position[0] += Position[2] * (Position[0] + sx) / (Position[2] - sy);
 						Position[2] = 5.f;
-						VectorAdd(Position,BodyOrigin,Position);
-						glVertex3fv(Position);
+
+						VectorAdd(Position, BodyOrigin, Position);
+
+						verts.push_back(Position[0]);
+						verts.push_back(Position[1]);
+						verts.push_back(Position[2]);
 					}
 				}
-				glEnd();
+
+				if (!verts.empty())
+				{
+					glEnableClientState(GL_VERTEX_ARRAY);
+
+					glVertexPointer(3, GL_FLOAT, 0, verts.data());
+
+					glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(verts.size() / 3));
+
+					glDisableClientState(GL_VERTEX_ARRAY);
+				}
+
 			}
 		}
 	}
@@ -2258,44 +2467,81 @@ void BMD::RenderObjectBoundingBox()
 				VectorTransform(b->BoundingVertices[j],BoneTransform[i],BoundingVertices[j]);
 			}
 			
-			glBegin(GL_QUADS);
-			//glBegin(GL_LINES);
-			glColor3f(0.2f,0.2f,0.2f);
-			glTexCoord2f( 1.0F, 1.0F); glVertex3fv(BoundingVertices[7]);
-			glTexCoord2f( 1.0F, 0.0F); glVertex3fv(BoundingVertices[6]);
-			glTexCoord2f( 0.0F, 0.0F); glVertex3fv(BoundingVertices[4]);
-			glTexCoord2f( 0.0F, 1.0F); glVertex3fv(BoundingVertices[5]);
-			
-			glColor3f(0.2f,0.2f,0.2f);
-			glTexCoord2f( 0.0F, 1.0F); glVertex3fv(BoundingVertices[0]);
-			glTexCoord2f( 1.0F, 1.0F); glVertex3fv(BoundingVertices[2]);
-			glTexCoord2f( 1.0F, 0.0F); glVertex3fv(BoundingVertices[3]);
-			glTexCoord2f( 0.0F, 0.0F); glVertex3fv(BoundingVertices[1]);
-			
-			glColor3f(0.6f,0.6f,0.6f);
-			glTexCoord2f( 1.0F, 1.0F); glVertex3fv(BoundingVertices[7]);
-			glTexCoord2f( 1.0F, 0.0F); glVertex3fv(BoundingVertices[3]);
-			glTexCoord2f( 0.0F, 0.0F); glVertex3fv(BoundingVertices[2]);
-			glTexCoord2f( 0.0F, 1.0F); glVertex3fv(BoundingVertices[6]);
-			
-			glColor3f(0.6f,0.6f,0.6f);
-			glTexCoord2f( 0.0F, 1.0F); glVertex3fv(BoundingVertices[0]);
-			glTexCoord2f( 1.0F, 1.0F); glVertex3fv(BoundingVertices[1]);
-			glTexCoord2f( 1.0F, 0.0F); glVertex3fv(BoundingVertices[5]);
-			glTexCoord2f( 0.0F, 0.0F); glVertex3fv(BoundingVertices[4]);
-			
-			glColor3f(0.4f,0.4f,0.4f);
-			glTexCoord2f( 1.0F, 1.0F); glVertex3fv(BoundingVertices[7]);
-			glTexCoord2f( 1.0F, 0.0F); glVertex3fv(BoundingVertices[5]);
-			glTexCoord2f( 0.0F, 0.0F); glVertex3fv(BoundingVertices[1]);
-			glTexCoord2f( 0.0F, 1.0F); glVertex3fv(BoundingVertices[3]);
-			
-			glColor3f(0.4f,0.4f,0.4f);
-			glTexCoord2f( 0.0F, 1.0F); glVertex3fv(BoundingVertices[0]);
-			glTexCoord2f( 1.0F, 1.0F); glVertex3fv(BoundingVertices[4]);
-			glTexCoord2f( 1.0F, 0.0F); glVertex3fv(BoundingVertices[6]);
-			glTexCoord2f( 0.0F, 0.0F); glVertex3fv(BoundingVertices[2]);
-			glEnd();
+
+			// face 1 - color 0.2
+			{
+				MU3DVertex quad[4];
+
+				quad[0] = { BoundingVertices[7][0], BoundingVertices[7][1], BoundingVertices[7][2], 1.f, 1.f };
+				quad[1] = { BoundingVertices[6][0], BoundingVertices[6][1], BoundingVertices[6][2], 1.f, 0.f };
+				quad[2] = { BoundingVertices[4][0], BoundingVertices[4][1], BoundingVertices[4][2], 0.f, 0.f };
+				quad[3] = { BoundingVertices[5][0], BoundingVertices[5][1], BoundingVertices[5][2], 0.f, 1.f };
+
+				MU_DrawBoundQuad3D(quad, 51, 51, 51, 255);
+			}
+
+			// face 2 - color 0.2
+			{
+				MU3DVertex quad[4];
+
+				quad[0] = { BoundingVertices[0][0], BoundingVertices[0][1], BoundingVertices[0][2], 0.f, 1.f };
+				quad[1] = { BoundingVertices[2][0], BoundingVertices[2][1], BoundingVertices[2][2], 1.f, 1.f };
+				quad[2] = { BoundingVertices[3][0], BoundingVertices[3][1], BoundingVertices[3][2], 1.f, 0.f };
+				quad[3] = { BoundingVertices[1][0], BoundingVertices[1][1], BoundingVertices[1][2], 0.f, 0.f };
+
+				MU_DrawBoundQuad3D(quad, 51, 51, 51, 255);
+			}
+
+			// face 3 - color 0.6
+			{
+				MU3DVertex quad[4];
+
+				quad[0] = { BoundingVertices[7][0], BoundingVertices[7][1], BoundingVertices[7][2], 1.f, 1.f };
+				quad[1] = { BoundingVertices[3][0], BoundingVertices[3][1], BoundingVertices[3][2], 1.f, 0.f };
+				quad[2] = { BoundingVertices[2][0], BoundingVertices[2][1], BoundingVertices[2][2], 0.f, 0.f };
+				quad[3] = { BoundingVertices[6][0], BoundingVertices[6][1], BoundingVertices[6][2], 0.f, 1.f };
+
+				MU_DrawBoundQuad3D(quad, 153, 153, 153, 255);
+			}
+
+			// face 4 - color 0.6
+			{
+				MU3DVertex quad[4];
+
+				quad[0] = { BoundingVertices[0][0], BoundingVertices[0][1], BoundingVertices[0][2], 0.f, 1.f };
+				quad[1] = { BoundingVertices[1][0], BoundingVertices[1][1], BoundingVertices[1][2], 1.f, 1.f };
+				quad[2] = { BoundingVertices[5][0], BoundingVertices[5][1], BoundingVertices[5][2], 1.f, 0.f };
+				quad[3] = { BoundingVertices[4][0], BoundingVertices[4][1], BoundingVertices[4][2], 0.f, 0.f };
+
+				MU_DrawBoundQuad3D(quad, 153, 153, 153, 255);
+			}
+
+			// face 5 - color 0.4
+			{
+				MU3DVertex quad[4];
+
+				quad[0] = { BoundingVertices[7][0], BoundingVertices[7][1], BoundingVertices[7][2], 1.f, 1.f };
+				quad[1] = { BoundingVertices[5][0], BoundingVertices[5][1], BoundingVertices[5][2], 1.f, 0.f };
+				quad[2] = { BoundingVertices[1][0], BoundingVertices[1][1], BoundingVertices[1][2], 0.f, 0.f };
+				quad[3] = { BoundingVertices[3][0], BoundingVertices[3][1], BoundingVertices[3][2], 0.f, 1.f };
+
+				MU_DrawBoundQuad3D(quad, 102, 102, 102, 255);
+			}
+
+			// face 6 - color 0.4
+			{
+				MU3DVertex quad[4];
+
+				quad[0] = { BoundingVertices[0][0], BoundingVertices[0][1], BoundingVertices[0][2], 0.f, 1.f };
+				quad[1] = { BoundingVertices[4][0], BoundingVertices[4][1], BoundingVertices[4][2], 1.f, 1.f };
+				quad[2] = { BoundingVertices[6][0], BoundingVertices[6][1], BoundingVertices[6][2], 1.f, 0.f };
+				quad[3] = { BoundingVertices[2][0], BoundingVertices[2][1], BoundingVertices[2][2], 0.f, 0.f };
+
+				MU_DrawBoundQuad3D(quad, 102, 102, 102, 255);
+			}
+
+			glColor4f(1.f, 1.f, 1.f, 1.f);
+
 		}
 	}
 	glPopMatrix();
@@ -2333,18 +2579,11 @@ void BMD::RenderBone(float (*BoneMatrix)[3][4])
 				{
      				VectorMA(BodyOrigin,BodyScale,BoneVertices[j],BoneVertices[j]);
 				}
-				glBegin(GL_LINES);
-				glVertex3fv(BoneVertices[0]);
-				glVertex3fv(BoneVertices[1]);
-				glEnd();
-				glBegin(GL_LINES);
-				glVertex3fv(BoneVertices[1]);
-				glVertex3fv(BoneVertices[2]);
-				glEnd();
-				glBegin(GL_LINES);
-				glVertex3fv(BoneVertices[2]);
-				glVertex3fv(BoneVertices[0]);
-				glEnd();
+
+				MU_DrawLine3D(BoneVertices[0], BoneVertices[1]);
+				MU_DrawLine3D(BoneVertices[1], BoneVertices[2]);
+				MU_DrawLine3D(BoneVertices[2], BoneVertices[0]);
+
 			}
 		}
 	}

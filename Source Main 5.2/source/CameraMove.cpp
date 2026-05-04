@@ -354,7 +354,7 @@ DWORD CCameraMove::GetCameraWalkState() const
 
 void CCameraMove::RenderWayPoint()
 {
-	glDisable(GL_DEPTH_TEST);
+	/*glDisable(GL_DEPTH_TEST);
 	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_TEXTURE_2D);
 	
@@ -385,8 +385,9 @@ void CCameraMove::RenderWayPoint()
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_ALPHA_TEST);
-	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);*/
 }
+
 void CCameraMove::SetSelectedTile(int iTileIndex)
 {
 	//. find

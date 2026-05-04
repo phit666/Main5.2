@@ -146,14 +146,34 @@ void CSideHair::RenderLine( vec3_t v1, vec3_t v2, vec3_t c1, vec3_t c2)
 	CrossProduct( m_vLight, d, vOrtho);
 	VectorNormalize( vOrtho);
 	VectorScale( vOrtho, 10.f, vOrtho);
-	glBegin(GL_QUADS);
-	//glColor3fv( c1);
-    glTexCoord2f(0.f,0.f+fTextureMove+fTextureV);glVertex3f(p1[0]-vOrtho[0],p1[1]-vOrtho[1],p1[2]-vOrtho[2]);
-	//glColor3fv( c2);
-    glTexCoord2f(0.f,1.f-fTextureMove+fTextureV);glVertex3f(p2[0]-vOrtho[0],p2[1]-vOrtho[1],p2[2]-vOrtho[2]);
-    glTexCoord2f(1.f,1.f-fTextureMove+fTextureV);glVertex3f(p2[0]+vOrtho[0],p2[1]+vOrtho[1],p2[2]+vOrtho[2]);
-	//glColor3fv( c1);
-    glTexCoord2f(1.f,0.f+fTextureMove+fTextureV);glVertex3f(p1[0]+vOrtho[0],p1[1]+vOrtho[1],p1[2]+vOrtho[2]);
-	glEnd();
-    //g_OpenglLib.Enable(GL_CULL_FACE);
+
+	MU3DVertex quad[4];
+
+	quad[0].x = p1[0] - vOrtho[0];
+	quad[0].y = p1[1] - vOrtho[1];
+	quad[0].z = p1[2] - vOrtho[2];
+	quad[0].u = 0.f;
+	quad[0].v = 0.f + fTextureMove + fTextureV;
+
+	quad[1].x = p2[0] - vOrtho[0];
+	quad[1].y = p2[1] - vOrtho[1];
+	quad[1].z = p2[2] - vOrtho[2];
+	quad[1].u = 0.f;
+	quad[1].v = 1.f - fTextureMove + fTextureV;
+
+	quad[2].x = p2[0] + vOrtho[0];
+	quad[2].y = p2[1] + vOrtho[1];
+	quad[2].z = p2[2] + vOrtho[2];
+	quad[2].u = 1.f;
+	quad[2].v = 1.f - fTextureMove + fTextureV;
+
+	quad[3].x = p1[0] + vOrtho[0];
+	quad[3].y = p1[1] + vOrtho[1];
+	quad[3].z = p1[2] + vOrtho[2];
+	quad[3].u = 1.f;
+	quad[3].v = 0.f + fTextureMove + fTextureV;
+
+	MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
+	
+	//g_OpenglLib.Enable(GL_CULL_FACE);
 }

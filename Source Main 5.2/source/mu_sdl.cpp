@@ -23,6 +23,8 @@ SOCKET g_socket = INVALID_SOCKET;
 
 nk_context* g_nk_ctx = nullptr;
 
+// LIBEVENT
+
 void MU_EnableSocketWrite()
 {
 #ifdef MU_USE_SDL
@@ -87,72 +89,6 @@ void MU_ShutdownNetworkEvent()
         event_base_free(g_eventBase);
         g_eventBase = nullptr;
     }
-}
-
-bool MU_InitSDL(int width, int height)
-{
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) != 0)
-        return false;
-
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-    gSDLWindow = SDL_CreateWindow(
-        "MU",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        width,
-        height,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
-    );
-
-    if (!gSDLWindow)
-        return false;
-
-    gGLContext = SDL_GL_CreateContext(gSDLWindow);
-
-    if (!gGLContext)
-        return false;
-
-    SDL_GL_MakeCurrent(gSDLWindow, gGLContext);
-    SDL_GL_SetSwapInterval(1);
-    //SDL_StartTextInput();
-
-    g_nk_ctx = nk_sdl_init(gSDLWindow);
-
-    struct nk_font_atlas* atlas;
-    nk_sdl_font_stash_begin(&atlas);
-    nk_sdl_font_stash_end();
-
-    if (!MU_InitNetworkEvent()) {
-        OutputDebugStringA("[SDL-DEBUG] MU_InitNetworkEvent failed.");
-        return false;
-    }
-
-    return true;
-}
-
-void MU_ShutdownSDL()
-{
-    SDL_StopTextInput();
-
-    if (gGLContext)
-    {
-        SDL_GL_DeleteContext(gGLContext);
-        gGLContext = nullptr;
-    }
-
-    if (gSDLWindow)
-    {
-        SDL_DestroyWindow(gSDLWindow);
-        gSDLWindow = nullptr;
-    }
-
-    nk_sdl_shutdown();
-    SDL_Quit();
-    MU_ShutdownNetworkEvent();
-
-    OutputDebugStringA("[SDL-DEBUG] MU_ShutdownSDL");
 }
 
 void MU_OnSocketEvent(evutil_socket_t fd, short events, void*)
@@ -318,4 +254,72 @@ void MU_CloseBev()
     }
 
     event_base_once(g_eventBase, -1, EV_TIMEOUT, defer_free_cb, (LPVOID)static_cast<int>(arg), &tv);
+}
+
+// SDL
+
+bool MU_InitSDL(int width, int height)
+{
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) != 0)
+        return false;
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+    gSDLWindow = SDL_CreateWindow(
+        "MU",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        width,
+        height,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
+    );
+
+    if (!gSDLWindow)
+        return false;
+
+    gGLContext = SDL_GL_CreateContext(gSDLWindow);
+
+    if (!gGLContext)
+        return false;
+
+    SDL_GL_MakeCurrent(gSDLWindow, gGLContext);
+    SDL_GL_SetSwapInterval(1);
+    SDL_StartTextInput();
+
+    g_nk_ctx = nk_sdl_init(gSDLWindow);
+
+    struct nk_font_atlas* atlas;
+    nk_sdl_font_stash_begin(&atlas);
+    nk_sdl_font_stash_end();
+
+    if (!MU_InitNetworkEvent()) {
+        OutputDebugStringA("[SDL-DEBUG] MU_InitNetworkEvent failed.");
+        return false;
+    }
+
+    return true;
+}
+
+void MU_ShutdownSDL()
+{
+    SDL_StopTextInput();
+
+    if (gGLContext)
+    {
+        SDL_GL_DeleteContext(gGLContext);
+        gGLContext = nullptr;
+    }
+
+    if (gSDLWindow)
+    {
+        SDL_DestroyWindow(gSDLWindow);
+        gSDLWindow = nullptr;
+    }
+
+    nk_sdl_shutdown();
+    SDL_Quit();
+    MU_ShutdownNetworkEvent();
+
+    OutputDebugStringA("[SDL-DEBUG] MU_ShutdownSDL");
 }

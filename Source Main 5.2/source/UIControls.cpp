@@ -3507,19 +3507,19 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 		ctx->style.edit.cursor_normal = text;
 		ctx->style.edit.cursor_hover = text;
 
-		if (MouseLButtonPush)
+		/*if (MouseLButtonPush)
 		{
 			char t[100] = { 0 };
 
-			//sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseX %d >= %d && < %d.", this->m_title.c_str(), 
-				//MouseX, m_iPos_x, m_iPos_x + m_iWidth);
+			sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseX %d >= %d && < %d.", this->m_title.c_str(), 
+				MouseX, m_iPos_x, m_iPos_x + m_iWidth);
 
-			//OutputDebugStringA(t);
+			OutputDebugStringA(t);
 
-			//sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseY %d >= %d && < %d.", this->m_title.c_str(),
-				//MouseY, m_iPos_y, m_iPos_y + m_iHeight);
+			sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseY %d >= %d && < %d.", this->m_title.c_str(),
+				MouseY, m_iPos_y, m_iPos_y + m_iHeight);
 
-			//OutputDebugStringA(t);
+			OutputDebugStringA(t);
 
 
 			if ((float)MouseX >= m_iPos_x &&
@@ -3527,12 +3527,14 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 				(float)MouseY >= m_iPos_y &&
 				(float)MouseY < m_iPos_y + m_iHeight)
 			{
-				//char t[100] = { 0 };
-				//sprintf(t, "[SDL-DEBUG] RenderNuklear, set focus to %s.", this->m_title.c_str());
-				//OutputDebugStringA(t);
+
+				char t[100] = { 0 };
+				sprintf(t, "[SDL-DEBUG] RenderNuklear, set focus to %s.", this->m_title.c_str());
+				OutputDebugStringA(t);
 				m_bFocused = true;
-				//this->enablekeyboard();
-				SDL_StartTextInput();
+				this->enablekeyboard();
+				//SDL_StartTextInput();
+
 			}
 			else
 			{
@@ -3542,10 +3544,20 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 				m_bFocused = false;
 				//this->disablekeyboard();
 			}
+		}*/
+		static char masked[MAX_TEXT_LENGTH + 1];
+
+		if (strncmp(this->m_title.c_str(), "login-username", 14) == 0) {
+			sprintf(m_szText, "lorelie");
+			m_iTextLength = 7;
+		}
+		else if (strncmp(this->m_title.c_str(), "login-password", 14) == 0) {
+			sprintf(m_szText, "redzone");
+			strncpy(masked, m_szText, 7);
+			m_iTextLength = 7;
 		}
 
 		if (m_bPasswordInput) {
-			static char masked[MAX_TEXT_LENGTH + 1];
 
 			int len = m_iTextLength;
 			if (len > MAX_TEXT_LENGTH)

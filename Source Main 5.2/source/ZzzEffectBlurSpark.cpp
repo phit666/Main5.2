@@ -151,28 +151,76 @@ void RenderBlurs()
 			if(b->Number >= 2)
 			{
 				BindTexture(nTexture);
-				for(int j=0;j<b->Number-1;j++)
+				for (int j = 0; j < b->Number - 1; j++)
 				{
-      				glBegin(GL_TRIANGLE_FAN);
-					float Light;
-					float TexU;
-					if(b->Owner->Level == 0)
-						Light = (b->Number-j)/(float)b->Number;
+					GLfloat oldColor[4];
+					glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+					MU3DColorVertex quad[4];
+
+					float Light1;
+					float Light2;
+
+					if (b->Owner->Level == 0)
+						Light1 = (b->Number - j) / (float)b->Number;
 					else
-						Light = 1.f;
-					glColor3f(b->Light[0]*Light,b->Light[1]*Light,b->Light[2]*Light);
-					TexU = (j)/(float)b->Number;
-					glTexCoord2f(TexU,1.f);glVertex3fv(b->p1[j]);
-					glTexCoord2f(TexU,0.f);glVertex3fv(b->p2[j]);
-					if(b->Owner->Level == 0)
-      					Light = (b->Number-(j+1))/(float)b->Number;
+						Light1 = 1.f;
+
+					if (b->Owner->Level == 0)
+						Light2 = (b->Number - (j + 1)) / (float)b->Number;
 					else
-						Light = 1.f;
-					glColor3f(b->Light[0]*Light,b->Light[1]*Light,b->Light[2]*Light);
-					TexU = (j+1)/(float)b->Number;
-					glTexCoord2f(TexU,0.f);glVertex3fv(b->p2[j+1]);
-					glTexCoord2f(TexU,1.f);glVertex3fv(b->p1[j+1]);
-    				glEnd();
+						Light2 = 1.f;
+
+					float TexU1 = j / (float)b->Number;
+					float TexU2 = (j + 1) / (float)b->Number;
+
+					// p1[j]
+					quad[0].x = b->p1[j][0];
+					quad[0].y = b->p1[j][1];
+					quad[0].z = b->p1[j][2];
+					quad[0].u = TexU1;
+					quad[0].v = 1.f;
+					quad[0].r = MU_FloatToColorByte(b->Light[0] * Light1);
+					quad[0].g = MU_FloatToColorByte(b->Light[1] * Light1);
+					quad[0].b = MU_FloatToColorByte(b->Light[2] * Light1);
+					quad[0].a = MU_FloatToColorByte(oldColor[3]); // glColor3f preserves alpha
+
+					// p2[j]
+					quad[1].x = b->p2[j][0];
+					quad[1].y = b->p2[j][1];
+					quad[1].z = b->p2[j][2];
+					quad[1].u = TexU1;
+					quad[1].v = 0.f;
+					quad[1].r = MU_FloatToColorByte(b->Light[0] * Light1);
+					quad[1].g = MU_FloatToColorByte(b->Light[1] * Light1);
+					quad[1].b = MU_FloatToColorByte(b->Light[2] * Light1);
+					quad[1].a = MU_FloatToColorByte(oldColor[3]);
+
+					// p2[j+1]
+					quad[2].x = b->p2[j + 1][0];
+					quad[2].y = b->p2[j + 1][1];
+					quad[2].z = b->p2[j + 1][2];
+					quad[2].u = TexU2;
+					quad[2].v = 0.f;
+					quad[2].r = MU_FloatToColorByte(b->Light[0] * Light2);
+					quad[2].g = MU_FloatToColorByte(b->Light[1] * Light2);
+					quad[2].b = MU_FloatToColorByte(b->Light[2] * Light2);
+					quad[2].a = MU_FloatToColorByte(oldColor[3]);
+
+					// p1[j+1]
+					quad[3].x = b->p1[j + 1][0];
+					quad[3].y = b->p1[j + 1][1];
+					quad[3].z = b->p1[j + 1][2];
+					quad[3].u = TexU2;
+					quad[3].v = 1.f;
+					quad[3].r = MU_FloatToColorByte(b->Light[0] * Light2);
+					quad[3].g = MU_FloatToColorByte(b->Light[1] * Light2);
+					quad[3].b = MU_FloatToColorByte(b->Light[2] * Light2);
+					quad[3].a = MU_FloatToColorByte(oldColor[3]);
+
+					MU_DrawTexturedColorQuad3D_Bound(quad);
+
+					glColor4fv(oldColor);
 				}
 			}
 		}
@@ -329,20 +377,64 @@ void RenderObjectBlurs()
 						continue;
 					}
 
-      				glBegin(GL_TRIANGLE_FAN);
-					float Light;
-					float TexU;
-					Light = (b->Number-j)/(float)b->Number;
-					glColor3f(b->Light[0]*Light,b->Light[1]*Light,b->Light[2]*Light);
-					TexU = (j)/(float)b->Number;
-					glTexCoord2f(TexU,1.f);glVertex3fv(b->p1[j]);
-					glTexCoord2f(TexU,0.f);glVertex3fv(b->p2[j]);
-      				Light = (b->Number-(j+1))/(float)b->Number;
-					glColor3f(b->Light[0]*Light,b->Light[1]*Light,b->Light[2]*Light);
-					TexU = (j+1)/(float)b->Number;
-					glTexCoord2f(TexU,0.f);glVertex3fv(b->p2[j+1]);
-					glTexCoord2f(TexU,1.f);glVertex3fv(b->p1[j+1]);
-    				glEnd();
+					GLfloat oldColor[4];
+					glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+					MU3DColorVertex quad[4];
+
+					float Light1 = (b->Number - j) / (float)b->Number;
+					float Light2 = (b->Number - (j + 1)) / (float)b->Number;
+
+					float TexU1 = j / (float)b->Number;
+					float TexU2 = (j + 1) / (float)b->Number;
+
+					// p1[j]
+					quad[0].x = b->p1[j][0];
+					quad[0].y = b->p1[j][1];
+					quad[0].z = b->p1[j][2];
+					quad[0].u = TexU1;
+					quad[0].v = 1.f;
+					quad[0].r = MU_FloatToColorByte(b->Light[0] * Light1);
+					quad[0].g = MU_FloatToColorByte(b->Light[1] * Light1);
+					quad[0].b = MU_FloatToColorByte(b->Light[2] * Light1);
+					quad[0].a = MU_FloatToColorByte(oldColor[3]);
+
+					// p2[j]
+					quad[1].x = b->p2[j][0];
+					quad[1].y = b->p2[j][1];
+					quad[1].z = b->p2[j][2];
+					quad[1].u = TexU1;
+					quad[1].v = 0.f;
+					quad[1].r = MU_FloatToColorByte(b->Light[0] * Light1);
+					quad[1].g = MU_FloatToColorByte(b->Light[1] * Light1);
+					quad[1].b = MU_FloatToColorByte(b->Light[2] * Light1);
+					quad[1].a = MU_FloatToColorByte(oldColor[3]);
+
+					// p2[j + 1]
+					quad[2].x = b->p2[j + 1][0];
+					quad[2].y = b->p2[j + 1][1];
+					quad[2].z = b->p2[j + 1][2];
+					quad[2].u = TexU2;
+					quad[2].v = 0.f;
+					quad[2].r = MU_FloatToColorByte(b->Light[0] * Light2);
+					quad[2].g = MU_FloatToColorByte(b->Light[1] * Light2);
+					quad[2].b = MU_FloatToColorByte(b->Light[2] * Light2);
+					quad[2].a = MU_FloatToColorByte(oldColor[3]);
+
+					// p1[j + 1]
+					quad[3].x = b->p1[j + 1][0];
+					quad[3].y = b->p1[j + 1][1];
+					quad[3].z = b->p1[j + 1][2];
+					quad[3].u = TexU2;
+					quad[3].v = 1.f;
+					quad[3].r = MU_FloatToColorByte(b->Light[0] * Light2);
+					quad[3].g = MU_FloatToColorByte(b->Light[1] * Light2);
+					quad[3].b = MU_FloatToColorByte(b->Light[2] * Light2);
+					quad[3].a = MU_FloatToColorByte(oldColor[3]);
+
+					MU_DrawTexturedColorQuad3D_Bound(quad);
+
+					glColor4fv(oldColor);
 				}
 			}
 		}
@@ -603,37 +695,118 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 		v->light = (-v->normal[0]+v->normal[1])*0.5f+0.5f;
 	}
 
+	// Tex2 pass
 	BindTexture(Tex2);
-	glBegin(GL_QUADS);
 
-	for(int i=0;i<n;i++)
 	{
-		int vlist = f->vlist[i];
-     	physics_vertex *v = &flag_vertex[vlist];
-		glTexCoord2f(TexCoord[i][0],TexCoord[i][1]);
-		glColor3f(Light[0]*v->light,Light[1]*v->light,Light[2]*v->light);
-		vec3_t p,Position;
-		Vector(v->p[0]+9.f,v->p[1]-12.f,v->p[2]-35.f,p);
-		Models[o->Type].TransformPosition(o->BoneTransform[19],p,Position,true);
-		glVertex3f(Position[0],Position[1],Position[2]);
-	}
-	glEnd();
+		std::vector<MU3DColorVertex> verts;
+		verts.reserve(n);
 
+		GLfloat oldColor[4];
+		glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+		for (int i = 0; i < n; i++)
+		{
+			int vlist = f->vlist[i];
+			physics_vertex* v = &flag_vertex[vlist];
+
+			vec3_t p, Position;
+			Vector(v->p[0] + 9.f, v->p[1] - 12.f, v->p[2] - 35.f, p);
+			Models[o->Type].TransformPosition(o->BoneTransform[19], p, Position, true);
+
+			MU3DColorVertex vx = {};
+
+			vx.x = Position[0];
+			vx.y = Position[1];
+			vx.z = Position[2];
+
+			vx.u = TexCoord[i][0];
+			vx.v = TexCoord[i][1];
+
+			vx.r = MU_FloatToColorByte(Light[0] * v->light);
+			vx.g = MU_FloatToColorByte(Light[1] * v->light);
+			vx.b = MU_FloatToColorByte(Light[2] * v->light);
+			vx.a = MU_FloatToColorByte(oldColor[3]); // glColor3f preserves alpha
+
+			verts.push_back(vx);
+		}
+
+		if (!verts.empty())
+		{
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glEnableClientState(GL_COLOR_ARRAY);
+
+			glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
+			glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
+			glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)verts.size());
+
+			glDisableClientState(GL_COLOR_ARRAY);
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+		}
+
+		glColor4fv(oldColor);
+	}
+
+
+	// Tex1 pass
 	BindTexture(Tex1);
-	glBegin(GL_QUADS);
 
-	for(int i=n-1;i>=0;i--)
 	{
-		int vlist = f->vlist[i];
-     	physics_vertex *v = &flag_vertex[vlist];
-		glTexCoord2f(TexCoord[i][0],TexCoord[i][1]);
-		glColor3f(Light[0]*v->light,Light[1]*v->light,Light[2]*v->light);
-		vec3_t p,Position;
-		Vector(v->p[0]+9.f,v->p[1]-12.f,v->p[2]-35.f,p);
-		Models[o->Type].TransformPosition(o->BoneTransform[19],p,Position,true);
-		glVertex3f(Position[0],Position[1],Position[2]);
+		std::vector<MU3DColorVertex> verts;
+		verts.reserve(n);
+
+		GLfloat oldColor[4];
+		glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+		for (int i = n - 1; i >= 0; i--)
+		{
+			int vlist = f->vlist[i];
+			physics_vertex* v = &flag_vertex[vlist];
+
+			vec3_t p, Position;
+			Vector(v->p[0] + 9.f, v->p[1] - 12.f, v->p[2] - 35.f, p);
+			Models[o->Type].TransformPosition(o->BoneTransform[19], p, Position, true);
+
+			MU3DColorVertex vx = {};
+
+			vx.x = Position[0];
+			vx.y = Position[1];
+			vx.z = Position[2];
+
+			vx.u = TexCoord[i][0];
+			vx.v = TexCoord[i][1];
+
+			vx.r = MU_FloatToColorByte(Light[0] * v->light);
+			vx.g = MU_FloatToColorByte(Light[1] * v->light);
+			vx.b = MU_FloatToColorByte(Light[2] * v->light);
+			vx.a = MU_FloatToColorByte(oldColor[3]); // glColor3f preserves alpha
+
+			verts.push_back(vx);
+		}
+
+		if (!verts.empty())
+		{
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glEnableClientState(GL_COLOR_ARRAY);
+
+			glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
+			glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
+			glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)verts.size());
+
+			glDisableClientState(GL_COLOR_ARRAY);
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+		}
+
+		glColor4fv(oldColor);
 	}
-	glEnd();
 }
 
 void RenderFlag(OBJECT *o,vec3_t Light,int Tex1,int Tex2)

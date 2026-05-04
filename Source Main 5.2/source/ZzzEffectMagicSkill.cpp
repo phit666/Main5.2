@@ -16,7 +16,7 @@
 #include "SkillManager.h"
 
 
-void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTop,float Height,float Rotation,float LightTop,float TextureV)
+void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTop,float Height,float Rotation,float LightTop,float TextureV) // TODO-TEST
 {
 	BindTexture(Type);
 
@@ -59,17 +59,33 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 		VectorRotate(p,Matrix1,Position[3]);
 		VectorAdd(ObjectPosition,Position[3],Position[3]);
 
-		glBegin(GL_QUADS);
-		for(int i=0;i<4;i++)
+		GLfloat oldColor[4];
+		glGetFloatv(GL_CURRENT_COLOR, oldColor);
+
+		MU3DColorVertex quad[4];
+
+		for (int i = 0; i < 4; ++i)
 		{
-			glTexCoord2f(UV[i][0],UV[i][1]+TextureV);
-			glColor3fv(Light[i]);
-			glVertex3fv(Position[i]);
+			quad[i].x = Position[i][0];
+			quad[i].y = Position[i][1];
+			quad[i].z = Position[i][2];
+
+			quad[i].u = UV[i][0];
+			quad[i].v = UV[i][1] + TextureV;
+
+			quad[i].r = MU_FloatToColorByte(Light[i][0]);
+			quad[i].g = MU_FloatToColorByte(Light[i][1]);
+			quad[i].b = MU_FloatToColorByte(Light[i][2]);
+
+			quad[i].a = MU_FloatToColorByte(oldColor[3]);
 		}
-		glEnd();
+
+		MU_DrawTexturedColorQuad3D_Bound(quad);
+
+		glColor4fv(oldColor);
 	}
 }
-
+/*
 void RenderCircle2D(int Type,vec3_t ScreenPosition,float ScaleBottom,float ScaleTop,float Height,float Rotation,float TextureV,float TextureVScale)
 {
 	vec3_t ObjectPosition;
@@ -126,7 +142,7 @@ void RenderCircle2D(int Type,vec3_t ScreenPosition,float ScaleBottom,float Scale
 		glEnd();
 	}
 }
-
+*/
 void CreateMagicShiny(CHARACTER *c,int Hand)
 {
 	OBJECT *o = &c->Object;

@@ -8,6 +8,7 @@
 #include "ZzzCharacter.h"
 #include "zzzEffect.h"
 #include "MapManager.h"
+#include "mu_sdl.h"
 
 #define RENDER_CLOTH
 #define ADD_COLLISION
@@ -830,40 +831,90 @@ void CPhysicsCloth::Render( vec3_t *pvColor, int iLevel)
 	delete [] pvRenderPos;
 }
 
-void CPhysicsCloth::RenderFace( BOOL bFront, int iTexture, vec3_t *pvRenderPos)
+void CPhysicsCloth::RenderFace(BOOL bFront, int iTexture, vec3_t* pvRenderPos)
 {
-	BindTexture( iTexture);	//BITMAP_ROBE
+	if (!pvRenderPos)
+		return;
 
-	glBegin(GL_QUADS);
-	
-	if ( bFront)
+	BindTexture(iTexture);
+
+	const int vertexCount = m_iNumHor * m_iNumVer;
+	const int quadCount = (m_iNumHor - 1) * (m_iNumVer - 1);
+	const int indexCount = quadCount * 6;
+
+	std::vector<MUClothVertex> vertices(vertexCount);
+	std::vector<GLushort> indices(indexCount);
+
+	for (int y = 0; y < m_iNumVer; ++y)
 	{
-		for ( int j = 0; j < m_iNumVer - 1; ++j)
+		for (int x = 0; x < m_iNumHor; ++x)
 		{
-			for ( int i = 0; i < m_iNumHor - 1; ++i)
-			{
-				RenderVertex( pvRenderPos, i, j);
-				RenderVertex( pvRenderPos, i+1, j);
-				RenderVertex( pvRenderPos, i+1, j+1);
-				RenderVertex( pvRenderPos, i, j+1);
-			}
-		}
-	}
-	else
-	{
-		for ( int j = 0; j < m_iNumVer - 1; ++j)
-		{
-			for ( int i = 0; i < m_iNumHor - 1; ++i)
-			{
-				RenderVertex( pvRenderPos, i, j);
-				RenderVertex( pvRenderPos, i, j+1);
-				RenderVertex( pvRenderPos, i+1, j+1);
-				RenderVertex( pvRenderPos, i+1, j);
-			}
+			int idx = m_iNumHor * y + x;
+			vec3_t* p = &pvRenderPos[idx];
+
+			vertices[idx].x = (*p)[0];
+			vertices[idx].y = (*p)[1];
+			vertices[idx].z = (*p)[2];
+
+			vertices[idx].u = (float)x / (float)(m_iNumHor - 1);
+			vertices[idx].v = min(0.99f, (float)y / (float)(m_iNumVer - 1));
 		}
 	}
 
-	glEnd();
+	int k = 0;
+
+	for (int y = 0; y < m_iNumVer - 1; ++y)
+	{
+		for (int x = 0; x < m_iNumHor - 1; ++x)
+		{
+			GLushort v0 = (GLushort)(m_iNumHor * y + x);
+			GLushort v1 = (GLushort)(m_iNumHor * y + x + 1);
+			GLushort v2 = (GLushort)(m_iNumHor * (y + 1) + x + 1);
+			GLushort v3 = (GLushort)(m_iNumHor * (y + 1) + x);
+
+			if (bFront)
+			{
+				indices[k++] = v0;
+				indices[k++] = v1;
+				indices[k++] = v2;
+
+				indices[k++] = v0;
+				indices[k++] = v2;
+				indices[k++] = v3;
+			}
+			else
+			{
+				indices[k++] = v0;
+				indices[k++] = v3;
+				indices[k++] = v2;
+
+				indices[k++] = v0;
+				indices[k++] = v2;
+				indices[k++] = v1;
+			}
+		}
+	}
+
+	TextureEnable = true;
+	glEnable(GL_TEXTURE_2D);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glVertexPointer(3, GL_FLOAT, sizeof(MUClothVertex), &vertices[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(MUClothVertex), &vertices[0].u);
+
+	glDrawElements(
+		GL_TRIANGLES,
+		indexCount,
+		GL_UNSIGNED_SHORT,
+		indices.data()
+	);
+
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+
+	glColor4f(1.f, 1.f, 1.f, 1.f);
 }
 
 void CPhysicsCloth::RenderVertex( vec3_t *pvRenderPos, int xVertex, int yVertex)

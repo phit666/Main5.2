@@ -7180,12 +7180,33 @@ void RenderJoints( BYTE bRenderOneMore )
                     Luminosity *= o->Light[0];
                     glColor3f(Luminosity,Luminosity,Luminosity);
 					
-					glBegin(GL_QUADS);
-					glTexCoord2f( Light1, 0.f); glVertex3fv(o->Tails[j  ][0]);
-					glTexCoord2f( Light1, 1.f); glVertex3fv(o->Tails[j  ][1]);
-					glTexCoord2f( Light2, 1.f); glVertex3fv(o->Tails[j+1][1]);
-					glTexCoord2f( Light2, 0.f); glVertex3fv(o->Tails[j+1][0]);
-					glEnd();
+					MU3DVertex quad[4];
+
+					quad[0].x = o->Tails[j][0][0];
+					quad[0].y = o->Tails[j][0][1];
+					quad[0].z = o->Tails[j][0][2];
+					quad[0].u = Light1;
+					quad[0].v = 0.f;
+
+					quad[1].x = o->Tails[j][1][0];
+					quad[1].y = o->Tails[j][1][1];
+					quad[1].z = o->Tails[j][1][2];
+					quad[1].u = Light1;
+					quad[1].v = 1.f;
+
+					quad[2].x = o->Tails[j + 1][1][0];
+					quad[2].y = o->Tails[j + 1][1][1];
+					quad[2].z = o->Tails[j + 1][1][2];
+					quad[2].u = Light2;
+					quad[2].v = 1.f;
+
+					quad[3].x = o->Tails[j + 1][0][0];
+					quad[3].y = o->Tails[j + 1][0][1];
+					quad[3].z = o->Tails[j + 1][0][2];
+					quad[3].u = Light2;
+					quad[3].v = 0.f;
+
+					MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
                 }
                 else
                 {
@@ -7363,12 +7384,33 @@ void RenderJoints( BYTE bRenderOneMore )
 					
                     if ( (o->RenderFace&RENDER_FACE_ONE)==RENDER_FACE_ONE )
                     {
-                        glBegin(GL_QUADS);
-						glTexCoord2f( L1, V2); glVertex3fv(o->Tails[j  ][2]);
-						glTexCoord2f( L1, V1); glVertex3fv(o->Tails[j  ][3]);
-						glTexCoord2f( L2, V1); glVertex3fv(o->Tails[j+1][3]);
-						glTexCoord2f( L2, V2); glVertex3fv(o->Tails[j+1][2]);
-						glEnd();
+						MU3DVertex quad[4];
+
+						quad[0].x = o->Tails[j][2][0];
+						quad[0].y = o->Tails[j][2][1];
+						quad[0].z = o->Tails[j][2][2];
+						quad[0].u = L1;
+						quad[0].v = V2;
+
+						quad[1].x = o->Tails[j][3][0];
+						quad[1].y = o->Tails[j][3][1];
+						quad[1].z = o->Tails[j][3][2];
+						quad[1].u = L1;
+						quad[1].v = V1;
+
+						quad[2].x = o->Tails[j + 1][3][0];
+						quad[2].y = o->Tails[j + 1][3][1];
+						quad[2].z = o->Tails[j + 1][3][2];
+						quad[2].u = L2;
+						quad[2].v = V1;
+
+						quad[3].x = o->Tails[j + 1][2][0];
+						quad[3].y = o->Tails[j + 1][2][1];
+						quad[3].z = o->Tails[j + 1][2][2];
+						quad[3].u = L2;
+						quad[3].v = V2;
+
+						MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
                     }
 					
                     if ( (o->RenderFace&RENDER_FACE_TWO)==RENDER_FACE_TWO )
@@ -7378,12 +7420,35 @@ void RenderJoints( BYTE bRenderOneMore )
                             L1 += Scroll*2.f;
                             L2 += Scroll*2.f;
                         }
-						glBegin(GL_QUADS);
-						glTexCoord2f( L1, V1); glVertex3fv(o->Tails[j  ][0]);
-						glTexCoord2f( L1, V2); glVertex3fv(o->Tails[j  ][1]);
-						glTexCoord2f( L2, V2); glVertex3fv(o->Tails[j+1][1]);
-						glTexCoord2f( L2, V1); glVertex3fv(o->Tails[j+1][0]);
-						glEnd();
+
+						MU3DVertex quad[4];
+
+						quad[0].x = o->Tails[j][0][0];
+						quad[0].y = o->Tails[j][0][1];
+						quad[0].z = o->Tails[j][0][2];
+						quad[0].u = L1;
+						quad[0].v = V1;
+
+						quad[1].x = o->Tails[j][1][0];
+						quad[1].y = o->Tails[j][1][1];
+						quad[1].z = o->Tails[j][1][2];
+						quad[1].u = L1;
+						quad[1].v = V2;
+
+						quad[2].x = o->Tails[j + 1][1][0];
+						quad[2].y = o->Tails[j + 1][1][1];
+						quad[2].z = o->Tails[j + 1][1][2];
+						quad[2].u = L2;
+						quad[2].v = V2;
+
+						quad[3].x = o->Tails[j + 1][0][0];
+						quad[3].y = o->Tails[j + 1][0][1];
+						quad[3].z = o->Tails[j + 1][0][2];
+						quad[3].u = L2;
+						quad[3].v = V1;
+
+						MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
+
                     }
                 }
 			}

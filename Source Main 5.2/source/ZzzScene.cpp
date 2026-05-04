@@ -105,7 +105,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.1.19";
+char *szServerIpAddress = "192.168.254.116";
 //char *szServerIpAddress = "210.181.89.215";
 WORD g_ServerPort = 44405;
 

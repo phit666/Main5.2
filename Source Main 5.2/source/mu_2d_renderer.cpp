@@ -209,3 +209,94 @@ void MU_DrawBoundQuad3D(
 
     glColor4ub(255, 255, 255, 255);
 }
+
+void MU_DrawTexturedColorQuad3D_Bound(const MU3DColorVertex* v)
+{
+    if (!v)
+        return;
+
+    TextureEnable = true;
+    glEnable(GL_TEXTURE_2D);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &v[0].x);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &v[0].u);
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &v[0].r);
+
+    static const GLubyte idx[6] =
+    {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, idx);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+
+    glColor4f(1.f, 1.f, 1.f, 1.f);
+}
+
+void MU_DrawBoundTexturedColorQuad2D(const MU2DColorVertex* v)
+{
+    if (!v)
+        return;
+
+    TextureEnable = true;
+    glEnable(GL_TEXTURE_2D);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(2, GL_FLOAT, sizeof(MU2DColorVertex), &v[0].x);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(MU2DColorVertex), &v[0].u);
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU2DColorVertex), &v[0].r);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+
+    glColor4f(1.f, 1.f, 1.f, 1.f);
+}
+
+void MU_DrawBoundTexturedQuad2D(const MU2DVertex* v)
+{
+    if (!v)
+        return;
+
+    TextureEnable = true;
+    glEnable(GL_TEXTURE_2D);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    glVertexPointer(2, GL_FLOAT, sizeof(MU2DVertex), &v[0].x);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(MU2DVertex), &v[0].u);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void MU_DrawLine3D(const vec3_t a, const vec3_t b)
+{
+    GLfloat verts[6] = {
+        a[0], a[1], a[2],
+        b[0], b[1], b[2]
+    };
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, verts);
+
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+}

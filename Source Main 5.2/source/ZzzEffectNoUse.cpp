@@ -43,7 +43,7 @@ void CreatePlane(int Type,vec3_t Position,vec3_t Light,float Angle)
 }
 
 void RenderPlane(int Texture,vec3_t Position,float Scale,float Angle)
-{
+{/*
 	BindTexture(Texture);
 	EnableAlphaBlend();
 
@@ -68,6 +68,7 @@ void RenderPlane(int Texture,vec3_t Position,float Scale,float Angle)
 
 	glPopMatrix();
 	DisableAlphaBlend();
+	*/
 }
 
 void MovePlanes()
@@ -105,7 +106,7 @@ void RenderPlanes()
 }
 
 void RenderShpere(int Type,vec3_t ShperePosition,float Scale,vec3_t ShpereLight,float Rotation,float TextureV)
-{
+{/*
 	vec3_t ObjectPosition;
 	VectorCopy(ShperePosition,ObjectPosition);
 	ObjectPosition[2] += Scale;
@@ -160,7 +161,7 @@ void RenderShpere(int Type,vec3_t ShperePosition,float Scale,vec3_t ShpereLight,
 			}
 			glEnd();
 		}
-	}
+	}*/
 }
 
 typedef struct
@@ -226,7 +227,7 @@ void MagicBitmap(int Texture)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D,0, MU_GL_RGB_INTERNAL,(int)b->Width,(int)b->Height,0,GL_RGB,GL_UNSIGNED_BYTE,b->Buffer);
 }
-
+/*
 void RenderMagicBox(int Texture,vec3_t Position,float Angle)
 {
 	MagicBitmap(Texture);
@@ -281,17 +282,13 @@ void RenderMagicBox(int Texture,vec3_t Position,float Angle)
 	glTexCoord2f( 1.0F, 0.0F); glVertex3fv(BoundingVertices[6]);
 	glTexCoord2f( 0.0F, 0.0F); glVertex3fv(BoundingVertices[2]);
 
-	/*glTexCoord2f( 1.0F, 1.0F); glVertex3fv(BoundingVertices[7]);
-	glTexCoord2f( 1.0F, 0.0F); glVertex3fv(BoundingVertices[5]);
-	glTexCoord2f( 0.0F, 0.0F); glVertex3fv(BoundingVertices[1]);
-	glTexCoord2f( 0.0F, 1.0F); glVertex3fv(BoundingVertices[3]);*/
 	
 	glEnd();
 
 	glPopMatrix();
 	DisableAlphaBlend();
-}
-
+}*/
+/*
 void RenderFog(vec3_t Position,int Flag,float Height,float u,float v)
 {
 	float UV[4][2];
@@ -330,7 +327,7 @@ void RenderFog(vec3_t Position,int Flag,float Height,float u,float v)
 	}
 	glEnd();
 }
-
+*/
 int FireFrame = 0;
 
 void MappingEffect(int SrcIndex,int DstIndex,int Flag)
@@ -382,7 +379,7 @@ void MappingEffect(int SrcIndex,int DstIndex,int Flag)
 
     glTexImage2D(GL_TEXTURE_2D,0,src->Components,(int)src->Width,(int)src->Height,0,GL_RGB,GL_UNSIGNED_BYTE,dst->Buffer);
 }
-
+/*
 void RenderSky3()
 {
 	float Height = 800.f;
@@ -435,7 +432,7 @@ void RenderSky3()
 		glEnd();
 	}
 }
-
+*/
 static  int     g_waveCount = 0;
 static  int     g_backLightIndex[4*4*6];
 static  int     g_gridNum = 4;
@@ -514,7 +511,7 @@ void AnimationBackLight( void )
 
     g_aniBackLight = false;
 }
-
+/*
 void RenderBackLight( OBJECT* o, vec3_t Position, vec3_t Light1, vec3_t Light2 )
 {
 	vec3_t  position;
@@ -586,4 +583,4 @@ void RenderBackLight( OBJECT* o, vec3_t Position, vec3_t Light1, vec3_t Light2 )
 		CreateParticle(BITMAP_FLARE,position,o->Angle,Light1,1,0.2f);
     }
     g_aniBackLight = true;
-}
+}*/

@@ -90,4 +90,6 @@
 #include "NewUICommon.h"
 #include "./Math/ZzzMathLib.h"
 #include "ZzzOpenglUtil.h"
+#include "mu_gl.h"
+#include "mu_2d_renderer.h"
 

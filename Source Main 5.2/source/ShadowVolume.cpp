@@ -64,7 +64,7 @@ void ShadeWithShadowVolumes( void)
 	glDisable( GL_STENCIL_TEST);
 	EnableDepthMask();
 }
-
+/*
 void RenderShadowToScreen( void)
 {
 	DisableDepthTest();
@@ -100,7 +100,7 @@ void RenderShadowToScreen( void)
 	glDisable( GL_STENCIL_TEST);
 	EnableDepthMask();
 }
-
+*/
 
 CShadowVolume::CShadowVolume()
 {
@@ -302,14 +302,16 @@ void CShadowVolume::RenderAsFrame( void)
 
 void CShadowVolume::RenderShadowVolume( void)
 {
-	glBegin(GL_TRIANGLES);
-
-	for ( int i = 0; i < m_nNumVertices; ++i)
+	if (m_nNumVertices > 0)
 	{
-		glVertex3fv(m_pVertices[i]);
-	}
+		glEnableClientState(GL_VERTEX_ARRAY);
 
-	glEnd();
+		glVertexPointer(3, GL_FLOAT, 0, &m_pVertices[0][0]);
+
+		glDrawArrays(GL_TRIANGLES, 0, m_nNumVertices);
+
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
 }
 
 void CShadowVolume::Shade( void)
