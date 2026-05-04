@@ -12,6 +12,9 @@
 #include <windows.h>
 #include <process.h>
 #include <tchar.h>
+#include <Wininet.h>
+#include <crtdbg.h>
+#include <strsafe.h>
 
 #else
 
@@ -41,6 +44,7 @@ typedef uint64_t            ULONGLONG;
 typedef int INT;
 typedef void VOID;
 typedef uint32_t* LPDWORD;
+typedef void* LPOVERLAPPED;
 
 typedef unsigned int        UINT;
 typedef uintptr_t           UINT_PTR;
@@ -63,6 +67,7 @@ typedef void* PVOID;
 typedef const void* PCVOID;
 typedef void*               HANDLE;
 typedef void*               HWND;
+typedef void* HHOOK;
 typedef void*               HINSTANCE;
 typedef void*               HMODULE;
 typedef void*               HDC;
@@ -81,6 +86,122 @@ typedef int64_t             __int64;
 
 typedef unsigned int        SOCKET;
 typedef LRESULT (*WNDPROC)(HWND, UINT, WPARAM, LPARAM);
+
+#ifdef __ANDROID__
+#include <android/log.h>
+
+#ifndef MB_OK
+#define MB_OK 0x00000000
+#endif
+
+#ifndef MB_ICONERROR
+#define MB_ICONERROR 0x00000010
+#endif
+
+#ifndef MB_ICONWARNING
+#define MB_ICONWARNING 0x00000030
+#endif
+
+#ifndef MB_ICONINFORMATION
+#define MB_ICONINFORMATION 0x00000040
+#endif
+
+inline int MessageBox(HWND, const char* text, const char* caption, unsigned int)
+{
+    __android_log_print(ANDROID_LOG_INFO, "MU", "[MessageBox] %s : %s",
+                        caption ? caption : "",
+                        text ? text : "");
+    return 0;
+}
+#endif
+
+#ifndef GetCurrentThreadId
+inline DWORD GetCurrentThreadId()
+{
+    return 0;
+}
+#endif
+
+#ifndef CALLBACK
+#define CALLBACK
+#endif
+
+typedef void* HHOOK;
+typedef LRESULT (CALLBACK *HOOKPROC)(int code, WPARAM wParam, LPARAM lParam);
+
+#ifndef WH_CBT
+#define WH_CBT 5
+#endif
+
+#ifndef HCBT_MOVESIZE
+#define HCBT_MOVESIZE 0
+#endif
+
+#ifndef HCBT_MINMAX
+#define HCBT_MINMAX 1
+#endif
+
+#ifndef HCBT_QS
+#define HCBT_QS 2
+#endif
+
+#ifndef HCBT_CREATEWND
+#define HCBT_CREATEWND 3
+#endif
+
+#ifndef HCBT_DESTROYWND
+#define HCBT_DESTROYWND 4
+#endif
+
+#ifndef HCBT_ACTIVATE
+#define HCBT_ACTIVATE 5
+#endif
+
+#ifndef HCBT_CLICKSKIPPED
+#define HCBT_CLICKSKIPPED 6
+#endif
+
+#ifndef HCBT_KEYSKIPPED
+#define HCBT_KEYSKIPPED 7
+#endif
+
+#ifndef HCBT_SYSCOMMAND
+#define HCBT_SYSCOMMAND 8
+#endif
+
+#ifndef HCBT_SETFOCUS
+#define HCBT_SETFOCUS 9
+#endif
+
+#define TRUE 1
+#define FALSE 0
+
+inline HHOOK SetWindowsHookExA(int, HOOKPROC, HINSTANCE, DWORD)
+{
+    return nullptr;
+}
+
+inline BOOL UnhookWindowsHookEx(HHOOK)
+{
+    return TRUE;
+}
+
+inline LRESULT CallNextHookEx(HHOOK, int, WPARAM, LPARAM)
+{
+    return 0;
+}
+
+#define SetWindowsHookEx SetWindowsHookExA
+//#endif
+
+#define WH_CBT 5
+
+#ifndef GetDesktopWindow
+inline HWND GetDesktopWindow()
+{
+    return nullptr;
+}
+#endif
 
 #ifndef TRUE
 #define TRUE 1
@@ -141,6 +262,24 @@ typedef LRESULT (*WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 #ifndef E_FAIL
 #define E_FAIL ((HRESULT)0x80004005L)
 #endif
+
+#ifndef __forceinline
+#define __forceinline inline __attribute__((always_inline))
+#endif
+
+#ifndef __inline
+#define __inline inline
+#endif
+
+#ifndef __int64
+#define __int64 long long
+#endif
+
+#ifndef ZeroMemory
+#define ZeroMemory(Destination, Length) memset((Destination), 0, (Length))
+#endif
+
+#define CP_UTF8 65001
 
 typedef LONG HRESULT;
 
@@ -771,5 +910,86 @@ inline int closesocket(SOCKET)
 // OTHER
 #define IN
 #define OUT
+
+#ifndef HWND_TOPMOST
+#define HWND_TOPMOST ((HWND)-1)
+#endif
+
+#ifndef HWND_NOTOPMOST
+#define HWND_NOTOPMOST ((HWND)-2)
+#endif
+
+#ifndef HWND_TOP
+#define HWND_TOP ((HWND)0)
+#endif
+
+#ifndef HWND_BOTTOM
+#define HWND_BOTTOM ((HWND)1)
+#endif
+
+#ifndef SWP_NOSIZE
+#define SWP_NOSIZE         0x0001
+#endif
+
+#ifndef SWP_NOMOVE
+#define SWP_NOMOVE         0x0002
+#endif
+
+#ifndef SWP_NOZORDER
+#define SWP_NOZORDER       0x0004
+#endif
+
+#ifndef SWP_NOREDRAW
+#define SWP_NOREDRAW       0x0008
+#endif
+
+#ifndef SWP_NOACTIVATE
+#define SWP_NOACTIVATE     0x0010
+#endif
+
+#ifndef SWP_FRAMECHANGED
+#define SWP_FRAMECHANGED   0x0020
+#endif
+
+#ifndef SWP_SHOWWINDOW
+#define SWP_SHOWWINDOW     0x0040
+#endif
+
+#ifndef SWP_HIDEWINDOW
+#define SWP_HIDEWINDOW     0x0080
+#endif
+
+#ifndef SWP_NOCOPYBITS
+#define SWP_NOCOPYBITS     0x0100
+#endif
+
+#ifndef SWP_NOOWNERZORDER
+#define SWP_NOOWNERZORDER  0x0200
+#endif
+
+#ifndef SWP_NOSENDCHANGING
+#define SWP_NOSENDCHANGING 0x0400
+#endif
+
+inline BOOL SetWindowPos(...)
+{
+    return TRUE;
+}
+
+inline BOOL GetWindowRect(HWND, RECT* rc)
+{
+    if (!rc)
+        return FALSE;
+
+    int w = 0, h = 0;
+    SDL_GetWindowSize(SDL_GL_GetCurrentWindow(), &w, &h);
+
+    rc->left = 0;
+    rc->top = 0;
+    rc->right = w;
+    rc->bottom = h;
+
+    return TRUE;
+}
 
 #endif

@@ -293,7 +293,7 @@ LOCAL_SRC_FILES := \
     UIWindows.cpp \
     UsefulDef.cpp \
     Utilities/Log/DebugAngel.cpp \
-    Utilities/Log/ErrorReport.cpp \
+    ErrorReport_Stub.cpp \
     Utilities/Log/muConsoleDebug.cpp \
     Utilities/Log/WindowsConsole.cpp \
     Utilities/Memory/MemoryLock.cpp \

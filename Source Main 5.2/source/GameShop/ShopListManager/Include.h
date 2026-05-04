@@ -36,12 +36,12 @@
 #define ERROR_THREAD						0x08
 
 #include "mu_win_compat.h"
-#include <Wininet.h>
+
 #include <vector>
 #include <string>
-#include <tchar.h>
-#include <crtdbg.h>
-#include <strsafe.h>
+//#include <tchar.h>
+//#include <crtdbg.h>
+//#include <strsafe.h>
 #include "GameShop\ShopListManager\interface\WZResult\WZResult.h"
 #include "GameShop\ShopListManager\interface\DownloadInfo.h"
 #include "GameShop\ShopListManager\interface\FileDownloader.h"

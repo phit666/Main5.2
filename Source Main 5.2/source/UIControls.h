@@ -4,6 +4,7 @@
 #include "zzzinfomation.h"
 #include "MultiLanguage.h"
 #include "w_nuklear.h"
+#include "QuestMng.h"
 
 #ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM
 #define UIMAX_TEXT_LINE			150
@@ -647,7 +648,7 @@ protected:
 	virtual int GetRenderLinePos_y(int nLine);
 };
 
-enum REQUEST_REWARD_CLASSIFY;
+//enum REQUEST_REWARD_CLASSIFY;
 
 struct SQuestContents
 {
