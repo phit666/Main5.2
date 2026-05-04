@@ -474,10 +474,10 @@ void CMsgWin::ManageOKClick()
 	CUIMng& rUIMng = CUIMng::Instance();
 	rUIMng.HideWin(this);
 
-	char t[100] = { 0 };
-	sprintf(t, "[SDL-DEBUG] ManageOKClick(), m_nMsgCode %d",
-		m_nMsgCode);
-	OutputDebugStringA(t);
+	//char t[100] = { 0 };
+	//sprintf(t, "[SDL-DEBUG] ManageOKClick(), m_nMsgCode %d",
+		//m_nMsgCode);
+	//OutputDebugStringA(t);
 
 
 	switch (m_nMsgCode)

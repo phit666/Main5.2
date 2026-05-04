@@ -115,7 +115,7 @@ void MU_OnSocketEvent(evutil_socket_t fd, short events, void*)
 {
     if (events & EV_READ)
     {
-        OutputDebugStringA("[SDL-DEBUG] MU_OnSocketEvent, EV_READ");
+        //OutputDebugStringA("[SDL-DEBUG] MU_OnSocketEvent, EV_READ");
         if (SocketClient.nRecv() == 1) {
             SocketClient.Close();
             return;
@@ -124,7 +124,7 @@ void MU_OnSocketEvent(evutil_socket_t fd, short events, void*)
 
     if (events & EV_WRITE)
     {
-        OutputDebugStringA("[SDL-DEBUG] MU_OnSocketEvent, EV_WRITE");
+       // OutputDebugStringA("[SDL-DEBUG] MU_OnSocketEvent, EV_WRITE");
         if (SocketClient.FDWriteSend())
         {
             MU_DisableSocketWrite();
@@ -311,9 +311,9 @@ int MU_BevSend(const void* data, int len)
     if (!g_bev || !data || len <= 0)
         return FALSE;
 
-    char t[100] = { 0 };
-    sprintf(t, "[SDL-DEBUG] MU_BevSend, len %d", len);
-    OutputDebugStringA(t);
+    //char t[100] = { 0 };
+    //sprintf(t, "[SDL-DEBUG] MU_BevSend, len %d", len);
+    //OutputDebugStringA(t);
 
 
     return bufferevent_write(g_bev, data, len) == 0 ? TRUE : FALSE;
@@ -409,7 +409,7 @@ bool MU_InitSDL(int width, int height)
     nk_sdl_font_stash_end();
 
     if (!MU_InitNetworkEvent()) {
-        OutputDebugStringA("[SDL-DEBUG] MU_InitNetworkEvent failed.");
+        //OutputDebugStringA("[SDL-DEBUG] MU_InitNetworkEvent failed.");
         return false;
     }
 
@@ -436,5 +436,5 @@ void MU_ShutdownSDL()
     SDL_Quit();
     MU_ShutdownNetworkEvent();
 
-    OutputDebugStringA("[SDL-DEBUG] MU_ShutdownSDL");
+    //OutputDebugStringA("[SDL-DEBUG] MU_ShutdownSDL");
 }

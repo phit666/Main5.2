@@ -252,9 +252,9 @@ int CWsctlc::Connect(char *ip_addr, unsigned short port, DWORD WinMsgNum)
 	}
 #endif
 
-	char t[100] = { 0 };
-	sprintf(t, "[SDL-DEBUG] Connect, %s : %d", ip_addr, port);
-	OutputDebugStringA(t);
+	//char t[100] = { 0 };
+	//sprintf(t, "[SDL-DEBUG] Connect, %s : %d", ip_addr, port);
+	//OutputDebugStringA(t);
 
     addr.sin_family			= PF_INET;
     addr.sin_port			= htons( port );
