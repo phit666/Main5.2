@@ -75,6 +75,7 @@
 #include "MonkSystem.h"
 #endif //PBG_ADD_NEWCHAR_MONK_SKILL
 #include "mu_socket.h"
+#include "mu_sdl.h"
 
 #define MAX_DEBUG_MAX 10
 
@@ -189,6 +190,15 @@ BOOL CreateSocket(char *IpAddr, unsigned short Port)
 	}
 #else
 	SocketClient.Create(g_hWnd, TRUE);
+#if USE_LIBEVENT == 1
+	if (MU_Connect(IpAddr, Port) != 1) {
+		g_ErrorReport.Write("Failed to connect. ");
+		g_ErrorReport.WriteCurrentTime();
+		CUIMng::Instance().PopUpMsgWin(MESSAGE_SERVER_LOST);
+		bResult = FALSE;
+	}
+
+#else
 	if( SocketClient.Connect(IpAddr,Port,WM_ASYNCSELECTMSG) == FALSE )
 	{
 		g_ErrorReport.Write( "Failed to connect. ");
@@ -198,6 +208,7 @@ BOOL CreateSocket(char *IpAddr, unsigned short Port)
 		
 		bResult = FALSE;
 	}
+#endif
 #endif
 	g_byPacketSerialSend = 0;
 	g_byPacketSerialRecv = 0;

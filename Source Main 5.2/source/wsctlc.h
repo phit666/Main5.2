@@ -10,6 +10,7 @@
 
 #include "./Utilities/Log/ErrorReport.h"
 #include "./Utilities/Log/muConsoleDebug.h"
+#include "mu_sdl.h"
 
 #define MAX_SENDBUF		8192
 #define MAX_RECVBUF		8192
@@ -64,10 +65,14 @@ public:
 	BOOL Connect(char *ip_addr, unsigned short port, DWORD WinMsgNum);
 
 	void PushPacket(BYTE* data, int size);
+	void ClearGarbage();
 
 	int  sSend(SOCKET socket, char *buf, int len);
 	__forceinline int  sSend(char *buf, int len)
 	{
+#if USE_LIBEVENT == 1
+		MU_BevSend(buf, len);
+#else
 		int nResult;
 		
 		int nLeft = len;
@@ -120,6 +125,7 @@ public:
 			nLeft -= nResult;
 			if( nLeft <= 0 ) break;
 		}	
+#endif
 		return TRUE;
 	}
 	int  FDWriteSend();

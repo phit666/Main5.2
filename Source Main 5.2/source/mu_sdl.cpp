@@ -6,7 +6,22 @@
 #include "mu_sdl.h"
 #include "WSclient.h"
 #include "wsctlc.h"
+#include "wsctlc_addon.h"
 
+typedef struct
+{
+    BYTE c;
+    BYTE size;
+    BYTE headcode1;
+} MU_WSCTLC_PBMSG_HEAD, * MU_WSCTLC_LPPBMSG_HEAD;
+
+typedef struct
+{
+    BYTE c;
+    BYTE sizeH;
+    BYTE sizeL;
+    BYTE headcode1;
+} MU_WSCTLC_PWMSG_HEAD, * MU_WSCTLC_LPPWMSG_HEAD;
 
 SDL_Window* gSDLWindow = nullptr;
 SDL_GLContext gGLContext = nullptr;
@@ -54,6 +69,7 @@ bool MU_InitNetworkEvent()
 
 void MU_Close()
 {
+#if USE_LIBEVENT == 0
 #ifdef MU_USE_SDL
     if (g_socketReadEvent)
     {
@@ -68,10 +84,14 @@ void MU_Close()
     }
     g_socket = INVALID_SOCKET;
 #endif
+#endif
 }
 
 void MU_ShutdownNetworkEvent()
 {
+#if USE_LIBEVENT == 1
+    MU_CloseBev();
+#else
     if (g_socketReadEvent)
     {
         event_free(g_socketReadEvent);
@@ -83,7 +103,7 @@ void MU_ShutdownNetworkEvent()
         event_free(g_socketWriteEvent);
         g_socketWriteEvent = nullptr;
     }
-
+#endif
     if (g_eventBase)
     {
         event_base_free(g_eventBase);
@@ -156,19 +176,75 @@ static void
 conn_readcb(struct bufferevent* bev, void* user_data)
 {
     size_t len;
-   len = bufferevent_read(bev, (char*)buffer + bufferlen,
+
+    if (bufferlen >= MAX_RECVBUF)
+        return;
+
+    len = bufferevent_read(bev, (char*)buffer + bufferlen,
         MAX_RECVBUF - bufferlen);
 
-    if (len < 3)
+    bufferlen += len;
+
+    if (bufferlen < 3)
     {
-        bufferlen += len;
         return;
     }
 
-    bufferlen += len;
-    SocketClient.PushPacket(buffer, bufferlen);
-    bufferlen = 0;
-    memset(buffer, 0, MAX_RECVBUF);
+    int lOfs = 0;
+    int size = 0;
+
+    while (1)
+    {
+        if (buffer[lOfs] == 0xC1 || buffer[lOfs] == 0xC3)
+        {
+            MU_WSCTLC_LPPBMSG_HEAD lphead = (MU_WSCTLC_LPPBMSG_HEAD)(buffer + lOfs);
+            size = (int)lphead->size;
+        }
+        else if (buffer[lOfs] == 0xC2 || buffer[lOfs] == 0xC4)
+        {
+            MU_WSCTLC_LPPWMSG_HEAD lphead = (MU_WSCTLC_LPPWMSG_HEAD)(buffer + lOfs);
+            size = (((int)(lphead->sizeH)) << 8) + lphead->sizeL;
+        }
+        else {
+            bufferlen = 0;
+            return;
+        }
+
+
+        if (size <= 0)
+        {
+            return;
+        }
+        else if (size <= bufferlen)
+        {
+            SocketClient.PushPacket(buffer + lOfs, size);
+
+            lOfs += size;
+            bufferlen -= size;
+            if (bufferlen <= 0)
+            {
+                break;
+            }
+        }
+        else
+        {
+            if (lOfs > 0)
+            {
+                if (bufferlen < 1)
+                {
+                    break;
+                }
+                else
+                {
+                    memcpy(buffer, buffer + lOfs, bufferlen);
+                }
+            }
+            break;
+        }
+    }
+
+    SocketClient.ClearGarbage();
+
 }
 
 static void
@@ -178,57 +254,96 @@ conn_eventcb(struct bufferevent* bev, short events, void* user_data)
     {
         bufferevent_free(g_bev);
         g_bev = NULL;
+        SocketClient.Close();
     }
     else if (events & BEV_EVENT_ERROR)
     {
         bufferevent_free(g_bev);
         g_bev = NULL;
+        SocketClient.Close();
     }
     else if (events & BEV_EVENT_CONNECTED)
     {
+        //SocketClient.OnConnect();
     }
 }
 
 int MU_Connect(char* serverip, unsigned short port)
 {
-    struct bufferevent* bev;
-    struct sockaddr_in remote_address;
-    int result;
-
     if (!g_eventBase)
         return -1;
 
-    bev = bufferevent_socket_new(g_eventBase, -1,
+    struct bufferevent* bev = bufferevent_socket_new(
+        g_eventBase,
+        -1,
         BEV_OPT_CLOSE_ON_FREE
-        | BEV_OPT_THREADSAFE
-        | BEV_OPT_UNLOCK_CALLBACKS
-        | BEV_OPT_DEFER_CALLBACKS
     );
 
     if (!bev)
-    {
         return -1;
-    }
+
+    sockaddr_in remote_address;
+    memset(&remote_address, 0, sizeof(remote_address));
 
     remote_address.sin_family = AF_INET;
-    remote_address.sin_addr.s_addr = htonl(host2ip(serverip));
+    remote_address.sin_addr.s_addr = inet_addr(serverip);
     remote_address.sin_port = htons(port);
 
-    result = bufferevent_socket_connect(bev, (struct sockaddr*)&remote_address, sizeof(remote_address));
-
-    if (result == -1) {
+    if (bufferevent_socket_connect(
+        bev,
+        (struct sockaddr*)&remote_address,
+        sizeof(remote_address)) < 0)
+    {
+        bufferevent_free(bev);
         return -1;
     }
 
-    g_bev = bev;
-
     bufferevent_setcb(bev, conn_readcb, NULL, conn_eventcb, NULL);
-    bufferevent_enable(bev, EV_WRITE);
-    bufferevent_enable(bev, EV_READ);
+    bufferevent_enable(bev, EV_READ | EV_WRITE);
 
+    g_bev = bev;
+    bufferlen = 0;
     return 1;
 }
 
+int MU_BevSend(const void* data, int len)
+{
+    if (!g_bev || !data || len <= 0)
+        return FALSE;
+
+    char t[100] = { 0 };
+    sprintf(t, "[SDL-DEBUG] MU_BevSend, len %d", len);
+    OutputDebugStringA(t);
+
+
+    return bufferevent_write(g_bev, data, len) == 0 ? TRUE : FALSE;
+}
+
+void MU_CloseBev()
+{
+    if (!g_bev)
+        return;
+
+    struct bufferevent* bev = g_bev;
+    g_bev = NULL;
+
+    bufferevent_disable(bev, EV_READ | EV_WRITE);
+    bufferevent_setcb(bev, NULL, NULL, NULL, NULL);
+
+    evutil_socket_t fd = bufferevent_getfd(bev);
+    if (fd != EVUTIL_INVALID_SOCKET)
+        shutdown(fd, SD_BOTH);
+
+    bufferevent_free(bev);
+
+    bufferlen = 0;
+}
+
+evutil_socket_t MU_GetFD() {
+    return bufferevent_getfd(g_bev);
+}
+
+/*
 static void defer_free_cb(evutil_socket_t, short, void* arg)
 {
     if (g_bev != NULL)
@@ -254,7 +369,7 @@ void MU_CloseBev()
     }
 
     event_base_once(g_eventBase, -1, EV_TIMEOUT, defer_free_cb, (LPVOID)static_cast<int>(arg), &tv);
-}
+}*/
 
 // SDL
 

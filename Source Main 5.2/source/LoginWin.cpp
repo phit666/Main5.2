@@ -18,6 +18,7 @@
 #include "./Utilities/Log/muConsoleDebug.h"
 #include "ProtocolSend.h"
 #include "ServerListManager.h"
+#include "mu_sdl.h"
 
 #define	LIW_ACCOUNT		0
 #define	LIW_PASSWORD	1
@@ -250,5 +251,5 @@ void CLoginWin::ConnectConnectionServer()
 
 	LogIn = 0;
 	CurrentProtocolState = REQUEST_JOIN_SERVER;
-    CreateSocket(szServerIpAddress, g_ServerPort);
+	CreateSocket(szServerIpAddress, g_ServerPort);
 }

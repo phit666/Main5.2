@@ -129,7 +129,14 @@ extern BOOL g_bGameServerConnected;
 extern BYTE g_byNextFuncCrcCheck;
 
 int CWsctlc::Create(HWND hWnd, BOOL bGame)
-{	
+{
+#if USE_LIBEVENT == 1
+	m_bGame = bGame;
+	if (m_bGame)
+	{
+		g_bGameServerConnected = FALSE;
+	}
+#else
 	m_socket = socket( PF_INET, SOCK_STREAM, 0);
 	m_bGame = bGame;
 	if ( m_bGame)
@@ -147,6 +154,7 @@ int CWsctlc::Create(HWND hWnd, BOOL bGame)
 		return FALSE;
 	}
 	m_hWnd = hWnd;	
+#endif
 	return TRUE;
 }
 
@@ -156,7 +164,7 @@ BOOL CWsctlc::Close()
 	{
 		g_bGameServerConnected = FALSE;
 	}
-	
+#if USE_LIBEVENT == 0
 	LINGER linger;
 	linger.l_onoff	= 1;
 	linger.l_linger	= 0;
@@ -171,7 +179,7 @@ BOOL CWsctlc::Close()
 
 	m_nSendBufLen = 0;
 	m_nRecvBufLen = 0;
-
+#endif
 	// Clear Packet Queue
 	while(!m_pPacketQueue->IsEmpty()) 
 	{
@@ -179,6 +187,9 @@ BOOL CWsctlc::Close()
 	}
 	g_ErrorReport.Write("[Socket Closed][Clear PacketQueue]\r\n");
 
+#if USE_LIBEVENT == 1
+	MU_CloseBev();
+#else
 #if MU_USE_LIBEVENT == 1
 	le_close();
 #else
@@ -188,6 +199,7 @@ BOOL CWsctlc::Close()
 
 #ifdef MU_USE_SDL
 	MU_Close();
+#endif
 #endif
 
 	return TRUE;
@@ -199,9 +211,10 @@ BOOL CWsctlc::Close(SOCKET & socket)
 	{
 		g_bGameServerConnected = FALSE;
 	}
-
+#if USE_LIBEVENT == 0
 	closesocket(socket);
 	socket = INVALID_SOCKET;
+#endif
 	return TRUE;
 }
 
@@ -209,14 +222,26 @@ void CWsctlc::PushPacket(BYTE* data, int size) {
 	m_pPacketQueue->PushPacket(data, size);
 }
 
+void CWsctlc::ClearGarbage() {
+	m_pPacketQueue->ClearGarbage();
+}
 
 SOCKET CWsctlc::GetSocket()
 {
+#if USE_LIBEVENT == 1
+	evutil_socket_t fd = MU_GetFD();
+	if (fd == -1)
+		return INVALID_SOCKET;
+	else
+		return (SOCKET)fd;
+#else
 	return m_socket;
+#endif
 }
 
 int CWsctlc::Connect(char *ip_addr, unsigned short port, DWORD WinMsgNum)
 {
+#if USE_LIBEVENT == 0
 	sockaddr_in		addr;
 	int nResult;
 	struct hostent    *host = NULL;
@@ -278,13 +303,16 @@ int CWsctlc::Connect(char *ip_addr, unsigned short port, DWORD WinMsgNum)
 		return FALSE;
 	}
 #endif
-
+#endif
 
 	return TRUE;
 }
 
 int CWsctlc::sSend(SOCKET socket, char *buf, int len)
 {	
+#if USE_LIBEVENT == 1
+	return MU_BevSend(buf, len);
+#else
 #if MU_USE_SDL
 
 	if (len <= 0 || buf == NULL)
@@ -359,10 +387,12 @@ int CWsctlc::sSend(SOCKET socket, char *buf, int len)
 	}
 #endif
 	return TRUE;
+#endif
 }
 
 int CWsctlc::FDWriteSend()
 {
+#if USE_LIBEVENT == 0
 	int nResult;
 	int nDx	  = 0;
 	
@@ -398,6 +428,7 @@ int CWsctlc::FDWriteSend()
 		nDx += nResult;
 		m_nSendBufLen -= nResult;		
 	}
+#endif
 	return TRUE;
 }
 
@@ -486,7 +517,8 @@ void CWsctlc::LogPrint( char *szlog, ...)
 
 
 int CWsctlc::nRecv()
-{	
+{
+#if USE_LIBEVENT == 0
 	int nResult;
 
 	if(m_nRecvBufLen >= MAX_RECVBUF) 
@@ -584,7 +616,7 @@ int CWsctlc::nRecv()
 	}
 
 	m_pPacketQueue->ClearGarbage();
-	
+#endif	
 	return 0;
 }
 
