@@ -358,7 +358,7 @@ void RenderTipTextList(const int sx, const int sy, int TextNum, int Tab, int iSo
 
 		glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
 		RenderColor ((float)iPos_x, fsy, (float)fWidth, (float)fHeight);
-		glEnable(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	}
 
 	for(int i=0;i<TextNum;i++)

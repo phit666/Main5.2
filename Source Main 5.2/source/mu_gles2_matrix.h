@@ -105,3 +105,5 @@ inline void MU_RotateZ(MU_Mat4& m, float deg)
 
     MU_Multiply(m, m, t);
 }
+
+extern int  CachTexture;

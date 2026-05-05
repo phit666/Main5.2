@@ -1748,7 +1748,10 @@ BOOL CUIChatPalListBox::RenderDataLine(int iLineNumber)
 			glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
 		g_pRenderText->SetTextColor(0, 0, 0, 255);
 	}
 	else
@@ -1925,7 +1928,10 @@ BOOL CUIWindowListBox::RenderDataLine(int iLineNumber)
 		else glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
 		g_pRenderText->SetTextColor(0, 0, 0, 255);
 	}
 	else
@@ -2141,7 +2147,10 @@ BOOL CUILetterListBox::RenderDataLine(int iLineNumber)
 		else glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
 		g_pRenderText->SetTextColor(0, 0, 0, 255);
 	}
 	else
@@ -2474,7 +2483,10 @@ BOOL CUISocketListBox::RenderDataLine(int iLineNumber)
 		else glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
 		g_pRenderText->SetTextColor(0, 0, 0, 255);
 	}
 	else
@@ -2734,40 +2746,94 @@ void CUIRenderTextOriginal::WriteText(int iOffset, int iWidth, int iHeight)
 		}
 	}
 }
-void CUIRenderTextOriginal::UploadText(int sx,int sy,int Width,int Height)
+
+void CUIRenderTextOriginal::UploadText(int sx, int sy, int Width, int Height)
 {
-	BITMAP_t *b = &Bitmaps[BITMAP_FONT];
-	float TextureU = 0.f, TextureV = 0.f;
-	if(sx < 0)
+	BITMAP_t* b = &Bitmaps[BITMAP_FONT];
+
+	float TextureU = 0.f;
+	float TextureV = 0.f;
+
+	if (sx < 0)
 	{
-		TextureU = (-sx+0.01f)/b->Width;
+		TextureU = (-sx + 0.01f) / b->Width;
 		Width += sx;
-		sx = 0.f;
+		sx = 0;
 	}
-	else if(sx+Width > (int)WindowWidth)
+	else if (sx + Width > (int)WindowWidth)
 	{
 		Width = WindowWidth - sx;
 	}
-	if(sy < 0)
+
+	if (sy < 0)
 	{
-		TextureV = (-sy+0.01f)/b->Height;
+		TextureV = (-sy + 0.01f) / b->Height;
 		Height += sy;
-		sy = 0.f;
+		sy = 0;
 	}
-	else if(sy+Height > (int)WindowHeight)
+	else if (sy + Height > (int)WindowHeight)
 	{
 		Height = WindowHeight - sy;
 	}
-	if(Width > 0 && Height > 0 && sx+Width > 0 && sy+Height > 0)
-	{
-		glBindTexture(GL_TEXTURE_2D,b->TextureNumber);
-		glTexImage2D(GL_TEXTURE_2D,0,b->Components,(int)b->Width,(int)b->Height,0,GL_RGBA,GL_UNSIGNED_BYTE,b->Buffer);
 
-		float TextureUWidth = (Width+0.01f)/b->Width;
-		float TextureVHeight = (Height+0.01f)/b->Height;
-		RenderBitmap(BITMAP_FONT, (float)sx, (float)sy, (float)Width, (float)Height,
-			TextureU, TextureV, TextureUWidth, TextureVHeight, false, false);
-	}
+	if (Width <= 0 || Height <= 0 || sx + Width <= 0 || sy + Height <= 0)
+		return;
+
+	glUseProgram(g_muProgram);
+	MU_ApplyMatrices();
+
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_CULL_FACE);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, b->TextureNumber);
+
+	glTexSubImage2D(
+		GL_TEXTURE_2D,
+		0,
+		0, 0,
+		(int)b->Width,
+		(int)b->Height,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		b->Buffer
+	);
+
+	CachTexture = BITMAP_FONT;
+
+	float TextureUWidth = (Width + 0.01f) / b->Width;
+	float TextureVHeight = (Height + 0.01f) / b->Height;
+
+	RenderBitmap(
+		BITMAP_FONT,
+		(float)sx,
+		(float)sy,
+		(float)Width,
+		(float)Height,
+		TextureU,
+		TextureV,
+		TextureUWidth,
+		TextureVHeight,
+		false,
+		false
+	);
+
+	// restore for later 3D/2D draws
+	glUseProgram(g_muProgram);
+
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
+
+	glDepthMask(GL_TRUE);
+
+	CachTexture = -999999;
 }
 
 void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_char* pszText, 
@@ -4838,7 +4904,11 @@ BOOL CUIGuildNoticeListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
+	glUseProgram(g_muProgram);
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
+
 	g_pRenderText->SetBgColor(0);
 
 	int iPos_x = m_iPos_x + 4;
@@ -5038,7 +5108,7 @@ BOOL CUINewGuildMemberListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	g_pRenderText->SetBgColor(0);
 
 	int iPos_x = m_iPos_x + 8;
@@ -5231,7 +5301,7 @@ BOOL CUIUnionGuildListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 220, 255);
 	}
-	glEnable(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	g_pRenderText->SetBgColor(0);
 
 	int iPos_x = m_iPos_x + 4;
@@ -5406,7 +5476,7 @@ BOOL CUIUnmixgemList::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	g_pRenderText->SetBgColor(0);
 	int iPos_x = m_iPos_x + 4;
 	int iPos_y = GetRenderLinePos_y(iLineNumber);
@@ -5585,7 +5655,7 @@ BOOL CUIBCDeclareGuildListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	g_pRenderText->SetBgColor(0);
 	
 	int iPos_x = m_iPos_x + 4;
@@ -5752,7 +5822,7 @@ BOOL CUIBCGuildListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	g_pRenderText->SetBgColor(0);
 	
 	int iPos_x = m_iPos_x + 4;
@@ -5994,7 +6064,7 @@ BOOL CUICurQuestListBox::RenderDataLine(int iLineNumber)
 		::glColor4f(0.5f, 0.7f, 0.3f, 0.5f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	}
 
 	g_pRenderText->SetTextColor(255, 230, 210, 255);
@@ -6303,7 +6373,7 @@ BOOL CUIInGameShopListBox::RenderDataLine(int iLineNumber)
 		::glColor4f(0.15f, 0.3f, 0.4f, 0.5f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 4, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	}
 
 	g_pRenderText->SetTextColor(255, 230, 210, 255);
@@ -6449,7 +6519,7 @@ BOOL CUIBuyingListBox::RenderDataLine(int iLineNumber)
 		::glColor4f(0.15f, 0.3f, 0.4f, 0.5f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	}
 
 	g_pRenderText->SetTextColor(255, 230, 210, 255);
@@ -6595,7 +6665,7 @@ BOOL CUIPackCheckBuyingListBox::RenderDataLine(int nLine)
 		::glColor4f(0.07f, 0.31f, 0.31f, 0.5f);
 		RenderColor(m_iPos_x+3, GetRenderLinePos_y(nLine)+1, m_iWidth - m_fScrollBarWidth + 1, TEXT_HEIGHTSIZE-6);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
 	}
 
 	g_pRenderText->SetTextColor(255, 230, 210, 255);

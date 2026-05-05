@@ -680,6 +680,10 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	CullFaceEnable = true;
 	DepthMaskEnable = true;
 
+	glDisable(GL_BLEND);
+
+	CachTexture = -999999;
+
 #else
 	x = x * WindowWidth / 640;
 	y = y * WindowHeight / 480;
@@ -1259,15 +1263,15 @@ void BeginBitmap()
 	glUseProgram(g_muProgram);
 	MU_ApplyMatrices();
 
-	glDisable(GL_DEPTH_TEST);
-	glDepthMask(GL_FALSE);
-	glDisable(GL_CULL_FACE);
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	//CachTexture = -999999;
-	//glActiveTexture(GL_TEXTURE0);
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_CULL_FACE);
 }
 
 void EndBitmap()
@@ -1343,7 +1347,11 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 void EndRenderColor()
 {
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	glEnable(GL_TEXTURE_2D);
+
+	glUseProgram(g_muProgram);
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
+	//glEnable(GL_TEXTURE_2D);
 }
 
 void RenderColorBitmap(int Texture, float x, float y, float Width, float Height, float u, float v, float uWidth, float vHeight, unsigned int color)
