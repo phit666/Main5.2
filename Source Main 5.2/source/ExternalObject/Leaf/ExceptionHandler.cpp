@@ -1,11 +1,11 @@
 #include "stdafx.h"
+#include "ExceptionHandler.h"
+#include "checkintegrity.h"
 
 #ifdef __ANDROID__
 
 // ===== Android stub implementation =====
 
-#include "ExceptionHandler.h"
-#include "checkintegrity.h"
 
 using namespace leaf;
 

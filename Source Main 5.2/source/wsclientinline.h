@@ -35,7 +35,6 @@ extern int CurrentProtocolState;
 
 extern int DirTable[16];
 
-void BuxConvert(BYTE *Buffer,int Size);
 
 __forceinline bool FindText2(char *Text,char *Token,bool First=false)
 {

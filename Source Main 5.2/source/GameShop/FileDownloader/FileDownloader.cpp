@@ -1,16 +1,5 @@
-//************************************************************************
-//
-// Decompiled by @myheart, @synth3r
-// <https://forum.ragezone.com/members/2000236254.html>
-//
-//
-// FILE: FileDownloader.cpp
-//
-//
-
 #include "stdafx.h"
 
-//#ifndef MU_USE_SDL
 #ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM
 #include "GameShop\ShopListManager\interface\FileDownloader.h"
 #include "HTTPConnecter.h"
@@ -18,6 +7,13 @@
 #include <GameShop\ShopListManager\interface\PathMethod\\Path.h>
 
 #include "mu_win_compat.h"
+
+static size_t CurlWriteFile(void* ptr, size_t size, size_t nmemb, void* userdata)
+{
+    MU_FILE* file = (MU_FILE*)userdata;
+    return MU_fwrite(ptr, size, nmemb, file);
+}
+
 FileDownloader::FileDownloader(IDownloaderStateEvent* pStateEvent,
                                DownloadServerInfo* pServerInfo,
                                DownloadFileInfo* pFileInfo) // OK
@@ -27,7 +23,7 @@ FileDownloader::FileDownloader(IDownloaderStateEvent* pStateEvent,
     this->m_pServerInfo = pServerInfo;
     this->m_pFileInfo = pFileInfo;
     this->m_pConnecter = 0;
-    this->m_hLocalFile = INVALID_HANDLE_VALUE;
+    this->m_hLocalFile = NULL;
     this->m_nFileLength = 0;
 }
 
@@ -82,10 +78,10 @@ BOOL FileDownloader::CanBeContinue() // OK
 
 void FileDownloader::Release() // OK
 {
-    if(this->m_hLocalFile!=INVALID_HANDLE_VALUE)
+    if(this->m_hLocalFile!=NULL)
     {
         CloseHandle(this->m_hLocalFile);
-        this->m_hLocalFile = INVALID_HANDLE_VALUE;
+        this->m_hLocalFile = NULL;
     }
     if(this->m_hRemoteFile)
     {
@@ -118,38 +114,35 @@ IConnecter* FileDownloader::CreateConnecter() // OK
     }
 }
 
-WZResult 			FileDownloader::CreateConnection()
+#include <future>
+#include <chrono>
+
+WZResult FileDownloader::CreateConnection()
 {
     DWORD dwMilliseconds = this->m_pServerInfo->GetConnectTimeout();
 
-    if(dwMilliseconds>0)
+    if (dwMilliseconds > 0)
     {
-        unsigned int ThreadID = 0;
+        auto future = std::async(std::launch::async, [this]() {
+            return this->Connection();
+        });
 
-        HANDLE hHandle = (HANDLE)_beginthreadex(0,0,FileDownloader::RunConnectThread,this,0,&ThreadID);
+        auto status = future.wait_for(std::chrono::milliseconds(dwMilliseconds));
 
-        if(hHandle==INVALID_HANDLE_VALUE)
+        if (status == std::future_status::timeout)
         {
-            this->m_Result.SetResult(DL_BEGIN_THREAD_CONNECTION,GetLastError(),"[FileDownloader::CreateConnection] Fail : _beginthreadex, FileName = %s",this->m_pFileInfo->GetRemoteFilePath());
+            // Android/libcurl/libevent version should cancel connection here if supported.
+            this->m_Result.SetResult(
+                    DL_CONNECTION_TIMEOUT,
+                    0,
+                    "[FileDownloader::CreateConnection] Fail : WAIT_TIMEOUT, FileName = %s",
+                    this->m_pFileInfo->GetRemoteFilePath()
+            );
+
+            return this->m_Result;
         }
-        else
-        {
-            if(WaitForSingleObject(hHandle,dwMilliseconds)==WAIT_TIMEOUT)
-            {
-                InternetCloseHandle(this->m_hSession);
-                this->m_hSession = 0;
 
-                WaitForSingleObject(hHandle,INFINITE);
-
-                CloseHandle(hHandle);
-
-                this->m_Result.SetResult(DL_CONNECTION_TIMEOUT,0,"[FileDownloader::CreateConnection] Fail : WAIT_TIMEOUT, FileName = %s",this->m_pFileInfo->GetRemoteFilePath());
-            }
-            else
-            {
-                CloseHandle(hHandle);
-            }
-        }
+        this->m_Result = future.get();
     }
     else
     {
@@ -233,6 +226,50 @@ WZResult 			FileDownloader::TransferRemoteFile()
     return this->m_Result;
 }
 
+#ifndef _WIN32
+#include <sys/stat.h>
+#include <unistd.h>
+WZResult FileDownloader::CreateLocalFile()
+{
+    TCHAR* path = this->m_pFileInfo->GetLocalFilePath();
+
+    bool exists = (access(path, F_OK) == 0);
+
+    if (!exists || this->m_pServerInfo->IsOverWrite())
+    {
+        Path::CreateDirectorys(path, 1);
+
+        path = this->m_pFileInfo->GetLocalFilePath();
+
+        this->m_hLocalFile = MU_fopen(path, "wb");
+
+        if (!this->m_hLocalFile)
+        {
+            this->m_Result.SetResult(
+                    DL_CREATE_LOCALFILE,
+                    errno,
+                    "[FileDownloader::CreateLocalFile] Fail : MU_fopen, FileName = %s",
+                    this->m_pFileInfo->GetRemoteFilePath()
+            );
+        }
+        else
+        {
+            this->m_Result.SetSuccessResult();
+        }
+    }
+    else
+    {
+        this->m_Result.SetResult(
+                DL_LOCALFILE_EXISTS,
+                0,
+                "[FileDownloader::CreateLocalFile] Fail : Local File Exists, FileName = %s",
+                this->m_pFileInfo->GetRemoteFilePath()
+        );
+    }
+
+    return this->m_Result;
+}
+#else
 WZResult 			FileDownloader::CreateLocalFile()
 {
     TCHAR* path = this->m_pFileInfo->GetLocalFilePath();
@@ -250,7 +287,7 @@ WZResult 			FileDownloader::CreateLocalFile()
         }
         this->m_hLocalFile = CreateFile(path,0x40000000,0,0,CREATE_ALWAYS,0x80,0);
 
-        if(this->m_hLocalFile==INVALID_HANDLE_VALUE)
+        if(this->m_hLocalFile==NULL)
         {
             this->m_Result.SetResult(DL_CREATE_LOCALFILE,GetLastError(),"[FileDownloader::CreateLocalFile] Fail : CreateFile, FileName = %s",this->m_pFileInfo->GetRemoteFilePath());
         }
@@ -266,7 +303,7 @@ WZResult 			FileDownloader::CreateLocalFile()
 
     return this->m_Result;
 }
-
+#endif
 WZResult 			FileDownloader::ReadRemoteFile(BYTE* byReadBuffer,DWORD* dwBytesRead)
 {
     if(this->m_hRemoteFile)

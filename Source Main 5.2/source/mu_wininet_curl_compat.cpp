@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "mu_wininet_curl_compat.h"
+
+#ifdef _WIN32
 #define CURL_STATICLIB
+#endif
 #include <curl/curl.h>
 
 #include <algorithm>

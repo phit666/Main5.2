@@ -1198,6 +1198,12 @@
     <ClCompile Include="source\mu_wininet_curl_compat.cpp">
       <Filter>MU\GameShop\FileDownloader</Filter>
     </ClCompile>
+    <ClCompile Include="source\SimpleModulus.cpp">
+      <Filter>MU\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mu_gles2_matrix.cpp">
+      <Filter>MU\Client\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\BlackWin.h">
@@ -2294,6 +2300,12 @@
     </ClInclude>
     <ClInclude Include="source\mu_wininet_curl_compat.h">
       <Filter>MU\GameShop\FileDownloader</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_gles2_matrix.h">
+      <Filter>MU\Client\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_gles_matrix.h">
+      <Filter>MU\Client\core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

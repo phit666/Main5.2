@@ -133,7 +133,9 @@ CALLBACK_RESULT CMsgBoxIGSStorageItemInfo::OKButtonDown(class CNewUIMessageBoxBa
 	CMsgBoxIGSStorageItemInfo* pOwnMsgBox = dynamic_cast<CMsgBoxIGSStorageItemInfo*>(pOwner);
 	
 	CMsgBoxIGSUseItemConfirm* pMsgBox = NULL;
-	CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSUseItemConfirmLayout), &pMsgBox);
+	//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSUseItemConfirmLayout), &pMsgBox);
+	TMsgBoxLayoutContainer<CMsgBoxIGSUseItemConfirmLayout> container;
+	CreateMessageBox(container, &pMsgBox);
 	pMsgBox->Initialize(pOwnMsgBox->m_iStorageSeq, pOwnMsgBox->m_iStorageItemSeq,pOwnMsgBox->m_wItemCode, pOwnMsgBox->m_szItemType, pOwnMsgBox->m_szName);
 
 	PlayBuffer(SOUND_CLICK01);
@@ -226,7 +228,7 @@ void CMsgBoxIGSStorageItemInfo::UnloadImages()
 bool CMsgBoxIGSStorageItemInfoLayout::SetLayout()
 {
 	CMsgBoxIGSStorageItemInfo* pMsgBox = GetMsgBox();
-	if(false == pMsgBox)
+	if(nullptr == pMsgBox)
 		return false;
 	
 	if(false == pMsgBox->Create())

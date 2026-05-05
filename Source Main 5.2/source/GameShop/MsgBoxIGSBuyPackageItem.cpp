@@ -187,7 +187,7 @@ void CMsgBoxIGSBuyPackageItem::RenderTexts()
 	g_pRenderText->SetTextColor(255, 0, 0, 255);
 	if( m_wItemCode == 65535 )
 	{
-		sprintf(szText, "¾ÆÀÌÅÛÄÚµå°¡ ¾ø½À´Ï´Ù.");
+		sprintf(szText, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµå°¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
 	}
 	else
 	{
@@ -259,7 +259,9 @@ CALLBACK_RESULT CMsgBoxIGSBuyPackageItem::BuyBtnDown(class CNewUIMessageBoxBase*
 {
 	CMsgBoxIGSBuyPackageItem* pOwnMsgBox = dynamic_cast<CMsgBoxIGSBuyPackageItem*>(pOwner);
 	CMsgBoxIGSBuyConfirm* pMsgBox = NULL;
-	CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSBuyConfirmLayout), &pMsgBox);
+	//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSBuyConfirmLayout), &pMsgBox);
+	TMsgBoxLayoutContainer<CMsgBoxIGSBuyConfirmLayout> container;
+	CreateMessageBox(container, &pMsgBox);
 
 	pMsgBox->Initialize(pOwnMsgBox->m_wItemCode, pOwnMsgBox->m_iPackageSeq, pOwnMsgBox->m_iDisplaySeq, 0, pOwnMsgBox->m_iCashType,pOwnMsgBox->m_szPackageName, pOwnMsgBox->m_szPrice, pOwnMsgBox->m_szPeriod);
 
@@ -274,7 +276,10 @@ CALLBACK_RESULT CMsgBoxIGSBuyPackageItem::PresentBtnDown(class CNewUIMessageBoxB
 	CMsgBoxIGSBuyPackageItem* pOwnMsgBox = dynamic_cast<CMsgBoxIGSBuyPackageItem*>(pOwner);
 	
 	CMsgBoxIGSSendGift* pMsgBox = NULL;
-	CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSSendGiftLayout), &pMsgBox);
+	//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSSendGiftLayout), &pMsgBox);
+
+	TMsgBoxLayoutContainer<CMsgBoxIGSSendGiftLayout> container;
+	CreateMessageBox(container, &pMsgBox);
 
 	pMsgBox->Initialize(pOwnMsgBox->m_iPackageSeq, pOwnMsgBox->m_iDisplaySeq, 0, pOwnMsgBox->m_wItemCode, pOwnMsgBox->m_iCashType,pOwnMsgBox->m_szPackageName, pOwnMsgBox->m_szPrice, pOwnMsgBox->m_szPeriod);
 
@@ -328,7 +333,7 @@ void CMsgBoxIGSBuyPackageItem::ReleaseListBox()
 bool CMsgBoxBuyPackageItemLayout::SetLayout()
 {
 	CMsgBoxIGSBuyPackageItem* pMsgBox = GetMsgBox();
-	if(false == pMsgBox)
+	if(nullptr == pMsgBox)
 		return false;
 	
 	if(false == pMsgBox->Create())

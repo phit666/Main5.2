@@ -102,3 +102,6 @@
 #include "mu_gl.h"
 #include "mu_2d_renderer.h"
 
+void BuxConvert(BYTE *Buffer,int Size);
+
+

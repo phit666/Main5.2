@@ -66,7 +66,7 @@
 #include "ProtocolSend.h"
 #include "MapManager.h"
 #include "mu_sdl.h"
-
+#include "mu_gles2_matrix.h"
 
 extern CUITextInputBox * g_pSingleTextInputBox;
 extern CUITextInputBox * g_pSinglePasswdInputBox;
@@ -105,7 +105,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.254.116";
+char *szServerIpAddress = "192.168.1.19";
 //char *szServerIpAddress = "210.181.89.215";
 WORD g_ServerPort = 44405;
 
@@ -1288,6 +1288,7 @@ void NewMoveLogInScene()
 	g_ConsoleDebug->UpdateMainScene();
 }
 
+
 bool NewRenderLogInScene(HDC hDC)
 {
 	if(!InitLogIn) return false;
@@ -1348,32 +1349,64 @@ bool NewRenderLogInScene(HDC hDC)
     Width = GetScreenWidth();
 	glClearColor(0.f,0.f,0.f,1.f);
 
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	BeginOpengl(0,25,640,430);
+
 	CreateFrustrum((float)Width/(float)640, pos);
 
 	if (!CUIMng::Instance().m_CreditWin.IsShow())
 	{
+		//OutputDebugStringA("[SDL-DEBUG] m_CreditWin.IsShow()");
 		CameraViewFar = 330.f * CCameraMove::GetInstancePtr()->GetCurrentCameraDistanceLevel();
 #ifndef PJH_NEW_SERVER_SELECT_MAP
 		BeginOpengl();
 #endif //PJH_NEW_SERVER_SELECT_MAP
+
+		// ===== SOLID =====
+		//glEnable(GL_DEPTH_TEST);
+		//glDepthMask(GL_TRUE);
+		//glDisable(GL_BLEND);
+	//	glEnable(GL_CULL_FACE);
+
 		RenderTerrain(false);
 		CameraViewFar = 7000.f;
 		RenderCharactersClient();
 		RenderBugs();
 		RenderObjects();
 		RenderJoints();
+
+		// ===== TRANSPARENT =====
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glDepthMask(GL_FALSE);
+		//glDisable(GL_CULL_FACE);
+
 		RenderEffects();
 		CheckSprites();
+
+		// ===== SOLID =====
+		//glEnable(GL_DEPTH_TEST);
+		//glDepthMask(GL_TRUE);
+		//glDisable(GL_BLEND);
+		//glEnable(GL_CULL_FACE);
+
 		RenderLeaves();
 		RenderBoids();
 		RenderObjects_AfterCharacter();
 		ThePetProcess().RenderPets();
 	}
 
+	// ===== TRANSPARENT =====
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glDepthMask(GL_FALSE);
+	//glDisable(GL_CULL_FACE);
+
 	BeginSprite();
 	RenderSprites();
 	RenderParticles();
+
 	EndSprite();
 	BeginBitmap();
 
@@ -2292,15 +2325,16 @@ void MainScene(HDC hDC)
 		{
 		case LOG_IN_SCENE:
 			NewMoveLogInScene();
+			OutputDebugStringA("[SDL-DEBUG] NewMoveLogInScene");
 			break;
 
 		case CHARACTER_SCENE:
-			//OutputDebugStringA("[SDL-DEBUG] NewMoveCharacterScene");
+			OutputDebugStringA("[SDL-DEBUG] NewMoveCharacterScene");
 			NewMoveCharacterScene();
 			break;
 
 		case MAIN_SCENE:
-			//OutputDebugStringA("[SDL-DEBUG] MoveMainScene");
+			OutputDebugStringA("[SDL-DEBUG] MoveMainScene");
 			MoveMainScene();
 			break;
 		}
@@ -2413,14 +2447,17 @@ void MainScene(HDC hDC)
 	if(SceneFlag == LOG_IN_SCENE)
 	{
 		Success = NewRenderLogInScene(hDC);
+		OutputDebugStringA("[SDL-DEBUG] NewRenderLogInScene");
 	}
 	else if(SceneFlag == CHARACTER_SCENE)
 	{
 		Success = NewRenderCharacterScene(hDC);
+		OutputDebugStringA("[SDL-DEBUG] NewRenderCharacterScene");
 	}
 	else if(SceneFlag == MAIN_SCENE)
 	{
 		Success = RenderMainScene();
+		OutputDebugStringA("[SDL-DEBUG] RenderMainScene");
 	}
 
 	g_PhysicsManager.Render();
@@ -2785,17 +2822,17 @@ void Scene(HDC hDC)
 		break;
 #endif // MOVIE_DIRECTSHOW
 	case WEBZEN_SCENE:
-		//OutputDebugStringA("[SDL-DEBUG] WebzenScene");
+		OutputDebugStringA("[SDL-DEBUG] WebzenScene");
         WebzenScene(hDC);
 		break;
 	case LOADING_SCENE:
-		//OutputDebugStringA("[SDL-DEBUG] LoadingScene");
+		OutputDebugStringA("[SDL-DEBUG] LoadingScene");
 		LoadingScene(hDC);
 		break;
 	case LOG_IN_SCENE:
 	case CHARACTER_SCENE:
 	case MAIN_SCENE:
-		//OutputDebugStringA("[SDL-DEBUG] MainScene");
+		OutputDebugStringA("[SDL-DEBUG] MainScene");
 		MainScene(hDC);
 		break;
 	}

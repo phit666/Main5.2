@@ -13,6 +13,7 @@
 #include "ZzzEffect.h"
 #include "DSPlaySound.h"
 #include "WSClient.h"
+#include "mu_gles2_matrix.h"
 
 #define MAX_BLURS      100
 #define MAX_BLUR_TAILS 30
@@ -733,19 +734,51 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 
 		if (!verts.empty())
 		{
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glEnableClientState(GL_COLOR_ARRAY);
+			glUseProgram(g_muProgram);
+			MU_ApplyMatrices();
 
-			glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
-			glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
-			glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+			if (g_uUseTexture >= 0)
+				glUniform1i(g_uUseTexture, 1);
+
+			// texture must already be bound before this block
+			// glActiveTexture(GL_TEXTURE0);
+			// BindTexture(textureId);
+
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(
+				0,
+				3,
+				GL_FLOAT,
+				GL_FALSE,
+				sizeof(MU3DColorVertex),
+				&verts[0].x
+			);
+
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(
+				1,
+				2,
+				GL_FLOAT,
+				GL_FALSE,
+				sizeof(MU3DColorVertex),
+				&verts[0].u
+			);
+
+			glEnableVertexAttribArray(2);
+			glVertexAttribPointer(
+				2,
+				4,
+				GL_UNSIGNED_BYTE,
+				GL_TRUE,
+				sizeof(MU3DColorVertex),
+				&verts[0].r
+			);
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)verts.size());
 
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
+			glDisableVertexAttribArray(2);
+			glDisableVertexAttribArray(1);
+			glDisableVertexAttribArray(0);
 		}
 
 		glColor4fv(oldColor);
@@ -790,19 +823,51 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 
 		if (!verts.empty())
 		{
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glEnableClientState(GL_COLOR_ARRAY);
+			glUseProgram(g_muProgram);
+			MU_ApplyMatrices();
 
-			glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
-			glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
-			glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+			if (g_uUseTexture >= 0)
+				glUniform1i(g_uUseTexture, 1);
+
+			// texture must already be bound before this draw
+			// glActiveTexture(GL_TEXTURE0);
+			// BindTexture(textureId);
+
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(
+				0,
+				3,
+				GL_FLOAT,
+				GL_FALSE,
+				sizeof(MU3DColorVertex),
+				&verts[0].x
+			);
+
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(
+				1,
+				2,
+				GL_FLOAT,
+				GL_FALSE,
+				sizeof(MU3DColorVertex),
+				&verts[0].u
+			);
+
+			glEnableVertexAttribArray(2);
+			glVertexAttribPointer(
+				2,
+				4,
+				GL_UNSIGNED_BYTE,
+				GL_TRUE,
+				sizeof(MU3DColorVertex),
+				&verts[0].r
+			);
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)verts.size());
 
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
+			glDisableVertexAttribArray(2);
+			glDisableVertexAttribArray(1);
+			glDisableVertexAttribArray(0);
 		}
 
 		glColor4fv(oldColor);

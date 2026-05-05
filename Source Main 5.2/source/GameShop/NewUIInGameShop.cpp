@@ -15,6 +15,8 @@
 #include "MsgBoxIGSDeleteItemConfirm.h"
 #include "MapManager.h"
 #include "mu_sdl.h"
+#include "mu_gles_matrix.h"
+
 
 using namespace SEASON3B;
 
@@ -69,7 +71,7 @@ bool CNewUIInGameShop::Create(CNewUIManager* pNewUIMng, int x, int y)
 	SetPos(x, y);
 	LoadImages();
 	SetBtnInfo();
-	Show(false);	//visible()À» flase·Î
+	Show(false);	//visible()ï¿½ï¿½ flaseï¿½ï¿½
 
 	return true;
 }
@@ -312,7 +314,31 @@ void CNewUIInGameShop::SetRateScale(int _ItemType)
 void CNewUIInGameShop::RenderDisplayItems()
 {		
 	EndBitmap();
-	
+
+#ifndef _WIN32
+	MU_Mat4 proj;
+	MU_Mat4 view;
+
+	MU_LoadIdentity(proj);
+	MU_LoadIdentity(view);
+
+	glViewport(0, 0, WindowWidth, WindowHeight);
+
+	MU_Perspective(
+			proj,
+			1.0f,
+			(float)WindowWidth / (float)WindowHeight,
+			RENDER_ITEMVIEW_NEAR,
+			RENDER_ITEMVIEW_FAR
+	);
+
+// TODO: convert GetOpenGLMatrix(CameraMatrix) to fill your view matrix.
+// For now, keep CameraMatrix if your renderer still uses it.
+	GetOpenGLMatrix(CameraMatrix);
+
+	EnableDepthTest();
+	EnableDepthMask();
+#else
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -324,7 +350,7 @@ void CNewUIInGameShop::RenderDisplayItems()
 	GetOpenGLMatrix(CameraMatrix);
 	EnableDepthTest();
 	EnableDepthMask();
-	
+#endif
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	for(int i=0 ; i<g_InGameShopSystem->GetSizePackageAsDisplayPackage() ; i++ )
@@ -433,14 +459,14 @@ bool CNewUIInGameShop::BtnProcess()
 
 		IGS_StorageItem* pSelectItem = m_StorageItemListBox.GetSelectedText();
 		
-		if( iStorageIndex == IGS_SAFEKEEPING_LISTBOX )					// º¸°üÇÔ
+		if( iStorageIndex == IGS_SAFEKEEPING_LISTBOX )					// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			CMsgBoxIGSStorageItemInfo* pMsgBox = NULL;
 			CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSStorageItemInfoLayout), &pMsgBox);
 			pMsgBox->Initialize(pSelectItem->m_iStorageSeq, pSelectItem->m_iStorageItemSeq, pSelectItem->m_wItemCode, pSelectItem->m_szType, 
 				pSelectItem->m_szName, pSelectItem->m_szNum, pSelectItem->m_szPeriod);
 		}
-		else if( iStorageIndex == IGS_PRESENTBOX_LISTBOX )				// ¼±¹° º¸°üÇÔ
+		else if( iStorageIndex == IGS_PRESENTBOX_LISTBOX )				// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			CMsgBoxIGSGiftStorageItemInfo* pMsgBox = NULL;
 			CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSGiftStorageItemInfoLayout), &pMsgBox);
@@ -483,7 +509,7 @@ bool CNewUIInGameShop::BtnProcess()
 	{	
 		if(g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_INGAMESHOP) == true)
 		{	
-			SendRequestIGS_CashShopOpen(1);		// ¼¥ Close¿äÃ»
+			SendRequestIGS_CashShopOpen(1);		// ï¿½ï¿½ Closeï¿½ï¿½Ã»
 			g_pNewUISystem->Hide(SEASON3B::INTERFACE_INGAMESHOP);
 
 			return true;

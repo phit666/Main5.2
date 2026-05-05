@@ -99,7 +99,9 @@ void RenderPlanes()
 		OBJECT *o = &Planes[i];
 		if(o->Live)
 		{
-			 glColor3f(o->Light[0],o->Light[1],o->Light[2]);
+			 //glColor3f(o->Light[0],o->Light[1],o->Light[2]);
+			 glDisableVertexAttribArray(2);
+			 glVertexAttrib4f(2, o->Light[0], o->Light[1], o->Light[2], 1.0f);
              RenderPlane(o->Type,o->Position,o->Scale,o->Angle[2]);
 		}
 	}

@@ -232,7 +232,11 @@ CALLBACK_RESULT CMsgBoxIGSBuySelectItem::BuyBtnDown(class CNewUIMessageBoxBase* 
 	IGS_SelectBuyItem* pItem = pOwnMsgBox->m_SelectBuyListBox.GetSelectedText();
 	
 	CMsgBoxIGSBuyConfirm* pMsgBox = NULL;
-	CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSBuyConfirmLayout), &pMsgBox);
+	//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSBuyConfirmLayout), &pMsgBox);
+
+	TMsgBoxLayoutContainer<CMsgBoxIGSBuyConfirmLayout> container;
+	CreateMessageBox(container, &pMsgBox);
+
 	pMsgBox->Initialize(pOwnMsgBox->m_wItemCode, pOwnMsgBox->m_iPackageSeq, pOwnMsgBox->m_iDisplaySeq, pItem->m_iPriceSeq, pItem->m_iCashType, pItem->m_szItemName, pItem->m_szItemPrice, pItem->m_szItemPeriod);
 
 	PlayBuffer(SOUND_CLICK01);
@@ -247,7 +251,10 @@ CALLBACK_RESULT CMsgBoxIGSBuySelectItem::PresentBtnDown(class CNewUIMessageBoxBa
 	IGS_SelectBuyItem* pItem = pOwnMsgBox->m_SelectBuyListBox.GetSelectedText();
 	
 	CMsgBoxIGSSendGift* pMsgBox = NULL;
-	CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSSendGiftLayout), &pMsgBox);
+	//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSSendGiftLayout), &pMsgBox);
+	TMsgBoxLayoutContainer<CMsgBoxIGSSendGiftLayout> container;
+	CreateMessageBox(container, &pMsgBox);
+
 	pMsgBox->Initialize(pOwnMsgBox->m_iPackageSeq, pOwnMsgBox->m_iDisplaySeq, pItem->m_iPriceSeq, pItem->m_wItemCode, pItem->m_iCashType, pOwnMsgBox->m_szPackageName, pItem->m_szItemPrice, pItem->m_szItemPeriod);
 
 	PlayBuffer(SOUND_CLICK01);
@@ -371,7 +378,7 @@ void CMsgBoxIGSBuySelectItem::AddData(int iPackageSeq, int iDisplaySeq, int iPri
 bool CMsgBoxIGSBuySelectItemLayout::SetLayout()
 {
 	CMsgBoxIGSBuySelectItem* pMsgBox = GetMsgBox();
-	if(false == pMsgBox)
+	if(nullptr == pMsgBox)
 		return false;
 	
 	if(false == pMsgBox->Create())

@@ -21,12 +21,12 @@ extern nk_context* g_nk_ctx;
 extern event_base* g_eventBase;
 extern event* g_socketReadEvent;
 extern event* g_socketWriteEvent;
-extern SOCKET g_socket;
+//extern SOCKET g_socket;
 
 bool MU_InitSDL(int width, int height);
 void MU_ShutdownSDL();
 void MU_ProcessSDLEvents();
-bool MU_RegisterSocketEvent(SOCKET s);
+//bool MU_RegisterSocketEvent(SOCKET s);
 void MU_EnableSocketWrite();
 void MU_DisableSocketWrite();
 void MU_Close();

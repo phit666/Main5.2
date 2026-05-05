@@ -313,7 +313,7 @@ void CCreditWin::AnimationIllust(double dDeltaTick)
 	}
 }
 
-void BuxConvert(BYTE *Buffer, int Size);
+//void BuxConvert(BYTE *Buffer, int Size);
 
 void CCreditWin::LoadText()
 {

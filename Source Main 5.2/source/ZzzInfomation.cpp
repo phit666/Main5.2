@@ -38,12 +38,12 @@ static  DWORD   g_dwWorldStateBack= 0;
 #endif// STATE_LIMIT_TIME
 
 
-static BYTE bBuxCode[3] = {0xfc,0xcf,0xab};
+/*static BYTE bBuxCode[3] = {0xfc,0xcf,0xab};
 static void BuxConvert(BYTE *Buffer,int Size)
 {
 	for(int i=0;i<Size;i++)
 		Buffer[i] ^= bBuxCode[i%3];
-}
+}*/
 
 CGlobalText GlobalText;
 

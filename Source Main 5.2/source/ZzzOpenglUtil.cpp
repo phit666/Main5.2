@@ -10,6 +10,7 @@
 #include "zzzcharacter.h"
 #include "Zzzinfomation.h"
 #include "NewUISystem.h"
+#include "mu_gles2_matrix.h"
 
 int     OpenglWindowX;
 int     OpenglWindowY;
@@ -247,10 +248,10 @@ void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 
 void Projection(vec3_t Position, int* sx, int* sy)
 {
-	vec3_t TrasformPosition;
-	VectorTransform(Position, CameraMatrix, TrasformPosition);
-	*sx = -(int)(TrasformPosition[0] / PerspectiveX / TrasformPosition[2]) + ScreenCenterX;
-	*sy = (int)(TrasformPosition[1] / PerspectiveY / TrasformPosition[2]) + ScreenCenterY;
+	//vec3_t TrasformPosition;
+	//VectorTransform(Position, CameraMatrix, TrasformPosition);
+	*sx = -(int)(Position[0] / PerspectiveX / Position[2]) + ScreenCenterX;
+	*sy = (int)(Position[1] / PerspectiveY / Position[2]) + ScreenCenterY;
 	*sx = *sx * 640 / (int)WindowWidth;
 	*sy = *sy * 480 / (int)WindowHeight;
 }
@@ -298,9 +299,12 @@ int  AlphaBlendType;
 
 void BindTexture(int tex)
 {
+	glActiveTexture(GL_TEXTURE0);
+
 	if (CachTexture != tex)
 	{
 		CachTexture = tex;
+
 		if (tex >= 0)
 		{
 			BITMAP_t* b = &Bitmaps[tex];
@@ -308,7 +312,7 @@ void BindTexture(int tex)
 		}
 		else
 		{
-			glBindTexture(GL_TEXTURE_2D, -1 * tex);
+			glBindTexture(GL_TEXTURE_2D, (GLuint)(-tex));
 		}
 	}
 }
@@ -375,27 +379,14 @@ void DisableCullFace()
 void DisableTexture(bool AlphaTest)
 {
 	EnableDepthMask();
-	if (AlphaTest == true)
-	{
-		if (!AlphaTestEnable)
-		{
-			AlphaTestEnable = true;
-			glEnable(GL_ALPHA_TEST);
-		}
-	}
-	else
-	{
-		if (AlphaTestEnable)
-		{
-			AlphaTestEnable = false;
-			glDisable(GL_ALPHA_TEST);
-		}
-	}
-	if (TextureEnable)
-	{
-		TextureEnable = false;
-		glDisable(GL_TEXTURE_2D);
-	}
+
+	AlphaTestEnable = AlphaTest;
+	TextureEnable = false;
+
+	glUseProgram(g_muProgram);
+
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 0);
 }
 
 void DisableAlphaBlend()
@@ -410,15 +401,18 @@ void DisableAlphaBlend()
 	if (AlphaTestEnable)
 	{
 		AlphaTestEnable = false;
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST);
 	}
 	if (!TextureEnable)
 	{
 		TextureEnable = true;
-		glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+		//glEnable(GL_TEXTURE_2D);
 	}
-	if (FogEnable)
-		glEnable(GL_FOG);
+	//if (FogEnable)
+		//glEnable(GL_FOG);
 }
 
 void EnableAlphaTest(bool DepthMask)
@@ -435,15 +429,18 @@ void EnableAlphaTest(bool DepthMask)
 	if (!AlphaTestEnable)
 	{
 		AlphaTestEnable = true;
-		glEnable(GL_ALPHA_TEST);
+		//glEnable(GL_ALPHA_TEST);
 	}
 	if (!TextureEnable)
 	{
 		TextureEnable = true;
-		glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+		//glEnable(GL_TEXTURE_2D);
 	}
-	if (FogEnable)
-		glEnable(GL_FOG);
+	//if (FogEnable)
+		//glEnable(GL_FOG);
 }
 
 void EnableAlphaBlend()
@@ -459,15 +456,18 @@ void EnableAlphaBlend()
 	if (AlphaTestEnable)
 	{
 		AlphaTestEnable = false;
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST);
 	}
 	if (!TextureEnable)
 	{
 		TextureEnable = true;
-		glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+		//glEnable(GL_TEXTURE_2D);
 	}
-	if (FogEnable)
-		glDisable(GL_FOG);
+	//if (FogEnable)
+		//glDisable(GL_FOG);
 }
 
 void EnableAlphaBlendMinus()
@@ -483,15 +483,18 @@ void EnableAlphaBlendMinus()
 	if (AlphaTestEnable)
 	{
 		AlphaTestEnable = false;
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST);
 	}
 	if (!TextureEnable)
 	{
 		TextureEnable = true;
-		glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+		//glEnable(GL_TEXTURE_2D);
 	}
-	if (FogEnable)
-		glEnable(GL_FOG);
+	//if (FogEnable)
+		//glEnable(GL_FOG);
 }
 
 void EnableAlphaBlend2()
@@ -507,15 +510,18 @@ void EnableAlphaBlend2()
 	if (AlphaTestEnable)
 	{
 		AlphaTestEnable = false;
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST);
 	}
 	if (!TextureEnable)
 	{
 		TextureEnable = true;
-		glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+		//glEnable(GL_TEXTURE_2D);
 	}
-	if (FogEnable)
-		glEnable(GL_FOG);
+	//if (FogEnable)
+		//glEnable(GL_FOG);
 }
 
 void EnableAlphaBlend3()
@@ -531,15 +537,18 @@ void EnableAlphaBlend3()
 	if (AlphaTestEnable)
 	{
 		AlphaTestEnable = false;
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST);
 	}
 	if (!TextureEnable)
 	{
 		TextureEnable = true;
-		glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+		//glEnable(GL_TEXTURE_2D);
 	}
-	if (FogEnable)
-		glEnable(GL_FOG);
+	//if (FogEnable)
+		//glEnable(GL_FOG);
 }
 
 void EnableAlphaBlend4()
@@ -555,15 +564,18 @@ void EnableAlphaBlend4()
 	if (AlphaTestEnable)
 	{
 		AlphaTestEnable = false;
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST);
 	}
 	if (!TextureEnable)
 	{
 		TextureEnable = true;
-		glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+		//glEnable(GL_TEXTURE_2D);
 	}
-	if (FogEnable)
-		glEnable(GL_FOG);
+	//if (FogEnable)
+		//glEnable(GL_FOG);
 }
 
 void EnableLightMap()
@@ -579,15 +591,18 @@ void EnableLightMap()
 	if (AlphaTestEnable)
 	{
 		AlphaTestEnable = false;
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST);
 	}
 	if (!TextureEnable)
 	{
 		TextureEnable = true;
-		glEnable(GL_TEXTURE_2D);
+		glUseProgram(g_muProgram);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+		//glEnable(GL_TEXTURE_2D);
 	}
-	if (FogEnable)
-		glEnable(GL_FOG);
+	//if (FogEnable)
+		//glEnable(GL_FOG);
 }
 
 void glViewport2(int x, int y, int Width, int Height)
@@ -611,6 +626,46 @@ float ConvertY(float y)
 
 void BeginOpengl(int x, int y, int Width, int Height)
 {
+#ifdef MU_USE_SDL
+	x = x * WindowWidth / 640;
+	y = y * WindowHeight / 480;
+	Width = Width * WindowWidth / 640;
+	Height = Height * WindowHeight / 480;
+
+	glViewport2(x, y, Width, Height);
+
+	MU_Perspective(
+		g_muProjection,
+		CameraFOV,
+		(float)Width / (float)Height,
+		CameraViewNear,
+		CameraViewFar * 1.4f
+	);
+
+	g_muProjection.m[5] = -g_muProjection.m[5];
+
+	MU_LoadIdentity(g_muView);
+
+	MU_Translate(g_muView,
+		-CameraPosition[0],
+		-CameraPosition[1],
+		-CameraPosition[2]);
+
+	MU_RotateZ(g_muView, -CameraAngle[2]);
+
+	if (!CameraTopViewEnable)
+		MU_RotateX(g_muView, -CameraAngle[0]);
+
+	MU_RotateY(g_muView, -CameraAngle[1]);
+
+	glUseProgram(g_muProgram);
+	MU_ApplyMatrices();
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+
+#else
 	x = x * WindowWidth / 640;
 	y = y * WindowHeight / 480;
 	Width = Width * WindowWidth / 640;
@@ -657,14 +712,17 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	}
 
 	GetOpenGLMatrix(CameraMatrix);
+#endif
 }
 
 void EndOpengl()
 {
+#ifndef MU_USE_SDL
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
+#endif
 }
 
 void UpdateMousePositionn()
@@ -967,25 +1025,47 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 
 void BeginSprite()
 {
+#ifdef MU_USE_SDL
+	// GLES2: no matrix stack.
+// Keep current 3D projection/view from BeginOpengl().
+	glUseProgram(g_muProgram);
+	MU_ApplyMatrices();
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glDepthMask(GL_FALSE); // sprites usually should not write depth
+#else
 	glPushMatrix();
 	glLoadIdentity();
+#endif
 }
 
 void EndSprite()
 {
+#ifdef MU_USE_SDL
+	glDepthMask(GL_TRUE);
+
+	// GLES2: no pop matrix.
+#else
 	glPopMatrix();
+#endif
 }
 
 void RenderSprite(int Texture, vec3_t Position, float Width, float Height, vec3_t Light, float Rotation, float u, float v, float uWidth, float vHeight)
 {
 	BindTexture(Texture);
 
-	vec3_t p2;
-	VectorTransform(Position, CameraMatrix, p2);
+	//vec3_t p2;
+	//VectorTransform(Position, CameraMatrix, p2);
 	//VectorCopy(Position,p2);
-	float x = p2[0];
-	float y = p2[1];
-	float z = p2[2];
+	//float x = p2[0];
+	//float y = p2[1];
+	//float z = p2[2];
+
+	float x = Position[0];
+	float y = Position[1];
+	float z = Position[2];
 
 	Width *= 0.5f;
 	Height *= 0.5f;
@@ -1057,11 +1137,11 @@ void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, flo
 {
 	BindTexture(Texture);
 
-	vec3_t p2;
-	VectorTransform(Position, CameraMatrix, p2);
-	float x = p2[0];
-	float y = p2[1];
-	float z = p2[2];
+	//vec3_t p2;
+	//VectorTransform(Position, CameraMatrix, p2);
+	float x = Position[0];
+	float y = Position[1];
+	float z = Position[2];
 
 	Width *= 0.5f;
 	Height *= 0.5f;
@@ -1156,29 +1236,27 @@ float RenderNumber2D(float x, float y, int Num, float Width, float Height)
 
 void BeginBitmap()
 {
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
 	glViewport(0, 0, WindowWidth, WindowHeight);
-	gluPerspective(CameraFOV, (WindowWidth) / ((float)WindowHeight), CameraViewNear, CameraViewFar);
 
-	glLoadIdentity();
-	gluOrtho2D(0, WindowWidth, 0, WindowHeight);
+	MU_Ortho(g_muProjection, (float)WindowWidth, (float)WindowHeight);
+	MU_LoadIdentity(g_muView);
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
+	glUseProgram(g_muProgram);
+	MU_ApplyMatrices();
 
-	glLoadIdentity();
-	DisableDepthTest();
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_CULL_FACE);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	//CachTexture = -999999;
+	//glActiveTexture(GL_TEXTURE0);
 }
 
 void EndBitmap()
 {
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
 }
 
 void RenderColor(float x, float y, float Width, float Height, float Alpha, int Flag)

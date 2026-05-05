@@ -7,6 +7,13 @@
 #include "WSclient.h"
 #include "wsctlc.h"
 #include "wsctlc_addon.h"
+#include "mu_gles2_matrix.h"
+
+#ifndef _WIN32
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif
 
 typedef struct
 {
@@ -40,7 +47,6 @@ SOCKET g_socket = INVALID_SOCKET;
 
 nk_context* g_nk_ctx = nullptr;
 
-// LIBEVENT
 
 void MU_EnableSocketWrite()
 {
@@ -377,11 +383,18 @@ void MU_CloseBev()
 
 bool MU_InitSDL(int width, int height)
 {
+    OutputDebugStringA("[SDL-DEBUG] SDL_Init");
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) != 0)
         return false;
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+    OutputDebugStringA("[SDL-DEBUG] SDL_CreateWindow");
 
     gSDLWindow = SDL_CreateWindow(
         "MU",
@@ -395,6 +408,8 @@ bool MU_InitSDL(int width, int height)
     if (!gSDLWindow)
         return false;
 
+    OutputDebugStringA("[SDL-DEBUG] SDL_GL_CreateContext");
+
     gGLContext = SDL_GL_CreateContext(gSDLWindow);
 
     if (!gGLContext)
@@ -404,11 +419,29 @@ bool MU_InitSDL(int width, int height)
     SDL_GL_SetSwapInterval(1);
     SDL_StartTextInput();
 
+
+    glewExperimental = GL_TRUE;
+    GLenum err = glewInit();
+
+    if (err != GLEW_OK)
+    {
+        OutputDebugStringA("[SDL-DEBUG] glewInit failed");
+        return false;
+    }
+
+    OutputDebugStringA("[SDL-DEBUG] InitShader");
+
+    InitShader();
+
+    OutputDebugStringA("[SDL-DEBUG] nk_sdl_init");
+
     g_nk_ctx = nk_sdl_init(gSDLWindow);
 
     struct nk_font_atlas* atlas;
     nk_sdl_font_stash_begin(&atlas);
     nk_sdl_font_stash_end();
+
+    OutputDebugStringA("[SDL-DEBUG] MU_InitNetworkEvent");
 
     if (!MU_InitNetworkEvent()) {
         //OutputDebugStringA("[SDL-DEBUG] MU_InitNetworkEvent failed.");
@@ -440,3 +473,6 @@ void MU_ShutdownSDL()
 
     //OutputDebugStringA("[SDL-DEBUG] MU_ShutdownSDL");
 }
+
+
+

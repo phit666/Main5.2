@@ -19,6 +19,7 @@
 #include "UIMng.h"
 #include "CameraMove.h"
 #include "mu_sdl.h"
+#include "mu_gles2_matrix.h"
 
 //BMD Models[MAX_MODELS];
 BMD *Models;
@@ -382,13 +383,13 @@ void BMD::TransformPosition(float (*Matrix)[4],vec3_t Position,vec3_t WorldPosit
 {
 	if(Translate)
 	{
-		vec3_t p;
-		VectorTransform(Position,Matrix,p);
-		VectorScale(p,BodyScale,p);
-		VectorAdd(p,BodyOrigin,WorldPosition);
+		//vec3_t p;
+		//VectorTransform(Position,Matrix,p);
+		VectorScale(Position,BodyScale, Position);
+		VectorAdd(Position,BodyOrigin,WorldPosition);
 	}
-	else
-    	VectorTransform(Position,Matrix,WorldPosition);
+	//else
+    	//VectorTransform(Position,Matrix,WorldPosition);
 }
 
 void BMD::RotationPosition(float (*Matrix)[4],vec3_t Position,vec3_t WorldPosition)
@@ -923,12 +924,12 @@ void BMD::ReleaseLightMaps()
 
 void BMD::BeginRender(float Alpha)
 {
-	glPushMatrix();
+	//glPushMatrix();
 }
 
 void BMD::EndRender()
 {
-    glPopMatrix();
+    //glPopMatrix();
 }
 
 extern float WorldTime;
@@ -982,7 +983,14 @@ void BMD::RenderMesh(int i,int RenderFlag,float Alpha,int BlendMesh,float BlendM
 	bool EnableLight = LightEnable;
 	if(i==StreamMesh)
 	{
-		glColor3fv(BodyLight);
+		glDisableVertexAttribArray(2);
+		glVertexAttrib4f(
+			2,
+			BodyLight[0],
+			BodyLight[1],
+			BodyLight[2],
+			1.0f
+		);
 		EnableLight = false;
 	}
 	else if(EnableLight)
@@ -1010,15 +1018,30 @@ void BMD::RenderMesh(int i,int RenderFlag,float Alpha,int BlendMesh,float BlendM
         }
 
         DisableTexture();
-		if(Alpha >= 0.99f)
-        {
-            glColor3fv(BodyLight);
-        }
+		if (Alpha >= 0.99f)
+		{
+			glDisableVertexAttribArray(2);
+			glVertexAttrib4f(
+				2,
+				BodyLight[0],
+				BodyLight[1],
+				BodyLight[2],
+				1.0f
+			);
+		}
 		else
-        {
-            EnableAlphaTest();
-            glColor4f(BodyLight[0],BodyLight[1],BodyLight[2],Alpha);
-        }
+		{
+			EnableAlphaTest(); // your blend setup is fine
+
+			glDisableVertexAttribArray(2);
+			glVertexAttrib4f(
+				2,
+				BodyLight[0],
+				BodyLight[1],
+				BodyLight[2],
+				Alpha
+			);
+		}
  	}
 	else if ( (RenderFlag&RENDER_CHROME)==RENDER_CHROME     || 
               (RenderFlag&RENDER_CHROME2)==RENDER_CHROME2   ||
@@ -1183,7 +1206,15 @@ void BMD::RenderMesh(int i,int RenderFlag,float Alpha,int BlendMesh,float BlendM
             DisableDepthTest ();				
         }
 
-		glColor3f(BodyLight[0]*BlendMeshLight,BodyLight[1]*BlendMeshLight,BodyLight[2]*BlendMeshLight);
+		glDisableVertexAttribArray(2);
+		glVertexAttrib4f(
+			2,
+			BodyLight[0] * BlendMeshLight,
+			BodyLight[1] * BlendMeshLight,
+			BodyLight[2] * BlendMeshLight,
+			1.0f
+		);
+		//glColor3f(BodyLight[0]*BlendMeshLight,BodyLight[1]*BlendMeshLight,BodyLight[2]*BlendMeshLight);
 		//glColor3f(BlendMeshLight,BlendMeshLight,BlendMeshLight);
 		EnableLight = false;
 	}
@@ -1398,22 +1429,62 @@ void BMD::RenderMesh(int i,int RenderFlag,float Alpha,int BlendMesh,float BlendM
 
 	if (!verts.empty())
 	{
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
+		glUseProgram(g_muProgram);
+		MU_ApplyMatrices();
 
-		glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+
+		// texture must already be bound before RenderMesh draw.
+		// If you have tex id here, call:
+		// glActiveTexture(GL_TEXTURE0);
+		// BindTexture(texID);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(
+			0,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(MU3DColorVertex),
+			&verts[0].x
+		);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(
+			1,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(MU3DColorVertex),
+			&verts[0].u
+		);
+
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(
+			2,
+			4,
+			GL_UNSIGNED_BYTE,
+			GL_TRUE,
+			sizeof(MU3DColorVertex),
+			&verts[0].r
+		);
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
 
-		glDisableClientState(GL_COLOR_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(0);
 	}
 
-	glColor4fv(oldColor);
+	glDisableVertexAttribArray(2);
+	glVertexAttrib4f(
+		2,
+		oldColor[0],
+		oldColor[1],
+		oldColor[2],
+		oldColor[3]
+	); 
 }
 
 void BMD::RenderMeshAlternative( int iRndExtFlag, int iParam, int i,int RenderFlag,float Alpha,int BlendMesh,float BlendMeshLight,float BlendMeshTexCoordU,float BlendMeshTexCoordV,int MeshTexture)
@@ -1635,7 +1706,7 @@ void BMD::RenderMeshAlternative( int iRndExtFlag, int iParam, int i,int RenderFl
             DisableDepthTest ();				
         }
 
-		glColor3f(BodyLight[0]*BlendMeshLight,BodyLight[1]*BlendMeshLight,BodyLight[2]*BlendMeshLight);
+		//glColor3f(BodyLight[0]*BlendMeshLight,BodyLight[1]*BlendMeshLight,BodyLight[2]*BlendMeshLight);
 		//glColor3f(BlendMeshLight,BlendMeshLight,BlendMeshLight);
 		EnableLight = false;
 	}
@@ -1804,19 +1875,51 @@ void BMD::RenderMeshAlternative( int iRndExtFlag, int iParam, int i,int RenderFl
 
 	if (!verts.empty())
 	{
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
+		glUseProgram(g_muProgram);
+		MU_ApplyMatrices();
 
-		glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+
+		// texture should already be bound before this block
+		// glActiveTexture(GL_TEXTURE0);
+		// BindTexture(Texture);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(
+			0,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(MU3DColorVertex),
+			&verts[0].x
+		);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(
+			1,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(MU3DColorVertex),
+			&verts[0].u
+		);
+
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(
+			2,
+			4,
+			GL_UNSIGNED_BYTE,
+			GL_TRUE,
+			sizeof(MU3DColorVertex),
+			&verts[0].r
+		);
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
 
-		glDisableClientState(GL_COLOR_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(0);
 	}
 
 	glColor4fv(oldColor);
@@ -2045,7 +2148,7 @@ void BMD::RenderBody(int Flag,float Alpha,int BlendMesh,float BlendMeshLight,flo
 	}
 	EndRender();
 }
-
+// not used
 void BMD::RenderBodyAlternative( int iRndExtFlag, int iParam, int Flag,float Alpha,int BlendMesh,float BlendMeshLight,float BlendMeshTexCoordU,float BlendMeshTexCoordV,int HiddenMesh,int Texture)
 {
 	if(NumMeshs == 0) return;
@@ -2206,7 +2309,7 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
      		EnableAlphaBlendMinus();
 		else
      		EnableAlphaBlend();
-		glColor3f(BodyLight[0]*BlendMeshLight,BodyLight[1]*BlendMeshLight,BodyLight[2]*BlendMeshLight);
+		//glColor3f(BodyLight[0]*BlendMeshLight,BodyLight[1]*BlendMeshLight,BodyLight[2]*BlendMeshLight);
 		//glColor3f(BlendMeshLight,BlendMeshLight,BlendMeshLight);
 		EnableLight = false;
 	}
@@ -2336,24 +2439,57 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 
 	if (!verts.empty())
 	{
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
+		glUseProgram(g_muProgram);
+		MU_ApplyMatrices();
 
-		glVertexPointer(3, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(MU3DColorVertex), &verts[0].u);
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MU3DColorVertex), &verts[0].r);
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+
+		// make sure texture is already bound before this
+		// glActiveTexture(GL_TEXTURE0);
+		// BindTexture(Texture);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(
+			0,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(MU3DColorVertex),
+			&verts[0].x
+		);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(
+			1,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(MU3DColorVertex),
+			&verts[0].u
+		);
+
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(
+			2,
+			4,
+			GL_UNSIGNED_BYTE,
+			GL_TRUE,
+			sizeof(MU3DColorVertex),
+			&verts[0].r
+		);
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
 
-		glDisableClientState(GL_COLOR_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(0);
 	}
 
 	glColor4fv(oldColor);
 }
 
+// not used
 void BMD::RenderBodyTranslate(int Flag,float Alpha,int BlendMesh,float BlendMeshLight,float BlendMeshTexCoordU,float BlendMeshTexCoordV,int HiddenMesh,int Texture)
 {
 	if(NumMeshs == 0) return;
@@ -2434,13 +2570,32 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 
 				if (!verts.empty())
 				{
-					glEnableClientState(GL_VERTEX_ARRAY);
+					glUseProgram(g_muProgram);
+					MU_ApplyMatrices();
 
-					glVertexPointer(3, GL_FLOAT, 0, verts.data());
+					// no texture for this draw
+					if (g_uUseTexture >= 0)
+						glUniform1i(g_uUseTexture, 0);
+
+					glEnableVertexAttribArray(0);
+					glVertexAttribPointer(
+						0,
+						3,
+						GL_FLOAT,
+						GL_FALSE,
+						0,
+						verts.data()
+					);
+
+					glDisableVertexAttribArray(1);
+					glVertexAttrib2f(1, 0.0f, 0.0f);
+
+					glDisableVertexAttribArray(2);
+					glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
 
 					glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(verts.size() / 3));
 
-					glDisableClientState(GL_VERTEX_ARRAY);
+					glDisableVertexAttribArray(0);
 				}
 
 			}

@@ -9,6 +9,7 @@
 #include "zzzEffect.h"
 #include "MapManager.h"
 #include "mu_sdl.h"
+#include "mu_gles2_matrix.h"
 
 #define RENDER_CLOTH
 #define ADD_COLLISION
@@ -896,13 +897,41 @@ void CPhysicsCloth::RenderFace(BOOL bFront, int iTexture, vec3_t* pvRenderPos)
 	}
 
 	TextureEnable = true;
-	glEnable(GL_TEXTURE_2D);
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glUseProgram(g_muProgram);
+	MU_ApplyMatrices();
 
-	glVertexPointer(3, GL_FLOAT, sizeof(MUClothVertex), &vertices[0].x);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(MUClothVertex), &vertices[0].u);
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
+
+	// texture must already be bound before this
+	// glActiveTexture(GL_TEXTURE0);
+	// BindTexture(textureId);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(
+		0,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(MUClothVertex),
+		&vertices[0].x
+	);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(
+		1,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(MUClothVertex),
+		&vertices[0].u
+	);
+
+	glDisableVertexAttribArray(2);
+	glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	glDrawElements(
 		GL_TRIANGLES,
@@ -911,10 +940,8 @@ void CPhysicsCloth::RenderFace(BOOL bFront, int iTexture, vec3_t* pvRenderPos)
 		indices.data()
 	);
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	glColor4f(1.f, 1.f, 1.f, 1.f);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(0);
 }
 
 void CPhysicsCloth::RenderVertex( vec3_t *pvRenderPos, int xVertex, int yVertex)

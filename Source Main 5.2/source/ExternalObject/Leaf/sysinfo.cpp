@@ -3,6 +3,41 @@
 #include "sysinfo.h"
 #include "rdtsc.h"
 
+#ifdef __ANDROID__
+
+#include <sys/utsname.h>
+#include <unistd.h>
+#include <sstream>
+
+bool leaf::GetOSInfoString(std::string& osinfo)
+{
+    struct utsname u;
+    if (uname(&u) == 0)
+    {
+        osinfo = std::string(u.sysname) + " " + u.release;
+        return true;
+    }
+
+    osinfo = "Android";
+    return true;
+}
+
+
+
+void leaf::GetCPUInfoString(std::string& cpuinfo)
+{
+    std::stringstream ss;
+
+    // CPU cores
+    long cores = sysconf(_SC_NPROCESSORS_ONLN);
+
+    ss << "ARM CPU (" << cores << " cores)";
+
+    cpuinfo = ss.str();
+}
+
+#else
+
 bool leaf::GetOSInfoString(OUT std::string& osinfo)
 {
 	OSVERSIONINFO osi;
@@ -327,7 +362,7 @@ void leaf::GetCPUInfoString(OUT std::string& cpuinfo)
 		}
 	}	//. switch(iBrand)
 	
-	// ¼Óµµ
+	// ï¿½Óµï¿½
 	__int64 llFreq = GetCPUFrequency( 50) / 1000000;
 	char szFreq[24] = {0, };
 	if(llFreq > 1000) {
@@ -339,3 +374,5 @@ void leaf::GetCPUInfoString(OUT std::string& cpuinfo)
 	}
 	cpuinfo += szFreq;
 }
+
+#endif

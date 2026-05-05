@@ -20,17 +20,17 @@
 //////////////////////////////////////////////////////////////////////
 CMsgBoxIGSGiftStorageItemInfo::CMsgBoxIGSGiftStorageItemInfo()
 {
-	m_iStorageSeq	= 0;		// º¸°üÇÔ ¼ø¹ø
-	m_iStorageItemSeq = 0;		// º¸°üÇÔ »óÇ° ¼ø¹ø
-	m_wItemCode		= -1;		// ¾ÆÀÌÅÛ ÄÚµå
+	m_iStorageSeq	= 0;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	m_iStorageItemSeq = 0;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç° ï¿½ï¿½ï¿½ï¿½
+	m_wItemCode		= -1;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½
 	
-	m_szName[0]		= '\0';		// ¾ÆÀÌÅÛ ÀÌ¸§
+	m_szName[0]		= '\0';		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½
 	m_szNum[0]		= '\0';
 	m_szPeriod[0]	= '\0';
-	m_szItemType	= '\0';		// »óÇ°±¸ºÐ (C : Ä³½Ã, P : »óÇ°)
+	m_szItemType	= '\0';		// ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ (C : Ä³ï¿½ï¿½, P : ï¿½ï¿½Ç°)
 	
-	m_szIDInfo[0]	= '\0';		// ¼±¹°º¸³½ Ä³¸¯ÅÍID
-	m_szMessage[0]	= '\0';		// ¼±¹°º¸³½ ¸Þ¼¼Áö
+	m_szIDInfo[0]	= '\0';		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ID
+	m_szMessage[0]	= '\0';		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½
 }
 
 CMsgBoxIGSGiftStorageItemInfo::~CMsgBoxIGSGiftStorageItemInfo()
@@ -58,7 +58,7 @@ bool CMsgBoxIGSGiftStorageItemInfo::Create(float fPriority)
 
 	SetMsgBackOpacity();
 
-	// ¸Þ¼¼Áö Input Box
+	// ï¿½Þ¼ï¿½ï¿½ï¿½ Input Box
 	m_MessageInputBox.SetMultiline(TRUE);
 	m_MessageInputBox.Init(g_hWnd, IMAGE_IGS_FRAME_WIDTH-30, 100, 50);
 	m_MessageInputBox.SetPosition(GetPos().x+22, GetPos().y+IGS_MESSAGE_INPUT_TEXT_POS_Y+96);
@@ -96,13 +96,13 @@ void CMsgBoxIGSGiftStorageItemInfo::Initialize(int iStorageSeq, int iStorageItem
 	strcpy(m_szName, pszName);
 
 	// Num
-	sprintf(m_szNum, GlobalText[3040], pszNum);		// "¼ö·® : %s"
+	sprintf(m_szNum, GlobalText[3040], pszNum);		// "ï¿½ï¿½ï¿½ï¿½ : %s"
 
 	// Period
-	sprintf(m_szPeriod, GlobalText[3039], pszPeriod);	// "±â°£ : %s"
+	sprintf(m_szPeriod, GlobalText[3039], pszPeriod);	// "ï¿½â°£ : %s"
 
 	// ID Info
-	// "\'%s\' ´ÔÀÌ º¸³½ ¼±¹°ÀÔ´Ï´Ù."
+	// "\'%s\' ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½."
 	sprintf(m_szIDInfo, GlobalText[3041], pszID);
 
 	m_MessageInputBox.SetText(pszMessage);
@@ -199,9 +199,11 @@ CALLBACK_RESULT CMsgBoxIGSGiftStorageItemInfo::OKButtonDown(class CNewUIMessageB
 {
 	CMsgBoxIGSGiftStorageItemInfo* pOwnMsgBox = dynamic_cast<CMsgBoxIGSGiftStorageItemInfo*>(pOwner);
 
-	// »ç¿ëÇÏ±â È®ÀÎ Ã¢
+	// ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ È®ï¿½ï¿½ Ã¢
 	CMsgBoxIGSUseItemConfirm* pMsgBox = NULL;
-	CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSUseItemConfirmLayout), &pMsgBox);
+	//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSUseItemConfirmLayout), &pMsgBox);
+	TMsgBoxLayoutContainer<CMsgBoxIGSUseItemConfirmLayout> container;
+	CreateMessageBox(container, &pMsgBox);
 	pMsgBox->Initialize(pOwnMsgBox->m_iStorageSeq, pOwnMsgBox->m_iStorageItemSeq, 
 							pOwnMsgBox->m_wItemCode, pOwnMsgBox->m_szItemType, pOwnMsgBox->m_szName);
 
@@ -225,13 +227,13 @@ CALLBACK_RESULT CMsgBoxIGSGiftStorageItemInfo::CancelButtonDown(class CNewUIMess
 // SetButtonInfo
 void CMsgBoxIGSGiftStorageItemInfo::SetButtonInfo()
 {
-	// È®ÀÎ ¹öÆ°
+	// È®ï¿½ï¿½ ï¿½ï¿½Æ°
 	m_BtnUse.SetInfo(IMAGE_IGS_BUTTON, GetPos().x+IGS_BTN_OK_POS_X, GetPos().y+IGS_BTN_POS_Y+102, 
 						IMAGE_IGS_BTN_WIDTH, IMAGE_IGS_BTN_HEIGHT, CNewUIMessageBoxButton::MSGBOX_BTN_CUSTOM, true);
 	m_BtnUse.MoveTextPos(0, -1);
 	m_BtnUse.SetText(GlobalText[228]);	
 
-	// Ãë¼Ò ¹öÆ°
+	// ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°
 	m_BtnCancel.SetInfo(IMAGE_IGS_BUTTON, GetPos().x+IGS_BTN_CANCEL_POS_X, GetPos().y+IGS_BTN_POS_Y+102, 
 							IMAGE_IGS_BTN_WIDTH, IMAGE_IGS_BTN_HEIGHT, CNewUIMessageBoxButton::MSGBOX_BTN_CUSTOM, true);
 	m_BtnCancel.MoveTextPos(0, -1);
@@ -253,7 +255,7 @@ void CMsgBoxIGSGiftStorageItemInfo::RenderTexts()
 	g_pRenderText->SetTextColor(255, 255, 255, 255);
 	g_pRenderText->SetFont(g_hFontBold);
 
-	// Title "¼±¹° Á¤º¸Ã¢" 
+	// Title "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¢" 
 	g_pRenderText->RenderText(GetPos().x, GetPos().y+IGS_TEXT_TITLE_POS_Y, GlobalText[3048], IMAGE_IGS_FRAME_WIDTH, 0, RT3_SORT_CENTER);	
 
 	// Item Name
@@ -278,7 +280,7 @@ void CMsgBoxIGSGiftStorageItemInfo::RenderTexts()
 	g_pRenderText->SetTextColor(255, 0, 0, 255);
 	if( m_wItemCode == 65535 )
 	{
-		sprintf(szText, "¾ÆÀÌÅÛÄÚµå°¡ ¾ø½À´Ï´Ù.");
+		sprintf(szText, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµå°¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
 	}
 	else
 	{
@@ -322,7 +324,7 @@ void CMsgBoxIGSGiftStorageItemInfo::UnloadImages()
 bool CMsgBoxIGSGiftStorageItemInfoLayout::SetLayout()
 {
 	CMsgBoxIGSGiftStorageItemInfo* pMsgBox = GetMsgBox();
-	if(false == pMsgBox)
+	if(nullptr == pMsgBox)
 		return false;
 	
 	if(false == pMsgBox->Create())

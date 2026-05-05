@@ -26,13 +26,13 @@ extern float g_fScreenRate_y;
 
 static  CSItemOption csItemOption;
 
-static BYTE bBuxCode[3] = {0xfc,0xcf,0xab};
+/*static BYTE bBuxCode[3] = {0xfc,0xcf,0xab};
 
 static void BuxConvert(BYTE *Buffer,int Size)
 {
 	for(int i=0;i<Size;i++)
 		Buffer[i] ^= bBuxCode[i%3];
-}
+}*/
 
 bool CSItemOption::OpenItemSetScript ( bool bTestServer )
 {

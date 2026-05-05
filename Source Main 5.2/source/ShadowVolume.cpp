@@ -12,7 +12,7 @@
 #include "zzzTexture.h"
 #include "BaseCls.h"
 #include "ZzzCharacter.h"
-
+#include "mu_gles2_matrix.h"
 
 CQueue<CShadowVolume*> m_qSV;
 
@@ -304,13 +304,33 @@ void CShadowVolume::RenderShadowVolume( void)
 {
 	if (m_nNumVertices > 0)
 	{
-		glEnableClientState(GL_VERTEX_ARRAY);
+		glUseProgram(g_muProgram);
+		MU_ApplyMatrices();
 
-		glVertexPointer(3, GL_FLOAT, 0, &m_pVertices[0][0]);
+		// no texture
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 0);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(
+			0,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			&m_pVertices[0][0]
+		);
+
+		// no UV
+		glDisableVertexAttribArray(1);
+		glVertexAttrib2f(1, 0.0f, 0.0f);
+
+		glDisableVertexAttribArray(2);
+		glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
 
 		glDrawArrays(GL_TRIANGLES, 0, m_nNumVertices);
 
-		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableVertexAttribArray(0);
 	}
 }
 

@@ -246,8 +246,8 @@ bool CCheckSumGenerator::GenerateCheckSumFile(const void* pBuffer, size_t size, 
 	MU_FILE* f = MU_fopen(out_filename.c_str(), "wb");
 	if (!f)
 		return false;
-
-	size_t written = SDL_RWwrite(f, cs_table.pdwTable, 1, cs_table.TABLE_SIZE);
+	
+	size_t written = MU_fwrite(cs_table.pdwTable, 1, cs_table.TABLE_SIZE, f);
 	MU_fclose(f);
 
 	return written == cs_table.TABLE_SIZE;

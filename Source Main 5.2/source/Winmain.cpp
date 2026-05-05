@@ -62,6 +62,7 @@
 
 #include "mu_sdl.h"
 #include "mu_socket.h"
+#include "mu_gles2_matrix.h"
 
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
@@ -661,7 +662,7 @@ LONG FAR PASCAL WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		break;
 #if (defined WINDOWMODE)
 	case WM_SIZE:
-		if ( SIZE_MINIMIZED == wParam && g_bUseWindowMode == FALSE )
+		/*if (SIZE_MINIMIZED == wParam && g_bUseWindowMode == FALSE)
 		{
 			if ( !( g_bMinimizedEnabled))
 			{
@@ -672,7 +673,7 @@ LONG FAR PASCAL WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 				}
 				g_SimpleModulusCS.LoadKeyFromBuffer( ( BYTE*)dwMess, FALSE, FALSE, FALSE, TRUE);
 			}
-		}
+		}*/
 		break;
 #else
 #ifdef NDEBUG
@@ -1342,6 +1343,9 @@ int main(int argc, char* argv[])
 	MSG msg;
 #endif
 
+	OutputDebugStringA("[SDL-DEBUG] AttachExceptionHandler");
+
+
 	leaf::AttachExceptionHandler(ExceptionCallback);
 
 	char lpszExeVersion[256] = "unknown";
@@ -1349,6 +1353,10 @@ int main(int argc, char* argv[])
 	char *lpszCommandLine = GetCommandLine();
 	char lpszFile[MAX_PATH];
 	WORD wVersion[4] = { 0,};
+
+	OutputDebugStringA("[SDL-DEBUG] GetFileNameOfFilePath");
+
+
 	if ( GetFileNameOfFilePath( lpszFile, lpszCommandLine))
 	{
 		if ( GetFileVersion( lpszFile, wVersion))
@@ -1363,10 +1371,14 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	OutputDebugStringA("[SDL-DEBUG] g_ErrorReport.Write");
+
 	g_ErrorReport.Write( "\r\n");
 	g_ErrorReport.WriteLogBegin();
 	g_ErrorReport.AddSeparator();
 	g_ErrorReport.Write( "Mu online %s (%s) executed. (%d.%d.%d.%d)\r\n", lpszExeVersion, "Eng", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
+
+	OutputDebugStringA("[SDL-DEBUG] g_ConsoleDebug->Write");
 
 	g_ConsoleDebug->Write(MCD_NORMAL, "Mu Online (Version: %d.%d.%d.%d)", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
 
@@ -1388,14 +1400,26 @@ int main(int argc, char* argv[])
 	//}
 	//VM_END
 
+	//OutputDebugStringA("[SDL-DEBUG] memset(szServerIpAddress");
+	//memset(szServerIpAddress, 0, sizeof(szServerIpAddress));
+	//OutputDebugStringA("[SDL-DEBUG] strcpy(szServerIpAddress");
+
+	//strcpy(szServerIpAddress, "192.168.1.19");
+
+	OutputDebugStringA("[SDL-DEBUG] OpenMainExe");
+
 	if ( !OpenMainExe())
 	{
 		return false;
 	}
 
+	OutputDebugStringA("[SDL-DEBUG] LoadEncryptionKey");
 	// PKD_ADD_BINARY_PROTECTION
 	//VM_START
 	g_SimpleModulusCS.LoadEncryptionKey( "Data\\Enc1.dat");
+
+	OutputDebugStringA("[SDL-DEBUG] LoadDecryptionKey");
+
 	g_SimpleModulusSC.LoadDecryptionKey( "Data\\Dec2.dat");
 	//VM_END
 
@@ -1459,6 +1483,9 @@ int main(int argc, char* argv[])
 
 
 #ifdef MU_USE_SDL
+
+	OutputDebugStringA("[SDL-DEBUG] MU_InitSDL");
+
 	if (!MU_InitSDL(WindowWidth, WindowHeight)) {
 		return FALSE;
 	}
@@ -1658,6 +1685,11 @@ int main(int argc, char* argv[])
 #if MU_USE_LIBEVENT == 1
 	SDL_CreateThread(le_start, "Libevent Thread", NULL);
 #endif
+
+	MU_LoadIdentity(g_muProjection);
+	MU_LoadIdentity(g_muView);
+	UpdateProjection();
+
 	while (!Destroy && gSDLRunning)
 	{
 		nk_input_begin(g_nk_ctx);
@@ -1666,6 +1698,39 @@ int main(int argc, char* argv[])
 
 		if (g_eventBase)
 			event_base_loop(g_eventBase, EVLOOP_NONBLOCK);
+
+		glViewport(0, 0, WindowWidth, WindowHeight);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(g_muProgram);
+		MU_ApplyMatrices();
+
+		/*struct TestVertex
+		{
+			float x, y, z;
+			float r, g, b, a;
+		};
+
+		TestVertex tri[3] =
+		{
+			{ -0.5f, -0.5f, -2.0f, 1, 0, 0, 1 },
+			{  0.5f, -0.5f, -2.0f, 0, 1, 0, 1 },
+			{  0.0f,  0.5f, -2.0f, 0, 0, 1, 1 },
+		};
+
+		//glUseProgram(g_muProgram);
+		//MU_ApplyMatrices();
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TestVertex), &tri[0].x);
+
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(TestVertex), &tri[0].r);
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+		SDL_GL_SwapWindow(gSDLWindow);
+		continue;*/
 
 #if (defined WINDOWMODE)
 		if (g_bUseWindowMode == TRUE)
@@ -1802,9 +1867,17 @@ void MU_ProcessSDLEvents()
 			gSDLRunning = false;
 			break;
 
+
 		case SDL_WINDOWEVENT:
 			switch (e.window.event)
 			{
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+			case SDL_WINDOWEVENT_RESIZED:
+				WindowWidth = e.window.data1;
+				WindowHeight = e.window.data2;
+				UpdateProjection();
+				break;
+
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
 				g_bWndActive = true;
 				break;

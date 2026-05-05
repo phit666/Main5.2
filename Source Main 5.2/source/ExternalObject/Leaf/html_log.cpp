@@ -14,6 +14,7 @@ CHtmlLog::~CHtmlLog()
 
 bool CHtmlLog::LoadHtmlLog(const std::string& filename)
 {
+	/*
 	MU_FILE* fp = MU_fopen(filename.c_str(), "rb");
 	if (!fp)
 		return false;
@@ -72,7 +73,7 @@ bool CHtmlLog::LoadHtmlLog(const std::string& filename)
 	}
 
 	delete[] pbyLog;
-	MU_fclose(fp);
+	MU_fclose(fp);*/
 	return true;
 }
 

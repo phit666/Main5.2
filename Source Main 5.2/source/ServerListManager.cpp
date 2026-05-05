@@ -78,9 +78,9 @@ typedef struct _SERVER_GROUP_INFO
 
 	while (0 != ::fread(&sServerGroupScript, nSize, 1, fp))
 	{
-		BuxConvert((BYTE*)&sServerGroupScript, nSize);
+		::BuxConvert((BYTE*)&sServerGroupScript, nSize);
 		::fread(szDescript, sServerGroupScript.m_nDescriptLen, 1, fp);
-		BuxConvert((BYTE*)szDescript, sServerGroupScript.m_nDescriptLen);
+		::BuxConvert((BYTE*)szDescript, sServerGroupScript.m_nDescriptLen);
 		::strncpy(sServerGroupInfo.m_szName, sServerGroupScript.m_szName,SLM_MAX_SERVER_NAME_LENGTH);
 		sServerGroupInfo.m_byPos = sServerGroupScript.m_byPos;
 		sServerGroupInfo.m_bySequence = sServerGroupScript.m_bySequence;

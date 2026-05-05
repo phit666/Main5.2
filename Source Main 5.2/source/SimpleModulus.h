@@ -19,6 +19,11 @@
 # define SIZE_ENCRYPTION_KEY	( 4)	// SIZE_ENCRYPTION_BLOCK
 # define SIZE_ENCRYPTED_BLOCK	( 11)
 
+struct ENCDEC_FILEHEADER
+{
+    short sFileHeader;
+    int dwSize;
+};
 
 class CSimpleModulus  
 {
@@ -41,21 +46,28 @@ public:
 	int Decrypt( void *lpTarget, void *lpSource, int iSize);
 
 protected:
-	void EncryptBlock( void *lpTarget, void *lpSource, int nSize);
+	int EncryptBlock( void *lpTarget, void *lpSource, int nSize);
 	int DecryptBlock( void *lpTarget, void *lpSource);
 	int AddBits( void *lpBuffer, int nNumBufferBits, void *lpBits, int nInitialBit, int nNumBits);
 	void Shift( void *lpBuffer, int nByte, int nShift);
 	int GetByteOfBit( int nBit);
 public:
-	BOOL SaveAllKey( char *lpszFileName);
-	BOOL LoadAllKey( char *lpszFileName);
-	BOOL SaveEncryptionKey( char *lpszFileName);
-	BOOL LoadEncryptionKey( char *lpszFileName);
-	BOOL SaveDecryptionKey( char *lpszFileName);
-	BOOL LoadDecryptionKey( char *lpszFileName);
+	BOOL SaveAllKey(LPSTR lpszFileName);
+	BOOL LoadAllKey(LPSTR lpszFileName);
+	BOOL SaveEncryptionKey(LPSTR lpszFileName);
+	BOOL LoadEncryptionKey(LPSTR lpszFileName);
+	BOOL SaveDecryptionKey(LPSTR lpszFileName);
+	BOOL LoadDecryptionKey(LPSTR lpszFileName);
 protected:
-	BOOL SaveKey( char *lpszFileName, unsigned short sID, BOOL bMod, BOOL bEnc, BOOL bDec, BOOL bXOR);
-	BOOL LoadKey( char *lpszFileName, unsigned short sID, BOOL bMod, BOOL bEnc, BOOL bDec, BOOL bXOR);
+	BOOL SaveKey(LPSTR lpszFileName, WORD wFileHeader, BOOL bSaveModulus, BOOL bSaveEncKey, BOOL bSaveDecKey, BOOL bSaveXORKey);
+	//BOOL SaveKey(LPSTR lpszFileName, unsigned short sID, BOOL bMod, BOOL bEnc, BOOL bDec, BOOL bXOR);
+	//BOOL LoadKey(LPSTR lpszFileName, unsigned short sID, BOOL bMod, BOOL bEnc, BOOL bDec, BOOL bXOR);
+	BOOL LoadKey(LPSTR lpszFileName,
+		WORD wFileHeader,
+		BOOL bLoadModulus,
+		BOOL bLoadEncKey,
+		BOOL bLoadDecKey,
+		BOOL bLoadXORKey);
 public:
 	BOOL LoadKeyFromBuffer( BYTE *pbyBuffer, BOOL bMod, BOOL bEnc, BOOL bDec, BOOL bXOR);
 };

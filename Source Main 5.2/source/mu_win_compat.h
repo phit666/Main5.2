@@ -25,4 +25,35 @@
 #include "Compats/win_compat.h"
 #endif
 #include "mu_wininet_curl_compat.h"
+#include "mu_gles2_matrix.h"
+#ifdef USE_GLES2_PORT
+inline void MU_glColor3f(float r, float g, float b)
+{
+    glDisableVertexAttribArray(2);
+    glVertexAttrib4f(2, r, g, b, 1.0f);
+}
+
+inline void MU_glColor4f(float r, float g, float b, float a)
+{
+    glDisableVertexAttribArray(2);
+    glVertexAttrib4f(2, r, g, b, a);
+}
+
+inline void MU_glColor3fv(const float* v)
+{
+    glDisableVertexAttribArray(2);
+    glVertexAttrib4f(2, v[0], v[1], v[2], 1.0f);
+}
+
+inline void MU_glColor4fv(const float* v)
+{
+    glDisableVertexAttribArray(2);
+    glVertexAttrib4f(2, v[0], v[1], v[2], v[3]);
+}
+
+#define glColor3f  MU_glColor3f
+#define glColor4f  MU_glColor4f
+#define glColor3fv MU_glColor3fv
+#define glColor4fv MU_glColor4fv
+#endif
 

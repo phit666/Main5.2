@@ -254,7 +254,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>libcurl.lib;zlib.lib;crypt32.lib;Wininet.lib;libevent.lib;libevent_core.lib;SDL2.lib;SDL2main.lib;SDL2_gfx.lib;SDL2_ttf.lib;SDL2_mixer.lib;SDL2_image.lib;imm32.lib;vfw32.lib;dsound.lib;dxguid.lib;jpeglib.lib;opengl32.lib;glu32.lib;winmm.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;version.lib;glprocs.lib;Jpeglib.lib;ShareMemory.lib;SimpleModulus.lib;wzAudio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;libcurl.lib;zlib.lib;crypt32.lib;Wininet.lib;libevent.lib;libevent_core.lib;SDL2.lib;SDL2main.lib;SDL2_gfx.lib;SDL2_ttf.lib;SDL2_mixer.lib;SDL2_image.lib;imm32.lib;vfw32.lib;dsound.lib;dxguid.lib;jpeglib.lib;opengl32.lib;glu32.lib;winmm.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;version.lib;glprocs.lib;Jpeglib.lib;ShareMemory.lib;wzAudio.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(SolutionDir)\dependencies\lib;$(MU_SDK)\DXSDK\Lib;%(AdditionalLibraryDirectories);C:\Libraries\boost_1_75_0\stage\lib</AdditionalLibraryDirectories>
@@ -435,6 +435,7 @@
     <ClCompile Include="source\MsgWin.cpp" />
     <ClCompile Include="source\MultiLanguage.cpp" />
     <ClCompile Include="source\mu_2d_renderer.cpp" />
+    <ClCompile Include="source\mu_gles2_matrix.cpp" />
     <ClCompile Include="source\mu_sdl.cpp" />
     <ClCompile Include="source\mu_wininet_curl_compat.cpp" />
     <ClCompile Include="source\NewBloodCastleSystem.cpp" />
@@ -547,6 +548,7 @@
     <ClCompile Include="source\ServerSelWin.cpp" />
     <ClCompile Include="source\ShadowVolume.cpp" />
     <ClCompile Include="source\SideHair.cpp" />
+    <ClCompile Include="source\SimpleModulus.cpp" />
     <ClCompile Include="source\SkillEffectMgr.cpp" />
     <ClCompile Include="source\SkillInfo.cpp" />
     <ClCompile Include="source\SkillManager.cpp" />
@@ -839,6 +841,8 @@
     <ClInclude Include="source\mu_2d_renderer.h" />
     <ClInclude Include="source\mu_file.h" />
     <ClInclude Include="source\mu_gl.h" />
+    <ClInclude Include="source\mu_gles2_matrix.h" />
+    <ClInclude Include="source\mu_gles_matrix.h" />
     <ClInclude Include="source\mu_sdl.h" />
     <ClInclude Include="source\mu_wininet_curl_compat.h" />
     <ClInclude Include="source\mu_win_compat.h" />

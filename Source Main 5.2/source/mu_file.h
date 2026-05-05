@@ -73,5 +73,6 @@ using MU_FILE = FILE;
 #define MU_fread  fread
 #define MU_fseek  fseek
 #define MU_ftell  ftell
+#define MU_fwrite fwrite
 
 #endif

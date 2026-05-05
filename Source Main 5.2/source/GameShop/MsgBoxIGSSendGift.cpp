@@ -176,19 +176,25 @@ CALLBACK_RESULT CMsgBoxIGSSendGift::OKButtonDown(class CNewUIMessageBoxBase* pOw
 	if( pOwnMsgBox->m_szID[0] == '\0' )
 	{
 		CMsgBoxIGSCommon* pMsgBox = NULL;
-		CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+		//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+		TMsgBoxLayoutContainer<CMsgBoxIGSCommonLayout> container;
+		CreateMessageBox(container, &pMsgBox);
 		pMsgBox->Initialize(GlobalText[3028], GlobalText[3031]);
 	}
 	else if( strcmp(pOwnMsgBox->m_szID, Hero->ID) == 0 )
 	{
 		CMsgBoxIGSCommon* pMsgBox = NULL;
-		CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+		//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+		TMsgBoxLayoutContainer<CMsgBoxIGSCommonLayout> container;
+		CreateMessageBox(container, &pMsgBox);
 		pMsgBox->Initialize(GlobalText[3028], GlobalText[3032]);
 	}
 	else
 	{
 		CMsgBoxIGSSendGiftConfirm* pMsgBox = NULL;
-		CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSSendGiftConfirmLayout), &pMsgBox);
+		//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSSendGiftConfirmLayout), &pMsgBox);
+		TMsgBoxLayoutContainer<CMsgBoxIGSSendGiftConfirmLayout> container;
+		CreateMessageBox(container, &pMsgBox);
 		pMsgBox->Initialize(pOwnMsgBox->m_iPackageSeq, pOwnMsgBox->m_iDisplaySeq, pOwnMsgBox->m_iPriceSeq, pOwnMsgBox->m_wItemCode, pOwnMsgBox->m_iCashType, pOwnMsgBox->m_szID, pOwnMsgBox->m_szMessage, pOwnMsgBox->m_szName, pOwnMsgBox->m_szPrice, pOwnMsgBox->m_szPeriod);
 	}
 	
@@ -306,7 +312,7 @@ void CMsgBoxIGSSendGift::UnloadImages()
 bool CMsgBoxIGSSendGiftLayout::SetLayout()
 {
 	CMsgBoxIGSSendGift* pMsgBox = GetMsgBox();
-	if(false == pMsgBox)
+	if(nullptr == pMsgBox)
 		return false;
 	
 	if(false == pMsgBox->Create())

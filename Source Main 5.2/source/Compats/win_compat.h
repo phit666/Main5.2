@@ -11,7 +11,7 @@
 #include <time.h>
 
 #include <SDL.h>
-
+#include "mu_sdl.h"
 
 
 #include <algorithm>
@@ -762,16 +762,6 @@ inline BOOL ReadFile(...)
     return FALSE;
 }
 
-inline BOOL WriteFile(...)
-{
-    return FALSE;
-}
-
-inline BOOL CloseHandle(HANDLE)
-{
-    return TRUE;
-}
-
 inline DWORD GetModuleFileNameA(HMODULE, LPSTR buffer, DWORD size)
 {
     if (buffer && size > 0)
@@ -1150,13 +1140,6 @@ inline void glColorPointer(GLint size, GLenum type, GLsizei stride, const void* 
             pointer
     );
 }
-
-inline void glColor3f(float, float, float) {}
-inline void glColor4f(float, float, float, float) {}
-inline void glColor3fv(const float*) {}
-inline void glColor4fv(const float*) {}
-inline void glDisable(int) {}
-inline void glEnable(int) {}
 #endif
 
 inline HFONT CreateFont(...)
@@ -1350,6 +1333,50 @@ typedef struct tagVS_FIXEDFILEINFO
     DWORD dwFileDateMS;
     DWORD dwFileDateLS;
 } VS_FIXEDFILEINFO;
+#endif
+
+#ifndef StringCchCopy
+inline int StringCchCopy(char* dst, size_t dstBytes, const char* src)
+{
+    if (!dst || dstBytes == 0)
+        return -1;
+
+    if (!src)
+    {
+        dst[0] = '\0';
+        return 0;
+    }
+
+    strncpy(dst, src, dstBytes - 1);
+    dst[dstBytes - 1] = '\0';
+    return 0;
+}
+#endif
+
+#ifndef _tcschr
+#define _tcschr strchr
+#endif
+
+inline BOOL WriteFile(void* file, const void* buffer, DWORD size, DWORD* written, void*)
+{
+    size_t w = MU_fwrite(buffer, 1, size, (MU_FILE*)file);
+
+    if (written)
+        *written = (DWORD)w;
+
+    return (w == size) ? TRUE : FALSE;
+}
+
+inline int CloseHandle(void* h)
+{
+    if (!h)
+        return 0;
+
+    return MU_fclose((MU_FILE*)h);
+}
+
+#ifndef _atoi64
+#define _atoi64 atoll
 #endif
 
 #endif

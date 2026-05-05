@@ -22,6 +22,7 @@ $(LOCAL_PATH)/../SDL2_ttf \
 $(LOCAL_PATH)/common \
 $(LOCAL_PATH)/../libevent/include \
 $(LOCAL_PATH)/../libjpeg-turbo/include \
+$(LOCAL_PATH)/../curl/include \
 $(LOCAL_PATH)
 
 # Add your application source files here...
@@ -270,6 +271,8 @@ LOCAL_SRC_FILES := \
     ServerSelWin.cpp \
     ShadowVolume.cpp \
     SideHair.cpp \
+    SimpleModulus.cpp \
+    mu_gles2_matrix.cpp \
     SkillEffectMgr.cpp \
     SkillInfo.cpp \
     SkillManager.cpp \

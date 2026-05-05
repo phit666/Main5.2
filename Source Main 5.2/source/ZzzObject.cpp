@@ -7713,7 +7713,17 @@ void RenderPartObjectBody(BMD *b,OBJECT *o,int Type,float Alpha,int RenderType)
 	{
 		if (b->HideSkin)
 		{
-			::glColor3fv(b->BodyLight);
+			//::glColor3fv(b->BodyLight);
+
+			glDisableVertexAttribArray(2);
+			glVertexAttrib4f(
+				2,
+				b->BodyLight[0],
+				b->BodyLight[1],
+				b->BodyLight[2],
+				1.0f
+			);
+
 			int anMesh[6] = { 2, 1, 0, 2, 1, 2 };
 			b->RenderMesh(anMesh[Type-(MODEL_HELM+39)], RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV);
 		}
