@@ -37,7 +37,7 @@ typedef int32_t             LONG;
 typedef uint32_t            ULONG;
 //typedef uint64_t            QWORD;
 typedef uint64_t            ULONGLONG;
-
+typedef char CHAR;
 typedef int INT;
 typedef void VOID;
 typedef uint32_t* LPDWORD;
@@ -1214,7 +1214,7 @@ inline bool IsBadReadPtr(const void* ptr, size_t size)
 typedef void* HKEY;
 typedef BYTE* LPBYTE;
 typedef const BYTE* LPCBYTE;
-typedef unsigned long* ULONG_PTR;
+typedef uint32_t* ULONG_PTR;
 
 #ifndef ERROR_SUCCESS
 #define ERROR_SUCCESS 0L
@@ -1299,5 +1299,57 @@ inline LONG RegCloseKey(HKEY)
 #define RegSetValueEx   RegSetValueExA
 #define RegDeleteKey    RegDeleteKeyA
 #define RegDeleteValue  RegDeleteValueA
+
+#ifndef _EXCEPTION_POINTERS_DEFINED
+#define _EXCEPTION_POINTERS_DEFINED
+typedef struct _EXCEPTION_POINTERS
+{
+    void* ExceptionRecord;
+    void* ContextRecord;
+} _EXCEPTION_POINTERS;
+#endif
+
+// ===== Memory =====
+#ifndef MEMORYSTATUS
+typedef struct _MEMORYSTATUS
+{
+    DWORD dwLength;
+    DWORD dwMemoryLoad;
+    DWORD dwTotalPhys;
+    DWORD dwAvailPhys;
+    DWORD dwTotalPageFile;
+    DWORD dwAvailPageFile;
+    DWORD dwTotalVirtual;
+    DWORD dwAvailVirtual;
+} MEMORYSTATUS, *LPMEMORYSTATUS;
+#endif
+
+#ifndef PEXCEPTION_RECORD
+typedef void* PEXCEPTION_RECORD;
+#endif
+
+#ifndef LPTOP_LEVEL_EXCEPTION_FILTER
+typedef LONG (*LPTOP_LEVEL_EXCEPTION_FILTER)(_EXCEPTION_POINTERS*);
+#endif
+
+// ===== Version info =====
+#ifndef VS_FIXEDFILEINFO
+typedef struct tagVS_FIXEDFILEINFO
+{
+    DWORD dwSignature;
+    DWORD dwStrucVersion;
+    DWORD dwFileVersionMS;
+    DWORD dwFileVersionLS;
+    DWORD dwProductVersionMS;
+    DWORD dwProductVersionLS;
+    DWORD dwFileFlagsMask;
+    DWORD dwFileFlags;
+    DWORD dwFileOS;
+    DWORD dwFileType;
+    DWORD dwFileSubtype;
+    DWORD dwFileDateMS;
+    DWORD dwFileDateLS;
+} VS_FIXEDFILEINFO;
+#endif
 
 #endif

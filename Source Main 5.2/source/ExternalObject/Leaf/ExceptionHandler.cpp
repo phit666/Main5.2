@@ -1,7 +1,37 @@
 #include "stdafx.h"
 
+#ifdef __ANDROID__
+
+// ===== Android stub implementation =====
+
 #include "ExceptionHandler.h"
 #include "checkintegrity.h"
+
+using namespace leaf;
+
+bool leaf::AttachExceptionHandler(const std::string&, bool) { return false; }
+bool leaf::AttachExceptionHandler(EXCEPTION_CALLBACK, bool) { return false; }
+bool leaf::DetachExceptionHandler() { return false; }
+bool leaf::IsContinueExceptionToSecondChance() { return false; }
+bool leaf::SaveExceptionDumpFile(const std::string&, CONTEXT*, _EXCEPTION_POINTERS*) { return false; }
+
+// Minimal dummy class
+CExceptionHandler::CExceptionHandler() {}
+CExceptionHandler::~CExceptionHandler() {}
+
+bool CExceptionHandler::AttachExceptionHandler(const std::string&, bool) { return false; }
+bool CExceptionHandler::AttachExceptionHandler(EXCEPTION_CALLBACK, bool) { return false; }
+bool CExceptionHandler::DetachExceptionHandler() { return false; }
+bool CExceptionHandler::IsEnableSecondChance() const { return false; }
+
+CExceptionHandler* CExceptionHandler::GetObjPtr()
+{
+	static CExceptionHandler s;
+	return &s;
+}
+
+#else
+
 
 #include <tlhelp32.h>
 #include <time.h>
@@ -479,3 +509,4 @@ const DMPCALLSTACKFRAME* CDmpFileLoader::GetCallStackFrame(int index) const
 		return m_listStackFrame[index];
 	return NULL;
 }
+#endif

@@ -2,7 +2,7 @@
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 
 #include "stdafx.h"
-
+#ifndef __ANDROID__
 #include "peimage.h"
 
 #include "xstreambuf.h"
@@ -819,3 +819,4 @@ DWORD CPeImageDataInjector::GetAlignedSize(DWORD dwNonAlignedSize, DWORD dwAlign
 {
 	return (DWORD)(((double)dwNonAlignedSize/(double)dwAlignment)+0.99f)*dwAlignment;
 }
+#endif

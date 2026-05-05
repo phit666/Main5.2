@@ -2,6 +2,7 @@
 
 #include "html_log.h"
 #include "stdleaf.h"
+#include "mu_sdl.h"
 
 using namespace leaf;
 
@@ -13,19 +14,24 @@ CHtmlLog::~CHtmlLog()
 
 bool CHtmlLog::LoadHtmlLog(const std::string& filename)
 {
-	FILE* fp = fopen(filename.c_str(), "rb");
-	if(fp == NULL)
+	MU_FILE* fp = MU_fopen(filename.c_str(), "rb");
+	if (!fp)
 		return false;
 
-	fseek(fp, 0, SEEK_END);
-	size_t size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
-	
+	MU_fseek(fp, 0, SEEK_END);
+	size_t size = MU_ftell(fp);
+	MU_fseek(fp, 0, SEEK_SET);
+
+	if (size == 0)
+	{
+		MU_fclose(fp);
+		return false;
+	}
+
 	BYTE* pbyLog = new BYTE[size];
-	fread(pbyLog, 1, size, fp);
+	MU_fread(pbyLog, 1, size, fp);
 
-	//. Parsing Html
-
+	// ===== original parsing unchanged =====
 	int iBeginSyntax = -1, iEndSyntax = -1, iBodyPos = 0;
 	enum KEYWORD_TYPE {
 		TYPE_NONE = 0,
@@ -33,59 +39,57 @@ bool CHtmlLog::LoadHtmlLog(const std::string& filename)
 		TYPE_END_BODY
 	} KeyWordType = TYPE_NONE;
 
-	for(int offset=0; offset<(int)size; offset++) 
+	for (int offset = 0; offset < (int)size; offset++)
 	{
-		if(pbyLog[offset] == '<') {
+		if (pbyLog[offset] == '<') {
 			iBeginSyntax = offset;
 			iEndSyntax = -1;
 		}
-		else if(pbyLog[offset] == '>') {
+		else if (pbyLog[offset] == '>') {
 
 			iEndSyntax = offset;
-			
-			if(KeyWordType == TYPE_BEGIN_BODY) {
-				m_head.assign((const char*)pbyLog, iEndSyntax+1);
-				iBodyPos = iEndSyntax+1;
+
+			if (KeyWordType == TYPE_BEGIN_BODY) {
+				m_head.assign((const char*)pbyLog, iEndSyntax + 1);
+				iBodyPos = iEndSyntax + 1;
 				KeyWordType = TYPE_NONE;
 			}
-			else if(KeyWordType == TYPE_END_BODY) {
-				if(pbyLog[iBeginSyntax-1] == '\n')
-					iBeginSyntax--;
-				if(pbyLog[iBeginSyntax-1] == '\r')
-					iBeginSyntax--;
+			else if (KeyWordType == TYPE_END_BODY) {
+				if (pbyLog[iBeginSyntax - 1] == '\n') iBeginSyntax--;
+				if (pbyLog[iBeginSyntax - 1] == '\r') iBeginSyntax--;
 
-				m_body.assign((const char*)pbyLog+iBodyPos, iBeginSyntax-iBodyPos);
-				m_tail.assign((const char*)pbyLog+iBeginSyntax, size-iBeginSyntax);
+				m_body.assign((const char*)pbyLog + iBodyPos, iBeginSyntax - iBodyPos);
+				m_tail.assign((const char*)pbyLog + iBeginSyntax, size - iBeginSyntax);
 				break;
 			}
 		}
-		else if(iEndSyntax < 0 && KeyWordType == TYPE_NONE) {
-			//. Scan body
-			if(strnicmp((const char*)pbyLog+offset, "BODY", 4) == 0)
+		else if (iEndSyntax < 0 && KeyWordType == TYPE_NONE) {
+			if (strncasecmp((const char*)pbyLog + offset, "BODY", 4) == 0)
 				KeyWordType = TYPE_BEGIN_BODY;
-			else if(strnicmp((const char*)pbyLog+offset, "/BODY", 5) == 0)
+			else if (strncasecmp((const char*)pbyLog + offset, "/BODY", 5) == 0)
 				KeyWordType = TYPE_END_BODY;
 		}
 	}
 
-	delete [] pbyLog;
-
-	fclose(fp);
+	delete[] pbyLog;
+	MU_fclose(fp);
 	return true;
 }
+
 bool CHtmlLog::SaveHtmlLog(const std::string& filename)
 {
-	FILE* fp = fopen(filename.c_str(), "wb");
-	if(fp == NULL)
+	MU_FILE* fp = MU_fopen(filename.c_str(), "wb");
+	if (!fp)
 		return false;
-	fwrite(m_head.data(), 1, m_head.size(), fp);
-	fwrite(m_body.data(), 1, m_body.size(), fp);
-	fwrite(m_tail.data(), 1, m_tail.size(), fp);
-	
-	fclose(fp);
 
+	MU_fwrite(m_head.data(), 1, m_head.size(), fp);
+	MU_fwrite(m_body.data(), 1, m_body.size(), fp);
+	MU_fwrite(m_tail.data(), 1, m_tail.size(), fp);
+
+	MU_fclose(fp);
 	return true;
 }
+
 void CHtmlLog::ClearHtmlLog()
 {
 	m_head = m_body = m_tail = std::string("");

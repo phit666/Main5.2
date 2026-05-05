@@ -3,6 +3,30 @@
 #ifndef _PEIMAGE_H_
 #define _PEIMAGE_H_
 
+#ifdef __ANDROID__
+#include "mu_sdl.h"
+// ===== Android stub =====
+
+#pragma once
+
+namespace leaf
+{
+	// All functions return false or nullptr
+
+	inline void* GetPtrOfImageDosHeader(void*) { return nullptr; }
+	inline void* GetPtrOfImageNtHeaders(void*) { return nullptr; }
+
+	inline bool GetImageDosHeader(const void*, void*) { return false; }
+	inline bool GetImageNtHeaders(const void*, void*) { return false; }
+
+	inline bool InjectDataToPeFile(const std::string&, const std::string&, const std::string&, const std::string&, bool) { return false; }
+	inline bool InjectDataToPeFile(const std::string&, const std::string&, const std::string&, const void*, size_t, bool) { return false; }
+
+	inline bool ExtractDataFromPeFile(const void*, int, void*, size_t) { return false; }
+}
+
+#else
+
 #pragma once
 
 #pragma warning(disable : 4786)
@@ -231,5 +255,5 @@ namespace leaf {
 	};
 	
 }	// namespace leaf
-
+#endif
 #endif // _PEIMAGE_H_
