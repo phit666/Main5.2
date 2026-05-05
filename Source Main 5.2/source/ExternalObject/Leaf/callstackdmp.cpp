@@ -15,6 +15,7 @@ CCallStackDump::CCallStackFrame::CCallStackFrame() : m_pFrameAddr(NULL), m_pRetu
 CCallStackDump::CCallStackFrame::~CCallStackFrame() {}
 
 bool CCallStackDump::CCallStackFrame::Create(DWORD* pEbp) {
+#ifdef _WIN32
 	if(IsBadReadPtr( pEbp, sizeof(DWORD)))
 		return false;
 	
@@ -26,6 +27,7 @@ bool CCallStackDump::CCallStackFrame::Create(DWORD* pEbp) {
 			break;
 		memcpy(m_pParameter+i, (void*)(pEbp+2+i), sizeof(DWORD));
 	}
+#endif
 	return true;
 }
 void CCallStackDump::CCallStackFrame::Release() {
@@ -36,15 +38,18 @@ void CCallStackDump::CCallStackFrame::Release() {
 void* CCallStackDump::CCallStackFrame::GetFrameAddr() { return m_pFrameAddr; }
 void* CCallStackDump::CCallStackFrame::GetReturnAddr() { return m_pReturnAddr; }
 void CCallStackDump::CCallStackFrame::GetParameter(DWORD* pBuf, size_t size) {
+#ifdef _WIN32
 	if(size > MAX_PARAMETER_BUFSIZE)
 		size = MAX_PARAMETER_BUFSIZE;
 	memcpy(pBuf, m_pParameter, size*sizeof(DWORD));
+#endif
 }
 
 CCallStackDump::CCallStackDump() {}
 CCallStackDump::~CCallStackDump() { Clear(); }
 
 void CCallStackDump::Dump(const CONTEXT* pContext) {
+#ifdef _WIN32
 	Clear();
 	
 	DWORD* pEbp = (DWORD*)pContext->Ebp;
@@ -62,9 +67,11 @@ void CCallStackDump::Dump(const CONTEXT* pContext) {
 
 		pEbp = (DWORD*)*pEbp;
 	}
+#endif
 }
 void CCallStackDump::Dump() 
 {
+#ifdef _WIN32
 	CONTEXT ct;
 	ZeroMemory(&ct, sizeof(CONTEXT));
 	
@@ -72,31 +79,41 @@ void CCallStackDump::Dump()
 	::GetThreadContext( GetCurrentThread(), &ct);
 	
 	Dump(&ct);
+#endif
 }
 void CCallStackDump::Clear() 
 {
+#ifdef _WIN32
 	type_framevect::iterator fvi = m_listFrame.begin();
 	for(; fvi != m_listFrame.end(); fvi++)
 		delete (*fvi);
 	m_listFrame.clear();
+#endif
 }
 
 size_t CCallStackDump::GetStackDepth() const { return m_listFrame.size(); }
 
 void* CCallStackDump::GetFrameAddr(int index) 
 {
+#ifdef _WIN32
 	if(index >= (int)GetStackDepth()) return NULL;
 		return m_listFrame[index]->GetFrameAddr();
+#endif
 }
 void* CCallStackDump::GetReturnAddr(int index) 
 {
-                                                                
+#ifdef _WIN32
 	if(index >= (int)GetStackDepth()) return NULL;
 		return m_listFrame[index]->GetReturnAddr();
+#else
+		return NULL;
+#endif
 }
 void CCallStackDump::GetParameter(int index, DWORD* pBuf, size_t size) 
 {
+#ifdef _WIN32
 	if(index >=0 && index < (int)GetStackDepth()) {
 		m_listFrame[index]->GetParameter(pBuf, size);
 	}
+#endif
 }

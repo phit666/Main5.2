@@ -38,6 +38,14 @@ inline size_t MU_fread(void* ptr, size_t size, size_t count, MU_FILE* fp)
     return SDL_RWread(fp, ptr, size, count);
 }
 
+inline size_t MU_fwrite(const void* ptr, size_t size, size_t count, MU_FILE* fp)
+{
+    if (!fp)
+        return 0;
+
+    return SDL_RWwrite(fp, ptr, size, count);
+}
+
 inline int MU_fseek(MU_FILE* fp, long offset, int origin)
 {
     if (!fp)

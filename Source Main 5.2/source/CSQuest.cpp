@@ -32,7 +32,7 @@ static  CSQuest csQuest;
 
 static BYTE bBuxCode[3] = {0xfc,0xcf,0xab};
 
-static void BuxConvert(BYTE *Buffer,int Size)
+void BuxConvert(BYTE *Buffer,int Size)
 {
 	for(int i=0;i<Size;i++)
 		Buffer[i] ^= bBuxCode[i%3];

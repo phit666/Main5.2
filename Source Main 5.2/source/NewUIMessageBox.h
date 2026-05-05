@@ -355,7 +355,8 @@ namespace SEASON3B
 		TMsgBoxLayout()
 		{
 			CNewUIMessageBoxMng* pNewUIMsgBoxMng = CNewUIMessageBoxMng::GetInstance();
-			ms_pMsgBox = pNewUIMsgBoxMng->NewMessageBox(CNewUIMessageBoxFactory::TContainer<_M>());
+			CNewUIMessageBoxFactory::TContainer<_M> container;
+			ms_pMsgBox = pNewUIMsgBoxMng->NewMessageBox(container);
 		}
 		virtual ~TMsgBoxLayout() {}
 
@@ -408,6 +409,12 @@ namespace SEASON3B
 			*ppMsgBox = TMsgBoxLayout<_M>::GetMsgBox();
 
 		return container.SetLayout();
+	}
+	template<class _L>
+	bool CreateMessageBox(const TMsgBoxLayoutContainer<_L>& container)
+	{
+		TMsgBoxLayoutContainer<_L> temp = container;
+		return CreateMessageBox(temp);
 	}
 }
 

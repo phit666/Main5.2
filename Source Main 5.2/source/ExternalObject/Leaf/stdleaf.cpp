@@ -5,6 +5,216 @@
 
 #include "stdleaf.h"
 
+#ifdef __ANDROID__
+#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#endif
+
+#include "mu_sdl.h"
+
+
+#ifdef __ANDROID__
+
+bool leaf::CreateDirectoryIncSub(const std::string& path)
+{
+	std::string cur;
+
+	for (size_t i = 0; i < path.size(); ++i)
+	{
+		char ch = path[i];
+		cur += ch;
+
+		if (ch == '/' || ch == '\\' || i == path.size() - 1)
+		{
+			if (cur.empty())
+				continue;
+
+			mkdir(cur.c_str(), 0777);
+		}
+	}
+
+	return true;
+}
+
+bool leaf::DeleteDirectoryIncSub(const std::string& path)
+{
+	DIR* dir = opendir(path.c_str());
+	if (!dir)
+		return false;
+
+	struct dirent* ent;
+
+	while ((ent = readdir(dir)) != nullptr)
+	{
+		if (!strcmp(ent->d_name, ".") || !strcmp(ent->d_name, ".."))
+			continue;
+
+		std::string full = path + "/" + ent->d_name;
+
+		struct stat st;
+		if (stat(full.c_str(), &st) == 0)
+		{
+			if (S_ISDIR(st.st_mode))
+				DeleteDirectoryIncSub(full);
+			else
+				remove(full.c_str());
+		}
+	}
+
+	closedir(dir);
+	return rmdir(path.c_str()) == 0;
+}
+
+bool leaf::GetFileSizeQW(const HANDLE hFile, QWORD& qwSize)
+{
+	qwSize = 0;
+	return false;
+}
+
+void leaf::GetAbsolutePath(const std::string& path, std::string& abspath)
+{
+	char buf[PATH_MAX];
+
+	if (realpath(path.c_str(), buf))
+		abspath = buf;
+	else
+		abspath = path;
+}
+
+void leaf::GetAbsoluteFilePath(const std::string& path, std::string& abspath, std::string& filename)
+{
+	GetAbsolutePath(path, abspath);
+
+	size_t pos = abspath.find_last_of("/\\");
+	filename = (pos == std::string::npos) ? abspath : abspath.substr(pos + 1);
+}
+
+void leaf::SplitFileName(const std::string& filepath, std::string& filename, bool bIncludeExt)
+{
+	size_t slash = filepath.find_last_of("/\\");
+	filename = (slash == std::string::npos) ? filepath : filepath.substr(slash + 1);
+
+	if (!bIncludeExt)
+	{
+		size_t dot = filename.find_last_of('.');
+		if (dot != std::string::npos)
+			filename = filename.substr(0, dot);
+	}
+}
+
+void leaf::SplitDirectoryPath(const std::string& filepath, std::string& dir)
+{
+	size_t slash = filepath.find_last_of("/\\");
+	dir = (slash == std::string::npos) ? "" : filepath.substr(0, slash + 1);
+}
+
+void leaf::SplitExt(const std::string& filepath, std::string& ext, bool bIncludeDot)
+{
+	size_t slash = filepath.find_last_of("/\\");
+	size_t dot = filepath.find_last_of('.');
+
+	if (dot == std::string::npos || (slash != std::string::npos && dot < slash))
+	{
+		ext.clear();
+		return;
+	}
+
+	ext = bIncludeDot ? filepath.substr(dot) : filepath.substr(dot + 1);
+}
+
+void leaf::ExchangeExt(const std::string& in_filepath, const std::string& ext, std::string& out_filepath)
+{
+	size_t dot = in_filepath.find_last_of('.');
+	size_t slash = in_filepath.find_last_of("/\\");
+
+	if (dot != std::string::npos && (slash == std::string::npos || dot > slash))
+		out_filepath = in_filepath.substr(0, dot);
+	else
+		out_filepath = in_filepath;
+
+	out_filepath += ".";
+	out_filepath += ext;
+}
+
+bool leaf::GetFileCreationTime(const std::string&, SYSTEMTIME& systime, bool)
+{
+	ZeroMemory(&systime, sizeof(SYSTEMTIME));
+	return false;
+}
+
+bool leaf::GetFileLastModifiedTime(const std::string& path, SYSTEMTIME& systime, bool)
+{
+	ZeroMemory(&systime, sizeof(SYSTEMTIME));
+
+	struct stat st;
+	if (stat(path.c_str(), &st) != 0)
+		return false;
+
+	struct tm tmv;
+	localtime_r(&st.st_mtime, &tmv);
+
+	systime.wYear = tmv.tm_year + 1900;
+	systime.wMonth = tmv.tm_mon + 1;
+	systime.wDay = tmv.tm_mday;
+	systime.wHour = tmv.tm_hour;
+	systime.wMinute = tmv.tm_min;
+	systime.wSecond = tmv.tm_sec;
+	systime.wMilliseconds = 0;
+
+	return true;
+}
+
+bool leaf::GetFileLastAccessedTime(const std::string& path, SYSTEMTIME& systime, bool)
+{
+	ZeroMemory(&systime, sizeof(SYSTEMTIME));
+
+	struct stat st;
+	if (stat(path.c_str(), &st) != 0)
+		return false;
+
+	struct tm tmv;
+	localtime_r(&st.st_atime, &tmv);
+
+	systime.wYear = tmv.tm_year + 1900;
+	systime.wMonth = tmv.tm_mon + 1;
+	systime.wDay = tmv.tm_mday;
+	systime.wHour = tmv.tm_hour;
+	systime.wMinute = tmv.tm_min;
+	systime.wSecond = tmv.tm_sec;
+	systime.wMilliseconds = 0;
+
+	return true;
+}
+
+void leaf::GetTimeString(std::string& str)
+{
+	struct timeval tv;
+	gettimeofday(&tv, nullptr);
+
+	struct tm tmv;
+	localtime_r(&tv.tv_sec, &tmv);
+
+	char szTime[256];
+
+	sprintf(szTime, "%d/%d/%d %d:%02d:%02d:%03ld",
+		1900 + tmv.tm_year,
+		tmv.tm_mon + 1,
+		tmv.tm_mday,
+		tmv.tm_hour,
+		tmv.tm_min,
+		tmv.tm_sec,
+		tv.tv_usec / 1000);
+
+	str = szTime;
+}
+
+#else
+
 // GetTimeString
 #include <time.h>
 #include <sys/timeb.h>
@@ -284,3 +494,4 @@ void leaf::GetTimeString(OUT std::string& str) {
 		plocaltime->tm_hour,plocaltime->tm_min,plocaltime->tm_sec,ftime.millitm);
 	str = szTime;
 }
+#endif

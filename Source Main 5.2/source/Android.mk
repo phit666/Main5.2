@@ -4,7 +4,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := curl
-LOCAL_SRC_FILES := libcurl.so
+LOCAL_SRC_FILES := ../curl/$(TARGET_ARCH_ABI)/libcurl.so
 
 include $(PREBUILT_SHARED_LIBRARY)
 
@@ -363,6 +363,15 @@ LOCAL_LDLIBS += -ljpeg
 LOCAL_CPP_FEATURES = exceptions
 
 LOCAL_CFLAGS = -frtti -DANDROID -DMU_USE_SDL=1 -DUSE_LIBEVENT=1 -DMU_USE_SDL_AUDIO=1
+
+LOCAL_CPPFLAGS += \
+    -std=c++17 \
+    -fexceptions \
+    -frtti \
+    -Wno-error \
+    -Wno-error=format-security \
+    -Wno-format-security
+
 
 LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf SDL2_image SDL2_mixer event2 curl
 LOCAL_STATIC_LIBRARIES += jpeg

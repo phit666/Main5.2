@@ -2,7 +2,7 @@
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 
 #include "stdafx.h"
-
+#include "mu_sdl.h"
 #include "checkintegrity.h"
 #include "xstreambuf.h"
 
@@ -208,80 +208,146 @@ bool CCheckSumGenerator::Generate(const std::string& out_filename)
 	return GenerateCheckSumFile(xBuffer.data(), xBuffer.size(), out_filename);
 }
 
-
-/* static functions */							  
-bool CCheckSumGenerator::GenerateCheckSumTable(IN const void* pBuffer, size_t size, OUT LPCHECKSUMTABLE lpCheckSumTable) 
+#ifdef MU_USE_SDL
+bool CCheckSumGenerator::GenerateCheckSumTable(const std::string& in_filename, LPCHECKSUMTABLE lpCheckSumTable)
 {
-	if(IsBadReadPtr(pBuffer, size) || size == 0 || size >= 0xEFFFFFFF)	//. limited under approximately 3.7GB
+	MU_FILE* f = MU_fopen(in_filename.c_str(), "rb");
+	if (!f)
 		return false;
 
-	BYTE* pbyBuffer = (BYTE*)pBuffer;
+	MU_fseek(f, 0, SEEK_END);
+	long fileSize = MU_ftell(f);
+	MU_fseek(f, 0, SEEK_SET);
 
-	int nBytesPerSection = size/256;
-	if(nBytesPerSection <= 0)
-		nBytesPerSection = 1;
-
-	DWORD dwNewKey = (0x0EDB8008 + (size&0x0000FFFF))<<1;
-	DWORD dwSrcOffset = 0;
-	for(int iSection=0; iSection<256; iSection++) {
-		DWORD dwSum = 0;
-		for(int iSecOffset=0; dwSrcOffset<size && iSecOffset<nBytesPerSection; iSecOffset++, dwSrcOffset++)
-			dwSum += pbyBuffer[dwSrcOffset];
-
-		DWORD dwSeedKey = dwSum ^ dwNewKey;
-		lpCheckSumTable->pdwTable[iSection] = dwSeedKey ^ dwMaskTable[(dwSeedKey+iSection)%256];
-		dwNewKey = (lpCheckSumTable->pdwTable[iSection]>>1);
+	if (fileSize <= 0)
+	{
+		MU_fclose(f);
+		return false;
 	}
 
+	std::vector<BYTE> buffer((size_t)fileSize);
+
+	size_t readCount = MU_fread(buffer.data(), 1, (size_t)fileSize, f);
+	MU_fclose(f);
+
+	if (readCount != (size_t)fileSize)
+		return false;
+
+	return GenerateCheckSumTable(buffer.data(), buffer.size(), lpCheckSumTable);
+}
+
+bool CCheckSumGenerator::GenerateCheckSumFile(const void* pBuffer, size_t size, const std::string& out_filename)
+{
+	CHECKSUMTABLE cs_table;
+
+	if (!GenerateCheckSumTable(pBuffer, size, &cs_table))
+		return false;
+
+	MU_FILE* f = MU_fopen(out_filename.c_str(), "wb");
+	if (!f)
+		return false;
+
+	size_t written = SDL_RWwrite(f, cs_table.pdwTable, 1, cs_table.TABLE_SIZE);
+	MU_fclose(f);
+
+	return written == cs_table.TABLE_SIZE;
+}
+
+bool CCheckSumGenerator::GenerateCheckSumFile(
+		const std::string& in_filename,
+		const std::string& out_filename)
+{
+	CHECKSUMTABLE cs_table;
+
+	if (false == GenerateCheckSumTable(in_filename, &cs_table))
+		return false;
+
+	MU_FILE* f = MU_fopen(out_filename.c_str(), "wb");
+	if (!f)
+		return false;
+
+	size_t written = MU_fwrite(cs_table.pdwTable, 1, cs_table.TABLE_SIZE, f);
+
+	MU_fclose(f);
+
+	return written == cs_table.TABLE_SIZE;
+}
+
+bool CCyclicRedundancyCheck32::GenerateCrc32Code(const std::string& filename, DWORD& dwCrc32)
+{
+	MU_FILE* f = MU_fopen(filename.c_str(), "rb");
+	if (!f)
+		return false;
+
+	dwCrc32 = 0xFFFFFFFF;
+
+	const size_t CHUNK_SIZE = 0xA00000; // 10 MB
+	std::vector<BYTE> buffer(CHUNK_SIZE);
+
+	while (true)
+	{
+		size_t bytesRead = MU_fread(buffer.data(), 1, CHUNK_SIZE, f);
+
+		if (bytesRead > 0)
+			GenerateCrc32SeedAssembly(buffer.data(), bytesRead, dwCrc32);
+
+		if (bytesRead < CHUNK_SIZE)
+			break;
+	}
+
+	MU_fclose(f);
+
+	dwCrc32 = ~dwCrc32;
 	return true;
 }
-bool CCheckSumGenerator::GenerateCheckSumTable(const std::string& in_filename, OUT LPCHECKSUMTABLE lpCheckSumTable) 
+#else
+bool CCheckSumGenerator::GenerateCheckSumTable(const std::string& in_filename, OUT LPCHECKSUMTABLE lpCheckSumTable)
 {
 	HANDLE hFile = CreateFile(in_filename.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-	if(INVALID_HANDLE_VALUE == hFile) return false;
-	
+	if (INVALID_HANDLE_VALUE == hFile) return false;
+
 	QWORD qwFileSize = 0;
-	if(false == GetFileSizeQW(hFile, qwFileSize)) 
+	if (false == GetFileSizeQW(hFile, qwFileSize))
 	{
 		CloseHandle(hFile);
 		return false;
 	}
 
 	HANDLE hFileMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-	if(INVALID_HANDLE_VALUE == hFileMap) 
+	if (INVALID_HANDLE_VALUE == hFileMap)
 	{
 		CloseHandle(hFile);
 		return false;
 	}
 
-	QWORD nBytesPerSection = qwFileSize/256;
-	if(nBytesPerSection <= 0)
+	QWORD nBytesPerSection = qwFileSize / 256;
+	if (nBytesPerSection <= 0)
 		nBytesPerSection = 1;
-	
+
 	BYTE* pbyAccessAddr = NULL;
 	QWORD qwFileOffset = 0;
 	DWORD dwPageSize = 0, dwPageOffset = 0;
 
-	DWORD dwNewKey = (0x0EDB8008 + (LODWORD(qwFileSize)&0x0000FFFF))<<1;
-	for(int iSection=0; iSection<256; iSection++) 
+	DWORD dwNewKey = (0x0EDB8008 + (LODWORD(qwFileSize) & 0x0000FFFF)) << 1;
+	for (int iSection = 0; iSection < 256; iSection++)
 	{
 		DWORD dwSum = 0;
-		for(QWORD qwSecOffset=0; qwSecOffset<nBytesPerSection && qwFileOffset < qwFileSize; qwSecOffset++, qwFileOffset++) 
+		for (QWORD qwSecOffset = 0; qwSecOffset < nBytesPerSection && qwFileOffset < qwFileSize; qwSecOffset++, qwFileOffset++)
 		{
-			if(dwPageOffset >= dwPageSize) 
-			{	
-				if(pbyAccessAddr) 
+			if (dwPageOffset >= dwPageSize)
+			{
+				if (pbyAccessAddr)
 				{
 					UnmapViewOfFile(pbyAccessAddr);
 					pbyAccessAddr = NULL;
 				}
-				if(qwFileSize-qwFileOffset < 0xA00000)	//. 10MB
-					dwPageSize = (DWORD)(qwFileSize-qwFileOffset);
+				if (qwFileSize - qwFileOffset < 0xA00000)	//. 10MB
+					dwPageSize = (DWORD)(qwFileSize - qwFileOffset);
 				else
 					dwPageSize = 0xA00000;
-		
+
 				//. Page mapping
-				if(NULL == (pbyAccessAddr = (BYTE*)MapViewOfFile(hFileMap, FILE_MAP_READ, 
+				if (NULL == (pbyAccessAddr = (BYTE*)MapViewOfFile(hFileMap, FILE_MAP_READ,
 					HIDWORD(qwFileOffset), LODWORD(qwFileOffset), dwPageSize)))
 				{
 					CloseHandle(hFileMap);
@@ -293,11 +359,11 @@ bool CCheckSumGenerator::GenerateCheckSumTable(const std::string& in_filename, O
 			dwSum += pbyAccessAddr[dwPageOffset++];
 		}
 		DWORD dwSeedKey = dwSum ^ dwNewKey;
-		lpCheckSumTable->pdwTable[iSection] = dwSeedKey ^ dwMaskTable[(dwSeedKey+iSection)%256];
-		dwNewKey = (lpCheckSumTable->pdwTable[iSection]>>1);		
+		lpCheckSumTable->pdwTable[iSection] = dwSeedKey ^ dwMaskTable[(dwSeedKey + iSection) % 256];
+		dwNewKey = (lpCheckSumTable->pdwTable[iSection] >> 1);
 	}
 
-	if(pbyAccessAddr) 
+	if (pbyAccessAddr)
 	{
 		UnmapViewOfFile(pbyAccessAddr);
 		pbyAccessAddr = NULL;
@@ -305,24 +371,25 @@ bool CCheckSumGenerator::GenerateCheckSumTable(const std::string& in_filename, O
 
 	CloseHandle(hFileMap);
 	CloseHandle(hFile);
-	
+
 	return true;
 }
+
 bool CCheckSumGenerator::GenerateCheckSumFile(IN const void* pBuffer, size_t size, const std::string& out_filename)
 {
 	HANDLE hFile = CreateFile(out_filename.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
-	if(hFile == INVALID_HANDLE_VALUE) return false;
+	if (hFile == INVALID_HANDLE_VALUE) return false;
 
 	CHECKSUMTABLE cs_table;
-	if(false == GenerateCheckSumTable(pBuffer, size, &cs_table)) {
+	if (false == GenerateCheckSumTable(pBuffer, size, &cs_table)) {
 		CloseHandle(hFile);
 		return false;
 	}
-	
+
 	DWORD nBytesWritten;
 	WriteFile(hFile, (LPCVOID)cs_table.pdwTable, cs_table.TABLE_SIZE, &nBytesWritten, NULL);
 
-	if(cs_table.TABLE_SIZE != nBytesWritten) {
+	if (cs_table.TABLE_SIZE != nBytesWritten) {
 		CloseHandle(hFile);
 		return false;
 	}
@@ -330,6 +397,7 @@ bool CCheckSumGenerator::GenerateCheckSumFile(IN const void* pBuffer, size_t siz
 	CloseHandle(hFile);
 	return true;
 }
+
 bool CCheckSumGenerator::GenerateCheckSumFile(const std::string& in_filename, const std::string& out_filename)
 {
 	HANDLE hFile = CreateFile(out_filename.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
@@ -340,7 +408,7 @@ bool CCheckSumGenerator::GenerateCheckSumFile(const std::string& in_filename, co
 		CloseHandle(hFile);
 		return false;
 	}
-	
+
 	DWORD nBytesWritten;
 	WriteFile(hFile, (LPCVOID)cs_table.pdwTable, cs_table.TABLE_SIZE, &nBytesWritten, NULL);
 
@@ -353,35 +421,8 @@ bool CCheckSumGenerator::GenerateCheckSumFile(const std::string& in_filename, co
 	return true;
 }
 
-/* Cyclic Redundancy Check (CRC) */
 
-bool leaf::GenerateCrc32Code(const void* pBuffer, size_t size, DWORD& dwCrc32) 
-{
-	return CCyclicRedundancyCheck32::GetObjPtr()->GenerateCrc32Code(pBuffer, size, dwCrc32);
-}
-bool leaf::GenerateCrc32Code(const std::string& filename, DWORD& dwCrc32) 
-{
-	return CCyclicRedundancyCheck32::GetObjPtr()->GenerateCrc32Code(filename, dwCrc32);
-}
-
-CCyclicRedundancyCheck32::CCyclicRedundancyCheck32() 
-{ CreateCrc32Table(); }
-
-CCyclicRedundancyCheck32::~CCyclicRedundancyCheck32()
-{ DestroyCrc32Table(); }
-
-bool CCyclicRedundancyCheck32::GenerateCrc32Code(const void* pBuffer, size_t size, DWORD& dwCrc32) 
-{
-	dwCrc32 = 0xFFFFFFFF;
-	if(!IsBadReadPtr(pBuffer, size) && size > 0) 
-	{
-		GenerateCrc32SeedAssembly((BYTE*)pBuffer, size, dwCrc32);
-		dwCrc32 = ~dwCrc32;
-		return true;
-	}
-	return false;
-}
-bool CCyclicRedundancyCheck32::GenerateCrc32Code(const std::string& filename, DWORD& dwCrc32) 
+bool CCyclicRedundancyCheck32::GenerateCrc32Code(const std::string& filename, DWORD& dwCrc32)
 {
 	HANDLE hFile = CreateFile(filename.c_str(),
 		GENERIC_READ,
@@ -391,16 +432,16 @@ bool CCyclicRedundancyCheck32::GenerateCrc32Code(const std::string& filename, DW
 		FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_SEQUENTIAL_SCAN,
 		NULL);
 	if(hFile == INVALID_HANDLE_VALUE) return false;
-	
+
 	QWORD qwFileSize = 0, qwFileOffset = 0;
 	DWORD dwViewSize;
 	DWORD dwBaseAddress;
-	
+
 	// Get the file size
-	if(GetFileSizeQW(hFile, qwFileSize)) 
+	if(GetFileSizeQW(hFile, qwFileSize))
 	{
 		HANDLE hFileMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-		if(hFileMap) 
+		if(hFileMap)
 		{
 			dwCrc32 = 0xFFFFFFFF;
 			// Loop while we map a section of the file and CRC it
@@ -410,17 +451,17 @@ bool CCyclicRedundancyCheck32::GenerateCrc32Code(const std::string& filename, DW
 					dwViewSize = LODWORD(qwFileSize);
 				else
 					dwViewSize = 0xA00000;
-				
+
 				dwBaseAddress = (DWORD)MapViewOfFile(hFileMap,
 					FILE_MAP_READ,
 					HIDWORD(qwFileOffset),
 					LODWORD(qwFileOffset),
 					dwViewSize);
-				
+
 				LPBYTE pbyBase = (LPBYTE)dwBaseAddress;
 				GenerateCrc32SeedAssembly(pbyBase, dwViewSize, dwCrc32);
 				UnmapViewOfFile((LPVOID)dwBaseAddress);
-				
+
 				qwFileOffset += dwViewSize;
 				qwFileSize -= dwViewSize;
 			}
@@ -438,41 +479,9 @@ bool CCyclicRedundancyCheck32::GenerateCrc32Code(const std::string& filename, DW
 
 	return false;
 }
-CCyclicRedundancyCheck32* CCyclicRedundancyCheck32::GetObjPtr() 
-{
-	static CCyclicRedundancyCheck32 s_Instance;
-	return &s_Instance;
-}
 
-void CCyclicRedundancyCheck32::CreateCrc32Table() 
-{
-	m_pdwCrc32Table = new DWORD[256];
-	
-	// This is the official polynomial used by CRC32 in PKZip.
-	// Often times the polynomial shown reversed as 0x04C11DB7.
-	DWORD dwPolynomial = 0xEDB88320;
-	int i, j;
-	
-	DWORD dwCrc;
-	for(i = 0; i < 256; i++)
-	{
-		dwCrc = i;
-		for(j = 8; j > 0; j--)
-		{
-			if(dwCrc & 1)
-				dwCrc = (dwCrc >> 1) ^ dwPolynomial;
-			else
-				dwCrc >>= 1;
-		}
-		m_pdwCrc32Table[i] = dwCrc;
-	}
-}
-void CCyclicRedundancyCheck32::DestroyCrc32Table() 
-{ 
-	delete [] m_pdwCrc32Table; 
-}
 
-void CCyclicRedundancyCheck32::GenerateCrc32SeedAssembly(BYTE* pbyBuffer, size_t size, DWORD& dwCrc32) 
+void CCyclicRedundancyCheck32::GenerateCrc32SeedAssembly(BYTE* pbyBuffer, size_t size, DWORD& dwCrc32)
 {
 	DWORD dwByteRead = size;
 	__asm
@@ -515,3 +524,106 @@ crc32loop:
 		mov [eax], ecx				// Write the result
 	}
 }
+#endif
+
+/* static functions */							  
+bool CCheckSumGenerator::GenerateCheckSumTable(IN const void* pBuffer, size_t size, OUT LPCHECKSUMTABLE lpCheckSumTable) 
+{
+	if(IsBadReadPtr(pBuffer, size) || size == 0 || size >= 0xEFFFFFFF)	//. limited under approximately 3.7GB
+		return false;
+
+	BYTE* pbyBuffer = (BYTE*)pBuffer;
+
+	int nBytesPerSection = size/256;
+	if(nBytesPerSection <= 0)
+		nBytesPerSection = 1;
+
+	DWORD dwNewKey = (0x0EDB8008 + (size&0x0000FFFF))<<1;
+	DWORD dwSrcOffset = 0;
+	for(int iSection=0; iSection<256; iSection++) {
+		DWORD dwSum = 0;
+		for(int iSecOffset=0; dwSrcOffset<size && iSecOffset<nBytesPerSection; iSecOffset++, dwSrcOffset++)
+			dwSum += pbyBuffer[dwSrcOffset];
+
+		DWORD dwSeedKey = dwSum ^ dwNewKey;
+		lpCheckSumTable->pdwTable[iSection] = dwSeedKey ^ dwMaskTable[(dwSeedKey+iSection)%256];
+		dwNewKey = (lpCheckSumTable->pdwTable[iSection]>>1);
+	}
+
+	return true;
+}
+
+
+
+/* Cyclic Redundancy Check (CRC) */
+
+bool leaf::GenerateCrc32Code(const void* pBuffer, size_t size, DWORD& dwCrc32) 
+{
+	return CCyclicRedundancyCheck32::GetObjPtr()->GenerateCrc32Code(pBuffer, size, dwCrc32);
+}
+bool leaf::GenerateCrc32Code(const std::string& filename, DWORD& dwCrc32) 
+{
+	return CCyclicRedundancyCheck32::GetObjPtr()->GenerateCrc32Code(filename, dwCrc32);
+}
+
+CCyclicRedundancyCheck32::CCyclicRedundancyCheck32() 
+{ CreateCrc32Table(); }
+
+CCyclicRedundancyCheck32::~CCyclicRedundancyCheck32()
+{ DestroyCrc32Table(); }
+
+bool CCyclicRedundancyCheck32::GenerateCrc32Code(const void* pBuffer, size_t size, DWORD& dwCrc32) 
+{
+	dwCrc32 = 0xFFFFFFFF;
+	if(!IsBadReadPtr(pBuffer, size) && size > 0) 
+	{
+		GenerateCrc32SeedAssembly((BYTE*)pBuffer, size, dwCrc32);
+		dwCrc32 = ~dwCrc32;
+		return true;
+	}
+	return false;
+}
+
+CCyclicRedundancyCheck32* CCyclicRedundancyCheck32::GetObjPtr() 
+{
+	static CCyclicRedundancyCheck32 s_Instance;
+	return &s_Instance;
+}
+
+void CCyclicRedundancyCheck32::CreateCrc32Table() 
+{
+	m_pdwCrc32Table = new DWORD[256];
+	
+	// This is the official polynomial used by CRC32 in PKZip.
+	// Often times the polynomial shown reversed as 0x04C11DB7.
+	DWORD dwPolynomial = 0xEDB88320;
+	int i, j;
+	
+	DWORD dwCrc;
+	for(i = 0; i < 256; i++)
+	{
+		dwCrc = i;
+		for(j = 8; j > 0; j--)
+		{
+			if(dwCrc & 1)
+				dwCrc = (dwCrc >> 1) ^ dwPolynomial;
+			else
+				dwCrc >>= 1;
+		}
+		m_pdwCrc32Table[i] = dwCrc;
+	}
+}
+void CCyclicRedundancyCheck32::DestroyCrc32Table() 
+{ 
+	delete [] m_pdwCrc32Table; 
+}
+
+void CCyclicRedundancyCheck32::GenerateCrc32SeedAssembly(BYTE* pbyBuffer, size_t size, DWORD& dwCrc32)
+{
+	for (size_t i = 0; i < size; ++i)
+	{
+		BYTE b = pbyBuffer[i];
+		dwCrc32 = (dwCrc32 >> 8) ^ m_pdwCrc32Table[(dwCrc32 ^ b) & 0xFF];
+	}
+}
+

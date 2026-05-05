@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////
-//  - ½Ì±ÛÅæ -
+//  - ï¿½Ì±ï¿½ï¿½ï¿½ -
 //  
 //  
 //////////////////////////////////////////////////////////////////////////
@@ -17,11 +17,11 @@ class Singleton
 public:
     Singleton( void )
     {
-        if ( _Singleton==0 )
-        {
-            int offset = (int)(T*)1 - (int)( Singleton <T>*)(T*)1;
-            _Singleton = (T*)((int)this + offset);
-        }
+        intptr_t offset =
+                (intptr_t)(T*)1 -
+                (intptr_t)(Singleton<T>*)(T*)1;
+
+        _Singleton = (T*)((intptr_t)this + offset);
     }
     
     virtual ~Singleton( void ) {  /*assert( _Singleton );*/  _Singleton = 0;  }
@@ -30,9 +30,9 @@ public:
     static T*   GetSingletonPtr ( void )   {  return ( _Singleton ); } 
 	static bool IsInitialized ( void )     { return _Singleton ? true : false; }
 
-	//¿©±â ºÎºÐÀº Á» »ý°¢À» ÇØº¸ÀÚ..
-	//new·Î ¸¸µé¾î¼­ ³ÖÀ¸¸é...delete¸¦ ÇØÁà¾ß ÇÏ´Âµ¥...
-	//ÇÒ·Á¸é boost·Î ¸¸µé¾îÁø data¸¸ ³Öµµ·Ï ÇÏÀÚ.
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Øºï¿½ï¿½ï¿½..
+	//newï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½î¼­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½...deleteï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï´Âµï¿½...
+	//ï¿½Ò·ï¿½ï¿½ï¿½ boostï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ dataï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	//static void RegisterSingleton ( T* p ) { _Singleton = p; }
 };
 

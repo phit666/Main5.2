@@ -12,6 +12,18 @@
 
 #include <SDL.h>
 
+
+
+#include <algorithm>
+
+#ifndef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef max
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#endif
+
 // ======================================================
 // Basic Win32 types
 // ======================================================
@@ -23,13 +35,14 @@ typedef uint16_t            WORD;
 typedef uint32_t            DWORD;
 typedef int32_t             LONG;
 typedef uint32_t            ULONG;
-typedef uint64_t            QWORD;
+//typedef uint64_t            QWORD;
 typedef uint64_t            ULONGLONG;
 
 typedef int INT;
 typedef void VOID;
 typedef uint32_t* LPDWORD;
 typedef void* LPOVERLAPPED;
+typedef void* CONTEXT;
 
 typedef unsigned int        UINT;
 typedef uintptr_t           UINT_PTR;
@@ -37,7 +50,7 @@ typedef intptr_t            LONG_PTR;
 typedef uintptr_t           WPARAM;
 typedef intptr_t            LPARAM;
 typedef intptr_t            LRESULT;
-
+typedef float   FLOAT;
 typedef const char*         LPCSTR;
 typedef char*               LPSTR;
 typedef const wchar_t*      LPCWSTR;
@@ -960,6 +973,197 @@ inline int closesocket(SOCKET)
 #define SWP_NOSENDCHANGING 0x0400
 #endif
 
+#ifndef FW_NORMAL
+#define FW_NORMAL 400
+#endif
+
+#ifndef FW_BOLD
+#define FW_BOLD 700
+#endif
+
+// Font / GDI constants
+#ifndef DEFAULT_CHARSET
+#define DEFAULT_CHARSET 1
+#endif
+
+#ifndef OUT_DEFAULT_PRECIS
+#define OUT_DEFAULT_PRECIS 0
+#endif
+
+#ifndef CLIP_DEFAULT_PRECIS
+#define CLIP_DEFAULT_PRECIS 0
+#endif
+
+#ifndef DEFAULT_QUALITY
+#define DEFAULT_QUALITY 0
+#endif
+
+#ifndef NONANTIALIASED_QUALITY
+#define NONANTIALIASED_QUALITY 3
+#endif
+
+#ifndef ANTIALIASED_QUALITY
+#define ANTIALIASED_QUALITY 4
+#endif
+
+#ifndef DEFAULT_PITCH
+#define DEFAULT_PITCH 0
+#endif
+
+#ifndef FIXED_PITCH
+#define FIXED_PITCH 1
+#endif
+
+#ifndef VARIABLE_PITCH
+#define VARIABLE_PITCH 2
+#endif
+
+#ifndef FF_DONTCARE
+#define FF_DONTCARE 0
+#endif
+
+#ifndef GL_ALPHA_TEST
+#define GL_ALPHA_TEST 0
+#endif
+
+#ifndef wsprintf
+#define wsprintf sprintf
+#endif
+
+#ifndef MAKEWORD
+#define MAKEWORD(a, b) ((unsigned short)(((unsigned char)(a)) | ((unsigned short)((unsigned char)(b)) << 8)))
+#endif
+
+#ifdef __ANDROID__
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
+#define MU_ATTR_POS    0
+#define MU_ATTR_UV     1
+#define MU_ATTR_COLOR  2
+
+// ===== Legacy GL constants (fixed pipeline) =====
+#ifndef GL_CURRENT_COLOR
+#define GL_CURRENT_COLOR 0x0B00
+#endif
+
+#ifndef GL_VERTEX_ARRAY
+#define GL_VERTEX_ARRAY 0x8074
+#endif
+
+#ifndef GL_TEXTURE_COORD_ARRAY
+#define GL_TEXTURE_COORD_ARRAY 0x8078
+#endif
+
+#ifndef GL_COLOR_ARRAY
+#define GL_COLOR_ARRAY 0x8076
+#endif
+
+#ifndef GL_NORMAL_ARRAY
+#define GL_NORMAL_ARRAY 0x8075
+#endif
+
+#ifndef GL_ALPHA_TEST
+#define GL_ALPHA_TEST 0x0BC0
+#endif
+
+#ifndef GL_LIGHTING
+#define GL_LIGHTING 0x0B50
+#endif
+
+#ifndef GL_LIGHT0
+#define GL_LIGHT0 0x4000
+#endif
+
+#ifndef GL_FOG
+#define GL_FOG 0x0B60
+#endif
+
+#ifndef GL_CLIP_PLANE0
+#define GL_CLIP_PLANE0 0x3000
+#endif
+
+#ifndef GL_MODELVIEW
+#define GL_MODELVIEW 0x1700
+#endif
+
+#ifndef GL_PROJECTION
+#define GL_PROJECTION 0x1701
+#endif
+
+#ifndef GL_TEXTURE
+#define GL_TEXTURE 0x1702
+#endif
+
+inline void glEnableClientState(GLenum array)
+{
+    if (array == GL_VERTEX_ARRAY)
+        glEnableVertexAttribArray(MU_ATTR_POS);
+    else if (array == GL_TEXTURE_COORD_ARRAY)
+        glEnableVertexAttribArray(MU_ATTR_UV);
+    else if (array == GL_COLOR_ARRAY)
+        glEnableVertexAttribArray(MU_ATTR_COLOR);
+}
+
+inline void glDisableClientState(GLenum array)
+{
+    if (array == GL_VERTEX_ARRAY)
+        glDisableVertexAttribArray(MU_ATTR_POS);
+    else if (array == GL_TEXTURE_COORD_ARRAY)
+        glDisableVertexAttribArray(MU_ATTR_UV);
+    else if (array == GL_COLOR_ARRAY)
+        glDisableVertexAttribArray(MU_ATTR_COLOR);
+}
+
+inline void glVertexPointer(GLint size, GLenum type, GLsizei stride, const void* pointer)
+{
+    glVertexAttribPointer(
+            MU_ATTR_POS,
+            size,
+            type,
+            GL_FALSE,
+            stride,
+            pointer
+    );
+}
+
+inline void glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const void* pointer)
+{
+    glVertexAttribPointer(
+            MU_ATTR_UV,
+            size,
+            type,
+            GL_FALSE,
+            stride,
+            pointer
+    );
+}
+
+inline void glColorPointer(GLint size, GLenum type, GLsizei stride, const void* pointer)
+{
+    glVertexAttribPointer(
+            MU_ATTR_COLOR,
+            size,
+            type,
+            GL_TRUE,   // important: 0-255 color becomes 0.0-1.0
+            stride,
+            pointer
+    );
+}
+
+inline void glColor3f(float, float, float) {}
+inline void glColor4f(float, float, float, float) {}
+inline void glColor3fv(const float*) {}
+inline void glColor4fv(const float*) {}
+inline void glDisable(int) {}
+inline void glEnable(int) {}
+#endif
+
+inline HFONT CreateFont(...)
+{
+    return nullptr;
+}
+
 inline BOOL SetWindowPos(...)
 {
     return TRUE;
@@ -980,5 +1184,120 @@ inline BOOL GetWindowRect(HWND, RECT* rc)
 
     return TRUE;
 }
+
+#ifndef timeGetTime
+inline unsigned int timeGetTime()
+{
+    return SDL_GetTicks();
+}
+#endif
+
+typedef struct _SYSTEMTIME
+{
+    WORD wYear;
+    WORD wMonth;
+    WORD wDayOfWeek;
+    WORD wDay;
+    WORD wHour;
+    WORD wMinute;
+    WORD wSecond;
+    WORD wMilliseconds;
+} SYSTEMTIME;
+
+#ifndef IsBadReadPtr
+inline bool IsBadReadPtr(const void* ptr, size_t size)
+{
+    return ptr == nullptr;
+}
+#endif
+
+typedef void* HKEY;
+typedef BYTE* LPBYTE;
+typedef const BYTE* LPCBYTE;
+typedef unsigned long* ULONG_PTR;
+
+#ifndef ERROR_SUCCESS
+#define ERROR_SUCCESS 0L
+#endif
+
+#ifndef HKEY_CLASSES_ROOT
+#define HKEY_CLASSES_ROOT ((HKEY)(intptr_t)0x80000000)
+#endif
+#ifndef HKEY_CURRENT_CONFIG
+#define HKEY_CURRENT_CONFIG ((HKEY)(intptr_t)0x80000005)
+#endif
+#ifndef HKEY_CURRENT_USER
+#define HKEY_CURRENT_USER ((HKEY)(intptr_t)0x80000001)
+#endif
+#ifndef HKEY_LOCAL_MACHINE
+#define HKEY_LOCAL_MACHINE ((HKEY)(intptr_t)0x80000002)
+#endif
+#ifndef HKEY_USERS
+#define HKEY_USERS ((HKEY)(intptr_t)0x80000003)
+#endif
+
+#ifndef REG_DWORD
+#define REG_DWORD 4
+#endif
+#ifndef REG_SZ
+#define REG_SZ 1
+#endif
+#ifndef REG_EXPAND_SZ
+#define REG_EXPAND_SZ 2
+#endif
+#ifndef REG_OPTION_NON_VOLATILE
+#define REG_OPTION_NON_VOLATILE 0
+#endif
+#ifndef KEY_ALL_ACCESS
+#define KEY_ALL_ACCESS 0
+#endif
+#ifndef KEY_QUERY_VALUE
+#define KEY_QUERY_VALUE 0
+#endif
+
+inline LONG RegCreateKeyExA(HKEY, LPCSTR, DWORD, LPSTR, DWORD, DWORD, void*, HKEY* phkResult, DWORD* lpdwDisposition)
+{
+    if (phkResult) *phkResult = nullptr;
+    if (lpdwDisposition) *lpdwDisposition = 0;
+    return -1;
+}
+
+inline LONG RegOpenKeyExA(HKEY, LPCSTR, DWORD, DWORD, HKEY* phkResult)
+{
+    if (phkResult) *phkResult = nullptr;
+    return -1;
+}
+
+inline LONG RegQueryValueExA(HKEY, LPCSTR, DWORD*, DWORD*, LPBYTE, DWORD*)
+{
+    return -1;
+}
+
+inline LONG RegSetValueExA(HKEY, LPCSTR, DWORD, DWORD, const BYTE*, DWORD)
+{
+    return -1;
+}
+
+inline LONG RegDeleteKeyA(HKEY, LPCSTR)
+{
+    return -1;
+}
+
+inline LONG RegDeleteValueA(HKEY, LPCSTR)
+{
+    return -1;
+}
+
+inline LONG RegCloseKey(HKEY)
+{
+    return ERROR_SUCCESS;
+}
+
+#define RegCreateKeyEx  RegCreateKeyExA
+#define RegOpenKeyEx    RegOpenKeyExA
+#define RegQueryValueEx RegQueryValueExA
+#define RegSetValueEx   RegSetValueExA
+#define RegDeleteKey    RegDeleteKeyA
+#define RegDeleteValue  RegDeleteValueA
 
 #endif
