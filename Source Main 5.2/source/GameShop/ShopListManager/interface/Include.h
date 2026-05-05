@@ -10,14 +10,14 @@
 
 #include <iostream>
 #include "mu_win_compat.h"
-#include <Wininet.h>
+//#include <Wininet.h>
 
-#include <crtdbg.h>
-#include <tchar.h>
-#include <strsafe.h>
+//#include <crtdbg.h>
+//#include <tchar.h>
+//#include <strsafe.h>
 
-#include "GameShop\ShopListManager\interface\WZResult/WZResult.h"
+#include "GameShop\ShopListManager\interface\WZResult\WZResult.h"
 #include "GameShop\ShopListManager\interface\DownloadInfo.h"
 #include "GameShop\ShopListManager\interface\IDownloaderStateEvent.h"
 
-#pragma comment(lib, "Wininet.lib")
+//#pragma comment(lib, "Wininet.lib")

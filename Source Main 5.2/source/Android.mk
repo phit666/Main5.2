@@ -1,5 +1,14 @@
 LOCAL_PATH := $(call my-dir)
 
+# ===== libcurl (PREBUILT) =====
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := curl
+LOCAL_SRC_FILES := libcurl.so
+
+include $(PREBUILT_SHARED_LIBRARY)
+
+# ===== Your app =====
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := main
@@ -14,7 +23,6 @@ $(LOCAL_PATH)/common \
 $(LOCAL_PATH)/../libevent/include \
 $(LOCAL_PATH)/../libjpeg-turbo/include \
 $(LOCAL_PATH)
-
 
 # Add your application source files here...
 LOCAL_SRC_FILES := \
@@ -151,6 +159,7 @@ LOCAL_SRC_FILES := \
     MultiLanguage.cpp \
     mu_2d_renderer.cpp \
     mu_sdl.cpp \
+    mu_wininet_curl_compat.cpp \
     NewBloodCastleSystem.cpp \
     NewChaosCastleSystem.cpp \
     NewUI3DRenderMng.cpp \
@@ -347,7 +356,6 @@ LOCAL_SRC_FILES := \
     ZzzTexture.cpp \
     _GlobalFunctions.cpp
 
-
 LOCAL_LDLIBS := -llog -landroid -lmediandk
 LOCAL_LDLIBS += -lGLESv2
 LOCAL_LDLIBS += -ljpeg
@@ -356,7 +364,7 @@ LOCAL_CPP_FEATURES = exceptions
 
 LOCAL_CFLAGS = -frtti -DANDROID -DMU_USE_SDL=1 -DUSE_LIBEVENT=1 -DMU_USE_SDL_AUDIO=1
 
-LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf SDL2_image SDL2_mixer event2
+LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf SDL2_image SDL2_mixer event2 curl
 LOCAL_STATIC_LIBRARIES += jpeg
 
 include $(BUILD_SHARED_LIBRARY)

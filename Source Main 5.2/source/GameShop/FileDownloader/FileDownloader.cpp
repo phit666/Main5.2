@@ -9,6 +9,8 @@
 //
 
 #include "stdafx.h"
+
+//#ifndef MU_USE_SDL
 #ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM
 #include "GameShop\ShopListManager\interface\FileDownloader.h"
 #include "HTTPConnecter.h"
@@ -318,5 +320,5 @@ void				FileDownloader::SendProgressDownloadFileEvent(ULONGLONG nTotalBytesRead)
         this->m_pStateEvent->OnProgressDownloadFile(this->m_pFileInfo->GetFileName(),nTotalBytesRead);
     }
 }
-
 #endif
+//#endif

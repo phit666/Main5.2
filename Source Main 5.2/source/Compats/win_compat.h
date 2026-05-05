@@ -1,22 +1,7 @@
 // mu_win_compat.h
 #pragma once
 
-#ifdef _WIN32
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
-#include <process.h>
-#include <tchar.h>
-#include <Wininet.h>
-#include <crtdbg.h>
-#include <strsafe.h>
-
-#else
+#ifndef _WIN32
 
 #include <stdint.h>
 #include <stddef.h>
@@ -277,6 +262,10 @@ inline HWND GetDesktopWindow()
 
 #ifndef ZeroMemory
 #define ZeroMemory(Destination, Length) memset((Destination), 0, (Length))
+#endif
+
+#ifndef RtlSecureZeroMemory
+#define RtlSecureZeroMemory(Destination, Length) memset((Destination), 0, (Length))
 #endif
 
 #define CP_UTF8 65001
