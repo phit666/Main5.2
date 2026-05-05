@@ -661,9 +661,24 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	glUseProgram(g_muProgram);
 	MU_ApplyMatrices();
 
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
+
+	glDisable(GL_ALPHA_TEST);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LEQUAL);
+
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
+	glFrontFace(GL_CW);
+
+	AlphaTestEnable = false;
+	TextureEnable = true;
+	DepthTestEnable = true;
+	CullFaceEnable = true;
+	DepthMaskEnable = true;
 
 #else
 	x = x * WindowWidth / 640;
