@@ -23,6 +23,7 @@ $(LOCAL_PATH)/common \
 $(LOCAL_PATH)/../libevent/include \
 $(LOCAL_PATH)/../libjpeg-turbo/include \
 $(LOCAL_PATH)/../curl/include \
+$(LOCAL_PATH)/../glm \
 $(LOCAL_PATH)
 
 # Add your application source files here...
