@@ -513,71 +513,111 @@ void RenderInfomation3D()
 {
 	bool Success = false;
 
-	if ( ( ( ErrorMessage==MESSAGE_TRADE_CHECK || ErrorMessage==MESSAGE_CHECK ) && AskYesOrNo==1 ) 
-		|| ErrorMessage==MESSAGE_USE_STATE 
-		|| ErrorMessage==MESSAGE_USE_STATE2) 
+	if (((ErrorMessage == MESSAGE_TRADE_CHECK || ErrorMessage == MESSAGE_CHECK) && AskYesOrNo == 1)
+		|| ErrorMessage == MESSAGE_USE_STATE
+		|| ErrorMessage == MESSAGE_USE_STATE2)
 	{
 		Success = true;
 	}
 
-    if ( ErrorMessage==MESSAGE_TRADE_CHECK && AskYesOrNo==5 )
-	{
-		Success = true;
-	}
-	if ( ErrorMessage==MESSAGE_PERSONALSHOP_WARNING ) 
+	if (ErrorMessage == MESSAGE_TRADE_CHECK && AskYesOrNo == 5)
 	{
 		Success = true;
 	}
 
-	if ( Success )
-    {
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glLoadIdentity();
-        glViewport2(0,0,WindowWidth,WindowHeight);
-        gluPerspective2(1.f,(float)(WindowWidth)/(float)(WindowHeight),CameraViewNear,CameraViewFar);
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
-        GetOpenGLMatrix(CameraMatrix);
-        EnableDepthTest();
-        EnableDepthMask();
+	if (ErrorMessage == MESSAGE_PERSONALSHOP_WARNING)
+	{
+		Success = true;
+	}
 
-        float Width, Height;
-        float x = (640-150)/2;
-        float y;
-        if ( ErrorMessage==MESSAGE_TRADE_CHECK )
-        {
-            y = 60+55;
-        }
-        else
-        {
-            y = 60+55;
-        }
+	if (Success)
+	{
+		glViewport(0, 0, WindowWidth, WindowHeight);
 
-	    Width=40.f;Height=60.f;
+		glm::mat4 proj = glm::perspective(
+			glm::radians(CameraFOV),
+			(float)WindowWidth / (float)WindowHeight,
+			CameraViewNear,
+			CameraViewFar
+		);
+
+		glm::mat4 view(1.0f);
+
+		memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
+		memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
+
+		MU_CopyViewToCameraMatrix(CameraMatrix);
+
+		glUseProgram(g_muProgram);
+		MU_ApplyMatrices();
+
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+
+		if (g_uDiscardBlack >= 0)
+			glUniform1i(g_uDiscardBlack, 0);
+
+		EnableDepthTest();
+		EnableDepthMask();
+
+		float Width, Height;
+
+		float x = (640 - 150) / 2;
+
+		float y;
+
+		if (ErrorMessage == MESSAGE_TRADE_CHECK)
+			y = 60 + 55;
+		else
+			y = 60 + 55;
+
+		Width = 40.f;
+		Height = 60.f;
+
 		int iRenderType = ErrorMessage;
-		if(AskYesOrNo == 5)
+
+		if (AskYesOrNo == 5)
 			iRenderType = MESSAGE_USE_STATE;
-		switch( iRenderType )
+
+		switch (iRenderType)
 		{
-		case MESSAGE_USE_STATE :
-		case MESSAGE_USE_STATE2 :
-        case MESSAGE_PERSONALSHOP_WARNING :
-            RenderItem3D(x,y,Width,Height,TargetItem.Type,TargetItem.Level,TargetItem.Option1,TargetItem.ExtOption,true);
+		case MESSAGE_USE_STATE:
+		case MESSAGE_USE_STATE2:
+		case MESSAGE_PERSONALSHOP_WARNING:
+
+			RenderItem3D(
+				x,
+				y,
+				Width,
+				Height,
+				TargetItem.Type,
+				TargetItem.Level,
+				TargetItem.Option1,
+				TargetItem.ExtOption,
+				true
+			);
 			break;
 
-		default :
-            RenderItem3D(x,y,Width,Height,PickItem.Type,PickItem.Level,PickItem.Option1,PickItem.ExtOption,true);
+		default:
+
+			RenderItem3D(
+				x,
+				y,
+				Width,
+				Height,
+				PickItem.Type,
+				PickItem.Level,
+				PickItem.Option1,
+				PickItem.ExtOption,
+				true
+			);
 			break;
 		}
 
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
 		UpdateMousePositionn();
-    }
+
+		BeginBitmap();
+	}
 }
 
 void RenderInfomation()
@@ -1049,24 +1089,19 @@ bool NewRenderCharacterScene(HDC hDC)
 	int Width,Height;
 
 	glColor3f(1.f,1.f,1.f);
-#ifndef PJH_NEW_SERVER_SELECT_MAP
-	BeginBitmap();
-		Width = 320;
-		Height = 320;
-		RenderBitmap(BITMAP_LOG_IN+9,  (float)0,(float)25,(float)Width,(float)Height,0.f,0.f);
-		RenderBitmap(BITMAP_LOG_IN+10,(float)320,(float)25,(float)Width,(float)Height,0.f,0.f);
-	EndBitmap();
-#endif //PJH_NEW_SERVER_SELECT_MAP
+
 	Height = 480;
 	Width = GetScreenWidth();
-    
+
 	glClearColor(0.f,0.f,0.f,1.f);
+
+
 	BeginOpengl(0,25,640,430);
 	
 	CreateFrustrum((float)Width/(float)640, pos);
 
-	OBJECT *o = &CharactersClient[SelectedHero].Object;
-
+	OBJECT* o = &CharactersClient[SelectedHero].Object;
+	
 	CreateScreenVector(MouseX,MouseY,MouseTarget);
 	for(int i = 0; i < 5; i++)
 	{
@@ -1093,62 +1128,51 @@ bool NewRenderCharacterScene(HDC hDC)
 		pObj = &pCha->Object;
 		if(pCha->Helper.Type == MODEL_HELPER+3)
 		{
-#ifdef PJH_NEW_SERVER_SELECT_MAP
 			pObj->Position[2] = 194.5f;
-#else //PJH_NEW_SERVER_SELECT_MAP
-			pObj->Position[2] = 55.0f;
-#endif //PJH_NEW_SERVER_SELECT_MAP
 		}
 		else
 		{
-#ifdef PJH_NEW_SERVER_SELECT_MAP
 			pObj->Position[2] = 169.5f;
-#else //PJH_NEW_SERVER_SELECT_MAP
-			pObj->Position[2] = 30.0f;
-#endif //PJH_NEW_SERVER_SELECT_MAP
 		}
 	}
 
 	RenderTerrain(false);
+
 	RenderObjects();
+
 	RenderCharactersClient();
 
 	if(!CUIMng::Instance().IsCursorOnUI())
 		SelectObjects();
 
 	RenderBugs();
+
 	RenderBlurs();
+
 	RenderJoints();
+
 	RenderEffects();
+
 	ThePetProcess().RenderPets();
 	RenderBoids();
 	RenderObjects_AfterCharacter();
+
 	CheckSprites();
 
-	if(SelectedHero!=-1 && o->Live)
+	if (SelectedHero != -1 && o->Live)
 	{
 		vec3_t vLight;
-		
 		Vector ( 1.0f, 1.0f, 1.f, vLight );
 		float fLumi = sinf ( WorldTime*0.0015f )*0.3f+0.5f;
 		Vector ( fLumi*vLight[0], fLumi*vLight[1], fLumi*vLight[2], vLight );
-#ifdef PJH_NEW_SERVER_SELECT_MAP
 		EnableAlphaBlend();
 		RenderTerrainAlphaBitmap(BITMAP_GM_AURORA, o->Position[0], o->Position[1], 1.8f, 1.8f, vLight, WorldTime*0.01f);
 		RenderTerrainAlphaBitmap(BITMAP_GM_AURORA, o->Position[0], o->Position[1], 1.2f, 1.2f, vLight, -WorldTime*0.01f);
 		DisableAlphaBlend();
-#else //PJH_NEW_SERVER_SELECT_MAP
-		RenderTerrainAlphaBitmap ( BITMAP_GM_AURORA, o->Position[0], o->Position[1], 1.5f, 1.5f, vLight, WorldTime*0.01f );
-		RenderTerrainAlphaBitmap ( BITMAP_GM_AURORA, o->Position[0], o->Position[1], 1.f, 1.f, vLight, -WorldTime*0.01f );
-#endif //PJH_NEW_SERVER_SELECT_MAP
-
-		//CreateParticle(BITMAP_FLARE+1,o->Position,o->Angle,Light,0,0.15f);
-
 		float Rotation = (int)WorldTime%3600/(float)10.f;
 		Vector ( 0.15f, 0.15f, 0.15f, o->Light );
 		CreateParticle(BITMAP_EFFECT, o->Position, o->Angle, o->Light, 4);
 		CreateParticle(BITMAP_EFFECT, o->Position, o->Angle, o->Light, 5);
-
 		g_csMapServer.SetHeroID ( (char *)CharactersClient[SelectedHero].ID );
 	}
 
@@ -1335,14 +1359,6 @@ bool NewRenderLogInScene(HDC hDC)
 	int Width,Height;
 
 	glColor3f(1.f,1.f,1.f);
-#ifndef PJH_NEW_SERVER_SELECT_MAP
-	BeginBitmap();
-	Width = 320;
-	Height = 320;
-	RenderBitmap(BITMAP_LOG_IN+9,  (float)0,(float)25,(float)Width,(float)Height,0.f,0.f);
-	RenderBitmap(BITMAP_LOG_IN+10,(float)320,(float)25,(float)Width,(float)Height,0.f,0.f);
-	EndBitmap();
-#endif //PJH_NEW_SERVER_SELECT_MAP
 
 	Height = 480;
     Width = GetScreenWidth();
@@ -1356,17 +1372,7 @@ bool NewRenderLogInScene(HDC hDC)
 
 	if (!CUIMng::Instance().m_CreditWin.IsShow())
 	{
-		//OutputDebugStringA("[SDL-DEBUG] m_CreditWin.IsShow()");
 		CameraViewFar = 330.f * CCameraMove::GetInstancePtr()->GetCurrentCameraDistanceLevel();
-#ifndef PJH_NEW_SERVER_SELECT_MAP
-		BeginOpengl();
-#endif //PJH_NEW_SERVER_SELECT_MAP
-
-		// ===== SOLID =====
-		//glEnable(GL_DEPTH_TEST);
-		//glDepthMask(GL_TRUE);
-		//glDisable(GL_BLEND);
-	//	glEnable(GL_CULL_FACE);
 
 		RenderTerrain(false);
 		CameraViewFar = 7000.f;
@@ -1375,32 +1381,14 @@ bool NewRenderLogInScene(HDC hDC)
 		RenderObjects();
 		RenderJoints();
 
-		// ===== TRANSPARENT =====
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		//glDepthMask(GL_FALSE);
-		//glDisable(GL_CULL_FACE);
-
 		RenderEffects();
 		CheckSprites();
-
-		// ===== SOLID =====
-		//glEnable(GL_DEPTH_TEST);
-		//glDepthMask(GL_TRUE);
-		//glDisable(GL_BLEND);
-		//glEnable(GL_CULL_FACE);
 
 		RenderLeaves();
 		RenderBoids();
 		RenderObjects_AfterCharacter();
 		ThePetProcess().RenderPets();
 	}
-
-	// ===== TRANSPARENT =====
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glDepthMask(GL_FALSE);
-	//glDisable(GL_CULL_FACE);
 
 	BeginSprite();
 	RenderSprites();
@@ -1529,9 +1517,9 @@ void LoadingScene(HDC hDC)
 	::glFlush();
 
 #ifdef MU_USE_SDL
-	CachTexture = -999999;
+	//CachTexture = -999999;
 	nk_sdl_render(NK_ANTI_ALIASING_ON);
-	CachTexture = -999999;
+	//CachTexture = -999999;
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);
@@ -2472,9 +2460,9 @@ void MainScene(HDC hDC)
 		glFlush();
 #ifdef MU_USE_SDL
 
-		CachTexture = -999999;
+		//CachTexture = -999999;
 		nk_sdl_render(NK_ANTI_ALIASING_ON);
-		CachTexture = -999999;
+		//CachTexture = -999999;
 		SDL_GL_SwapWindow(gSDLWindow);
 #else
 		::SwapBuffers(hDC);

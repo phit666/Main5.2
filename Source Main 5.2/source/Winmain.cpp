@@ -64,6 +64,8 @@
 #include "mu_socket.h"
 #include "mu_gles2_matrix.h"
 
+
+
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
 CUITextInputBox * g_pSinglePasswdInputBox = NULL;
@@ -1732,6 +1734,7 @@ int main(int argc, char* argv[])
 		SDL_GL_SwapWindow(gSDLWindow);
 		continue;*/
 
+
 #if (defined WINDOWMODE)
 		if (g_bUseWindowMode == TRUE)
 		{
@@ -1843,6 +1846,53 @@ int main(int argc, char* argv[])
 	return 0;// msg.wParam;
 }
 
+static vec3_t p1, p2;
+static vec3_t Angle;
+static float Matrix[3][4];
+
+
+void UpdateDebugCameraByKeyboard(float dt)
+{
+	const Uint8* keys = SDL_GetKeyboardState(NULL);
+
+	const float rotateSpeed = 60.0f;   // degrees per second
+	const float moveSpeed = 300.0f;  // world units per second
+
+	// left / right = rotate scene/camera around Z
+	if (keys[SDL_SCANCODE_LEFT]) {
+		CameraAngle[2] -= 15;// rotateSpeed* dt;
+		//OutputDebugStringA("[SDL-DEBUG] SDL_SCANCODE_LEFT");
+	}
+
+	if (keys[SDL_SCANCODE_RIGHT]) {
+		CameraAngle[2] += 15;// rotateSpeed* dt;
+		//OutputDebugStringA("[SDL-DEBUG] SDL_SCANCODE_RIGHT");
+	}
+
+	// forward direction based on CameraAngle[2]
+	float rad = CameraAngle[1] * 3.14159265f / 180.0f;
+
+	float forwardX = sinf(rad);
+	float forwardY = cosf(rad);
+
+	// up / down = move camera forward/backward
+	if (keys[SDL_SCANCODE_UP])
+	{
+		CameraPosition[0] += forwardX * moveSpeed * dt;
+		CameraPosition[1] += forwardY * moveSpeed * dt;
+	}
+
+	if (keys[SDL_SCANCODE_DOWN])
+	{
+		CameraPosition[0] -= forwardX * moveSpeed * dt;
+		CameraPosition[1] -= forwardY * moveSpeed * dt;
+	}
+
+	Vector(0.f, 0.f, 0.f, p1);
+	Vector(0.f, 0.f, -CameraAngle[2], Angle);
+	AngleMatrix(Angle, Matrix);
+	VectorRotate(p1, Matrix, p2);
+}
 
 void MU_ProcessSDLEvents()
 {
@@ -1899,6 +1949,7 @@ void MU_ProcessSDLEvents()
 					MouseWheel = 0;
 				}
 				break;
+
 
 			case SDL_WINDOWEVENT_MINIMIZED:
 				if (g_bUseWindowMode == FALSE)

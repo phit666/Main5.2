@@ -7,15 +7,31 @@
 #endif
 #include <math.h>
 #include <string.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#ifdef _WIN32
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+#endif
 
 #define USE_GLES2_PORT
+
+typedef float vec_t;
+typedef vec_t vec2_t[2];
+typedef vec_t vec3_t[3];
+typedef vec_t vec4_t[4];
+typedef vec_t vec34_t[3][4];
 
 struct MU_Mat4
 {
     float m[16];
 };
-
-
 
 extern MU_Mat4 g_muProjection;
 extern MU_Mat4 g_muView;
@@ -26,7 +42,9 @@ extern GLint g_uView;
 extern GLint g_uTexture;
 extern GLint g_uUseTexture;
 extern GLint g_uDiscardBlack;
+extern GLint g_uMinLight;
 
+extern float g_CurrentColor[4];
 
 void MU_Ortho(MU_Mat4& out, float w, float h);
 void MU_LoadIdentity(MU_Mat4& out);
@@ -107,4 +125,25 @@ inline void MU_RotateZ(MU_Mat4& m, float deg)
     MU_Multiply(m, m, t);
 }
 
+inline void MU_CopyViewToCameraMatrix(float dst[3][4])
+{
+    dst[0][0] = g_muView.m[0];
+    dst[0][1] = g_muView.m[4];
+    dst[0][2] = g_muView.m[8];
+    dst[0][3] = g_muView.m[12];
+
+    dst[1][0] = g_muView.m[1];
+    dst[1][1] = g_muView.m[5];
+    dst[1][2] = g_muView.m[9];
+    dst[1][3] = g_muView.m[13];
+
+    dst[2][0] = g_muView.m[2];
+    dst[2][1] = g_muView.m[6];
+    dst[2][2] = g_muView.m[10];
+    dst[2][3] = g_muView.m[14];
+}
+
 extern int  CachTexture;
+extern MU_Mat4 g_savedViewForSprite;
+void MU_TransformPoint(const MU_Mat4& m, const vec3_t in, vec3_t out);
+

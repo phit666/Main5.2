@@ -194,15 +194,16 @@ int   ScreenCenterYFlip;
 
 void GetOpenGLMatrix(float Matrix[3][4])
 {
+	/*
 	float OpenGLMatrix[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, OpenGLMatrix);
+	MU_glGetColor4(GL_MODELVIEW_MATRIX, OpenGLMatrix);
 	for (int i = 0; i < 3; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{
 			Matrix[i][j] = OpenGLMatrix[j * 4 + i];
 		}
-	}
+	}*/
 }
 
 void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
@@ -248,10 +249,15 @@ void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 
 void Projection(vec3_t Position, int* sx, int* sy)
 {
-	//vec3_t TrasformPosition;
-	//VectorTransform(Position, CameraMatrix, TrasformPosition);
-	*sx = -(int)(Position[0] / PerspectiveX / Position[2]) + ScreenCenterX;
-	*sy = (int)(Position[1] / PerspectiveY / Position[2]) + ScreenCenterY;
+	vec3_t p;
+	VectorTransform(Position, CameraMatrix, p);
+
+	if (p[2] >= -1.0f && p[2] <= 1.0f)
+		return;
+
+	*sx = -(int)(p[0] / PerspectiveX / p[2]) + ScreenCenterX;
+	*sy = (int)(p[1] / PerspectiveY / p[2]) + ScreenCenterY;
+
 	*sx = *sx * 640 / (int)WindowWidth;
 	*sy = *sy * 480 / (int)WindowHeight;
 }
@@ -626,7 +632,6 @@ float ConvertY(float y)
 
 void BeginOpengl(int x, int y, int Width, int Height)
 {
-#ifdef MU_USE_SDL
 	x = x * WindowWidth / 640;
 	y = y * WindowHeight / 480;
 	Width = Width * WindowWidth / 640;
@@ -634,31 +639,37 @@ void BeginOpengl(int x, int y, int Width, int Height)
 
 	glViewport2(x, y, Width, Height);
 
-	MU_Perspective(
-		g_muProjection,
-		CameraFOV,
+	glm::mat4 proj = glm::perspective(
+		glm::radians(CameraFOV),
 		(float)Width / (float)Height,
 		CameraViewNear,
 		CameraViewFar * 1.4f
 	);
 
-	g_muProjection.m[5] = -g_muProjection.m[5];
+	memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
 
-	MU_LoadIdentity(g_muView);
+	glm::mat4 view(1.0f);
 
-	MU_Translate(g_muView,
-		-CameraPosition[0],
-		-CameraPosition[1],
-		-CameraPosition[2]);
-
-	MU_RotateZ(g_muView, -CameraAngle[2]);
+	view = glm::rotate(view, glm::radians(CameraAngle[1]), glm::vec3(0.f, 1.f, 0.f));
 
 	if (!CameraTopViewEnable)
-		MU_RotateX(g_muView, -CameraAngle[0]);
+		view = glm::rotate(view, glm::radians(CameraAngle[0]), glm::vec3(1.f, 0.f, 0.f));
 
-	MU_RotateY(g_muView, -CameraAngle[1]);
+	view = glm::rotate(view, glm::radians(CameraAngle[2]), glm::vec3(0.f, 0.f, 1.f));
+
+	view = glm::translate(
+		view,
+		glm::vec3(
+			-CameraPosition[0],
+			-CameraPosition[1],
+			-CameraPosition[2]
+		)
+	);
+
+	memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
 
 	glUseProgram(g_muProgram);
+
 	MU_ApplyMatrices();
 
 	if (g_uUseTexture >= 0)
@@ -667,52 +678,7 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	if (g_uDiscardBlack >= 0)
 		glUniform1i(g_uDiscardBlack, 0);
 
-	CachTexture = -999999;
-
 	glDisable(GL_ALPHA_TEST);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LEQUAL);
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CW);
-
-	AlphaTestEnable = false;
-	TextureEnable = true;
-	DepthTestEnable = true;
-	CullFaceEnable = true;
-	DepthMaskEnable = true;
-
-	glDisable(GL_BLEND);
-
-	CachTexture = -999999;
-
-#else
-	x = x * WindowWidth / 640;
-	y = y * WindowHeight / 480;
-	Width = Width * WindowWidth / 640;
-	Height = Height * WindowHeight / 480;
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glViewport2(x, y, Width, Height);
-
-	gluPerspective2(CameraFOV, (float)Width / (float)Height, CameraViewNear, CameraViewFar * 1.4f);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	glRotatef(CameraAngle[1], 0.f, 1.f, 0.f);
-	if (CameraTopViewEnable == false)
-		glRotatef(CameraAngle[0], 1.f, 0.f, 0.f);
-	glRotatef(CameraAngle[2], 0.f, 0.f, 1.f);
-	glTranslatef(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]);
-
-	glDisable(GL_ALPHA_TEST);
-	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glDepthMask(true);
@@ -723,42 +689,20 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	DepthMaskEnable = true;
 	glDepthFunc(GL_LEQUAL);
 	glAlphaFunc(GL_GREATER, 0.25f);
-	if (FogEnable)
-	{
-		glEnable(GL_FOG);
-		glFogi(GL_FOG_MODE, GL_LINEAR);
-		glFogf(GL_FOG_DENSITY, FogDensity);
-		glFogfv(GL_FOG_COLOR, FogColor);
-	}
-	else
-	{
-		glDisable(GL_FOG);
-	}
 
-	GetOpenGLMatrix(CameraMatrix);
-#endif
+	MU_CopyViewToCameraMatrix(CameraMatrix);
 }
 
 void EndOpengl()
 {
-#ifndef MU_USE_SDL
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-#endif
 }
 
 void UpdateMousePositionn()
 {
-	vec3_t vPos;
-
-	glLoadIdentity();
-	glTranslatef(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]);
-	GetOpenGLMatrix(CameraMatrix);
-
-	Vector(-CameraMatrix[0][3], -CameraMatrix[1][3], -CameraMatrix[2][3], vPos);
-	VectorIRotate(vPos, CameraMatrix, MousePosition);
+	// camera/world position
+	MousePosition[0] = CameraPosition[0];
+	MousePosition[1] = CameraPosition[1];
+	MousePosition[2] = CameraPosition[2];
 }
 
 #ifdef LDS_ADD_MULTISAMPLEANTIALIASING
@@ -1047,49 +991,50 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 	MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
 }
 
+
 void BeginSprite()
 {
-#ifdef MU_USE_SDL
-	// GLES2: no matrix stack.
-// Keep current 3D projection/view from BeginOpengl().
+	g_savedViewForSprite = g_muView;
+
+	// old OpenGL did glLoadIdentity()
+	MU_LoadIdentity(g_muView);
+
 	glUseProgram(g_muProgram);
 	MU_ApplyMatrices();
 
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glDepthMask(GL_FALSE); // sprites usually should not write depth
-#else
-	glPushMatrix();
-	glLoadIdentity();
-#endif
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_CULL_FACE);
 }
 
 void EndSprite()
 {
-#ifdef MU_USE_SDL
-	glDepthMask(GL_TRUE);
+	g_muView = g_savedViewForSprite;
 
-	// GLES2: no pop matrix.
-#else
-	glPopMatrix();
-#endif
+	glUseProgram(g_muProgram);
+	MU_ApplyMatrices();
+
+	glDepthMask(GL_TRUE);
 }
 
 void RenderSprite(int Texture, vec3_t Position, float Width, float Height, vec3_t Light, float Rotation, float u, float v, float uWidth, float vHeight)
 {
 	BindTexture(Texture);
 
+	vec3_t p2;
+	MU_TransformPoint(g_savedViewForSprite, Position, p2);
+
 	//vec3_t p2;
 	//VectorTransform(Position, CameraMatrix, p2);
 	//VectorCopy(Position,p2);
-	//float x = p2[0];
-	//float y = p2[1];
-	//float z = p2[2];
+	float x = p2[0];
+	float y = p2[1];
+	float z = p2[2];
 
-	float x = Position[0];
-	float y = Position[1];
-	float z = Position[2];
+	//float x = Position[0];
+	//float y = Position[1];
+	//float z = Position[2];
 
 	Width *= 0.5f;
 	Height *= 0.5f;
@@ -1161,11 +1106,15 @@ void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, flo
 {
 	BindTexture(Texture);
 
+	vec3_t p2;
+	MU_TransformPoint(g_savedViewForSprite, Position, p2);
+
 	//vec3_t p2;
 	//VectorTransform(Position, CameraMatrix, p2);
-	float x = Position[0];
-	float y = Position[1];
-	float z = Position[2];
+	//VectorCopy(Position,p2);
+	float x = p2[0];
+	float y = p2[1];
+	float z = p2[2];
 
 	Width *= 0.5f;
 	Height *= 0.5f;
@@ -1262,8 +1211,19 @@ void BeginBitmap()
 {
 	glViewport(0, 0, WindowWidth, WindowHeight);
 
-	MU_Ortho(g_muProjection, (float)WindowWidth, (float)WindowHeight);
-	MU_LoadIdentity(g_muView);
+	glm::mat4 proj = glm::ortho(
+		0.0f,
+		(float)WindowWidth,
+		0.0f,
+		(float)WindowHeight,
+		-1.0f,
+		1.0f
+	);
+
+	glm::mat4 view(1.0f);
+
+	memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
+	memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
 
 	glUseProgram(g_muProgram);
 	MU_ApplyMatrices();
@@ -1271,12 +1231,15 @@ void BeginBitmap()
 	if (g_uUseTexture >= 0)
 		glUniform1i(g_uUseTexture, 1);
 
+	if (g_uDiscardBlack >= 0)
+		glUniform1i(g_uDiscardBlack, 0);
+
+
+	glDisable(GL_DEPTH_TEST);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glDisable(GL_DEPTH_TEST);
-	glDepthMask(GL_FALSE);
-	glDisable(GL_CULL_FACE);
 }
 
 void EndBitmap()
@@ -1287,9 +1250,6 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 {
 	DisableTexture();
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	x = ConvertX(x);
 	y = ConvertY(y);
 	Width = ConvertX(Width);
@@ -1297,56 +1257,26 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 
 	y = WindowHeight - y;
 
-	GLubyte r, g, b, a;
+	MU2DVertex v[4];
 
-	GLfloat oldColor[4];
-	glGetFloatv(GL_CURRENT_COLOR, oldColor);
+	v[0] = { x,         y,          0.f, 0.f };
+	v[1] = { x,         y - Height, 0.f, 0.f };
+	v[2] = { x + Width, y - Height, 0.f, 0.f };
+	v[3] = { x + Width, y,          0.f, 0.f };
 
-	if (Alpha > 0.0f)
+	GLubyte r = 255;
+	GLubyte g = 255;
+	GLubyte b = 255;
+	GLubyte a = MU_FloatToColorByte(Alpha);
+
+	if (Flag == 1)
 	{
-		if (Alpha > 1.0f)
-			Alpha = 1.0f;
-
-		// old behavior:
-		// Flag 0 = white
-		// Flag 1 = black
-		if (Flag == 1)
-		{
-			r = 0;
-			g = 0;
-			b = 0;
-		}
-		else
-		{
-			r = 255;
-			g = 255;
-			b = 255;
-		}
-
-		a = (GLubyte)(Alpha * 255.0f);
-	}
-	else
-	{
-		// important: preserve old OpenGL color
-		r = (GLubyte)(oldColor[0] * 255.0f);
-		g = (GLubyte)(oldColor[1] * 255.0f);
-		b = (GLubyte)(oldColor[2] * 255.0f);
-		a = (GLubyte)(oldColor[3] * 255.0f);
+		r = g = b = 0;
 	}
 
-	MU2DVertex quad[4];
+	MU_DrawColorQuad(v, r, g, b, a);
 
-	quad[0] = { x,         y,          0.0f, 0.0f };
-	quad[1] = { x,         y - Height, 0.0f, 0.0f };
-	quad[2] = { x + Width, y - Height, 0.0f, 0.0f };
-	quad[3] = { x + Width, y,          0.0f, 0.0f };
-
-	MU_DrawColorQuad(quad, r, g, b, a);
-
-	if (Alpha <= 0.0f)
-		glColor4fv(oldColor);
-	else
-		glColor4f(1.f, 1.f, 1.f, 1.f);
+	MU_glColor4f(1.f, 1.f, 1.f, 1.f);
 }
 
 void EndRenderColor()
@@ -1439,7 +1369,7 @@ void RenderBitmap(int Texture, float x, float y, float Width, float Height, floa
 	TEXCOORD(c[1], u, v + vHeight);
 
 	GLfloat oldColor[4];
-	glGetFloatv(GL_CURRENT_COLOR, oldColor);
+	MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
 
 	if (Alpha > 0.f)
 	{

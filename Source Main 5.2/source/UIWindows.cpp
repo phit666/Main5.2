@@ -1759,6 +1759,7 @@ extern void MoveCharacterVisual(CHARACTER *c,OBJECT *o);
 
 void CUIPhotoViewer::RenderPhotoCharacter()
 {
+	/*
 	float fPos_x = m_iPos_x * 1.2f + m_iWidth / 2 - 50;
 	float fPos_y = m_iPos_y * 1.2f + m_iHeight * 1.2f - 62;
 
@@ -1779,7 +1780,7 @@ void CUIPhotoViewer::RenderPhotoCharacter()
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	GetOpenGLMatrix(CameraMatrix);
+	MU_CopyViewToCameraMatrix(CameraMatrix);
 	EnableDepthTest();
 	EnableDepthMask();
 	
@@ -1795,7 +1796,7 @@ void CUIPhotoViewer::RenderPhotoCharacter()
 	Vector( 0.0f, 0.0f, m_fCurrentAngle, o->Angle);
 
 	glDisable(GL_ALPHA_TEST);
-	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D();
 	EnableDepthTest();
 	EnableCullFace();
 	EnableDepthMask();
@@ -1834,6 +1835,7 @@ void CUIPhotoViewer::RenderPhotoCharacter()
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glViewport2(0,0,WindowWidth,WindowHeight);
+	*/
 }
 
 int CUIPhotoViewer::SetPhotoPose(int iCurrentAni, int iMoveDir)
@@ -2489,6 +2491,7 @@ void CUIPhotoViewer::Render()
     {
         DeleteParts ( &m_PhotoChar );
     }
+	
 	RenderPhotoCharacter();
 
 	if (CheckOption(UIPHOTOVIEWER_CANCONTROL))

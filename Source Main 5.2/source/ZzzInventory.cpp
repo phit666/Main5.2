@@ -358,7 +358,7 @@ void RenderTipTextList(const int sx, const int sy, int TextNum, int Tab, int iSo
 
 		glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
 		RenderColor ((float)iPos_x, fsy, (float)fWidth, (float)fHeight);
-		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D();
 	}
 
 	for(int i=0;i<TextNum;i++)
@@ -7400,7 +7400,7 @@ void RenderItemName(int i,OBJECT *o,int ItemLevel,int ItemOption,int ItemExtOpti
 	}
 
 	GLfloat fCurColor[4] = { 1.f, 1.f, 1.f, 0.0f };
-	glGetFloatv(GL_CURRENT_COLOR, fCurColor);
+	MU_glGetColor4(GL_CURRENT_COLOR, fCurColor);
 	if(fCurColor[0] < 0.9f || fCurColor[1] < 0.9f || fCurColor[2] < 0.9f)
 		g_pRenderText->SetTextColor(fCurColor[0]*255, fCurColor[1]*255, fCurColor[2]*255, 255);
 	

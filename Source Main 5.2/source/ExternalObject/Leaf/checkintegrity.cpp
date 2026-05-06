@@ -211,6 +211,8 @@ bool CCheckSumGenerator::Generate(const std::string& out_filename)
 #ifdef MU_USE_SDL
 bool CCheckSumGenerator::GenerateCheckSumTable(const std::string& in_filename, LPCHECKSUMTABLE lpCheckSumTable)
 {
+	//OutputDebugString("[SDL-DEBUG] GenerateCheckSumTable...");
+
 	MU_FILE* f = MU_fopen(in_filename.c_str(), "rb");
 	if (!f)
 		return false;
@@ -232,6 +234,8 @@ bool CCheckSumGenerator::GenerateCheckSumTable(const std::string& in_filename, L
 
 	if (readCount != (size_t)fileSize)
 		return false;
+
+	//OutputDebugString("[SDL-DEBUG] GenerateCheckSumTable...done");
 
 	return GenerateCheckSumTable(buffer.data(), buffer.size(), lpCheckSumTable);
 }

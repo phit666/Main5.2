@@ -261,34 +261,48 @@ float CNewUIGoldBowmanLena::GetLayerDepth()	// 3.4f
 void CNewUIGoldBowmanLena::Render3D()
 {
 	EndBitmap();
-	
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-    glViewport2(0,0,WindowWidth,WindowHeight);
-	gluPerspective2 ( 1.f, (float)(WindowWidth)/(float)(WindowHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR );
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	GetOpenGLMatrix(CameraMatrix);
+
+	glViewport(0, 0, WindowWidth, WindowHeight);
+
+	glm::mat4 proj = glm::perspective(
+		glm::radians(1.0f),
+		(float)WindowWidth / (float)WindowHeight,
+		RENDER_ITEMVIEW_NEAR,
+		RENDER_ITEMVIEW_FAR
+	);
+
+	glm::mat4 view(1.0f);
+
+	memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
+	memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
+
+	MU_CopyViewToCameraMatrix(CameraMatrix);
+
+	glUseProgram(g_muProgram);
+	MU_ApplyMatrices();
+
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
+
+	if (g_uDiscardBlack >= 0)
+		glUniform1i(g_uDiscardBlack, 0);
+
 	EnableDepthTest();
 	EnableDepthMask();
 
-    int Type = ITEM_POTION+21;
-    int Level= 0;
-    float x = 640.f-120.f;
-    float y = 200.f;
-	float Width  = (float)ItemAttribute[Type].Width  * INVENTORY_SCALE;
+	int Type = ITEM_POTION + 21;
+	int Level = 0;
+
+	float x = 640.f - 120.f;
+	float y = 200.f;
+
+	float Width = (float)ItemAttribute[Type].Width * INVENTORY_SCALE;
 	float Height = (float)ItemAttribute[Type].Height * INVENTORY_SCALE;
-	RenderItem3D(x,y,Width,Height,Type,Level,0,0,false);
-    RenderItem3D(x,y+42,Width,Height,Type,Level,0,0,false);
-	
+
+	RenderItem3D(x, y, Width, Height, Type, Level, 0, 0, false);
+	RenderItem3D(x, y + 42, Width, Height, Type, Level, 0, 0, false);
+
 	UpdateMousePositionn();
-	
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	
+
 	BeginBitmap();
 }

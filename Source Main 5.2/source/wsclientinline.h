@@ -96,7 +96,12 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 	PBMSG_ENCRYPTED bc;
 	PWMSG_ENCRYPTED wc;
 
+	OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-0...");
+
 	int iSize = g_SimpleModulusCS.Encrypt( NULL, byBuffer + iSkip, len - iSkip);
+
+	OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-0...done");
+
 	
 	if ( iSize < 256 && bForceC4 == FALSE)
 	{
@@ -105,7 +110,14 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 		bc.Code = 0xC3;
 		bc.Size = iLength;
 
+		OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-1...");
+
+
 		g_SimpleModulusCS.Encrypt( bc.byBuffer, byBuffer + iSkip, len - iSkip);
+
+		OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-1...done");
+
+
 		assert( iSize < 256);
 
 		return ( g_pSocketClient->sSend( ( char*)&bc, iLength));
@@ -118,7 +130,12 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 		wc.SizeL = iLength % 256;
 		wc.SizeH = iLength / 256;
 
+		OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-2...");
+
 		g_SimpleModulusCS.Encrypt( wc.byBuffer, byBuffer + iSkip, len - iSkip);
+
+		OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-2...done");
+
 
 		assert( iSize <= MAX_SPE_BUFFERSIZE_);
 		return ( g_pSocketClient->sSend( ( char*)&wc, iLength));

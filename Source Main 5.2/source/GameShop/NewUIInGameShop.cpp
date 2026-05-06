@@ -135,7 +135,7 @@ void CNewUIInGameShop::RenderTexts()
 	g_pRenderText->SetBgColor(0, 0, 0, 0);
 	g_pRenderText->SetTextColor(255, 255, 255, 255);
 	g_pRenderText->SetFont(g_hFontBold);
-	sprintf(szText, Hero->ID);
+	strcpy(szText, Hero->ID);
 	g_pRenderText->RenderText(m_Pos.x+TEXT_IGS_CHAR_NAME_POS_X, m_Pos.y+TEXT_IGS_CHAR_NAME_POS_Y,szText, TEXT_IGS_CHAR_NAME_WIDTH, 0, RT3_SORT_CENTER);
 	g_pRenderText->SetFont(g_hFont);
 
@@ -312,38 +312,61 @@ void CNewUIInGameShop::SetRateScale(int _ItemType)
 }
 
 void CNewUIInGameShop::RenderDisplayItems()
-{		
-	EndBitmap();
+{
+    EndBitmap();
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glViewport2(0,0,WindowWidth,WindowHeight);
-	gluPerspective2(1.f, (float)(WindowWidth)/(float)(WindowHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	GetOpenGLMatrix(CameraMatrix);
-	EnableDepthTest();
-	EnableDepthMask();
+    glViewport(0, 0, WindowWidth, WindowHeight);
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+    MU_Perspective(
+            g_muProjection,
+            1.0f,
+            (float)WindowWidth / (float)WindowHeight,
+            RENDER_ITEMVIEW_NEAR,
+            RENDER_ITEMVIEW_FAR
+    );
 
-	for(int i=0 ; i<g_InGameShopSystem->GetSizePackageAsDisplayPackage() ; i++ )
-	{
- 		int iPosX = IGS_ITEMRENDER_POS_X_STANDAD+(IMAGE_IGS_VIEWDETAIL_BTN_DISTANCE_X*(i%IGS_NUM_ITEMS_WIDTH));
-  		int iPosY = IGS_ITEMRENDER_POS_Y_STANDAD+(IMAGE_IGS_VIEWDETAIL_BTN_DISTANCE_Y*(i/IGS_NUM_ITEMS_HEIGHT));
-		RenderItem3D(iPosX, iPosY, IGS_ITEMRENDER_POS_WIDTH, IGS_ITEMRENDER_POS_HEIGHT, g_InGameShopSystem->GetPackageItemCode(i), 0, 0, 0, true);
-	}
+    MU_LoadIdentity(g_muView);
 
-	UpdateMousePositionn();
-	
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	
-	BeginBitmap();
+    glUseProgram(g_muProgram);
+    MU_ApplyMatrices();
+
+    if (g_uUseTexture >= 0)
+        glUniform1i(g_uUseTexture, 1);
+
+    if (g_uDiscardBlack >= 0)
+        glUniform1i(g_uDiscardBlack, 0);
+
+    EnableDepthTest();
+    EnableDepthMask();
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    for (int i = 0; i < g_InGameShopSystem->GetSizePackageAsDisplayPackage(); i++)
+    {
+        int iPosX =
+                IGS_ITEMRENDER_POS_X_STANDAD +
+                (IMAGE_IGS_VIEWDETAIL_BTN_DISTANCE_X * (i % IGS_NUM_ITEMS_WIDTH));
+
+        int iPosY =
+                IGS_ITEMRENDER_POS_Y_STANDAD +
+                (IMAGE_IGS_VIEWDETAIL_BTN_DISTANCE_Y * (i / IGS_NUM_ITEMS_HEIGHT));
+
+        RenderItem3D(
+                iPosX,
+                iPosY,
+                IGS_ITEMRENDER_POS_WIDTH,
+                IGS_ITEMRENDER_POS_HEIGHT,
+                g_InGameShopSystem->GetPackageItemCode(i),
+                0,
+                0,
+                0,
+                true
+        );
+    }
+
+    UpdateMousePositionn();
+
+    BeginBitmap();
 }
 	
 bool CNewUIInGameShop::BtnProcess()
@@ -383,14 +406,20 @@ bool CNewUIInGameShop::BtnProcess()
 			if( pPackage->PriceCount == 1 )
 			{
 				CMsgBoxIGSBuyPackageItem* pMsgBox = NULL;
-				CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxBuyPackageItemLayout), &pMsgBox);
+				//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxBuyPackageItemLayout), &pMsgBox);
+                TMsgBoxLayoutContainer<CMsgBoxBuyPackageItemLayout> container;
+                CreateMessageBox(container, &pMsgBox);
 				pMsgBox->Initialize(pPackage);
 			}
 			else if(pPackage->PriceCount > 1)
 			{
 				CMsgBoxIGSBuySelectItem* pMsgBox = NULL;
-				CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSBuySelectItemLayout), &pMsgBox);
-				pMsgBox->Initialize(pPackage);
+				//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSBuySelectItemLayout), &pMsgBox);
+
+                TMsgBoxLayoutContainer<CMsgBoxIGSBuySelectItemLayout> container;
+                CreateMessageBox(container, &pMsgBox);
+
+                pMsgBox->Initialize(pPackage);
 			}
 
 			return true;
@@ -400,7 +429,11 @@ bool CNewUIInGameShop::BtnProcess()
 	if( m_CashGiftButton.UpdateMouseEvent() == true )
 	{
 		CMsgBoxIGSCommon* pMsgBox = NULL;
-		CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+		//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+
+        TMsgBoxLayoutContainer<CMsgBoxIGSCommonLayout> container;
+        CreateMessageBox(container, &pMsgBox);
+
 		pMsgBox->Initialize(GlobalText[2937], GlobalText[2938]);
 		return true;
 	}
@@ -408,7 +441,11 @@ bool CNewUIInGameShop::BtnProcess()
 	if( m_CashChargeButton.UpdateMouseEvent() == true )
 	{
 		CMsgBoxIGSCommon* pMsgBox = NULL;
-		CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+		//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+
+        TMsgBoxLayoutContainer<CMsgBoxIGSCommonLayout> container;
+        CreateMessageBox(container, &pMsgBox);
+
 		pMsgBox->Initialize(GlobalText[2937], GlobalText[2938]);
 		return true;
 	}
@@ -425,7 +462,11 @@ bool CNewUIInGameShop::BtnProcess()
 		if( m_StorageItemListBox.GetLineNum() <= 0 )
 		{
 			CMsgBoxIGSCommon* pMsgBox = NULL;
-			CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+			//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+
+            TMsgBoxLayoutContainer<CMsgBoxIGSCommonLayout> container;
+            CreateMessageBox(container, &pMsgBox);
+
 			pMsgBox->Initialize(GlobalText[3028], GlobalText[3033]);
 			return true;
 		}
@@ -438,14 +479,18 @@ bool CNewUIInGameShop::BtnProcess()
 		if( iStorageIndex == IGS_SAFEKEEPING_LISTBOX )					// ������
 		{
 			CMsgBoxIGSStorageItemInfo* pMsgBox = NULL;
-			CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSStorageItemInfoLayout), &pMsgBox);
+			//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSStorageItemInfoLayout), &pMsgBox);
+            TMsgBoxLayoutContainer<CMsgBoxIGSStorageItemInfoLayout> container;
+            CreateMessageBox(container, &pMsgBox);
 			pMsgBox->Initialize(pSelectItem->m_iStorageSeq, pSelectItem->m_iStorageItemSeq, pSelectItem->m_wItemCode, pSelectItem->m_szType, 
 				pSelectItem->m_szName, pSelectItem->m_szNum, pSelectItem->m_szPeriod);
 		}
 		else if( iStorageIndex == IGS_PRESENTBOX_LISTBOX )				// ���� ������
 		{
 			CMsgBoxIGSGiftStorageItemInfo* pMsgBox = NULL;
-			CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSGiftStorageItemInfoLayout), &pMsgBox);
+			//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSGiftStorageItemInfoLayout), &pMsgBox);
+            TMsgBoxLayoutContainer<CMsgBoxIGSGiftStorageItemInfoLayout> container;
+            CreateMessageBox(container, &pMsgBox);
 			pMsgBox->Initialize(pSelectItem->m_iStorageSeq, pSelectItem->m_iStorageItemSeq, pSelectItem->m_wItemCode, 
 				pSelectItem->m_szType, pSelectItem->m_szSendUserName, pSelectItem->m_szMessage, 
 				pSelectItem->m_szName, pSelectItem->m_szNum, pSelectItem->m_szPeriod);
@@ -624,7 +669,9 @@ bool CNewUIInGameShop::IsInGameShopOpen()
 	if( !(Hero->SafeZone) && !(WD_0LORENCIA == gMapManager.WorldActive && WD_3NORIA == gMapManager.WorldActive && WD_2DEVIAS == gMapManager.WorldActive && WD_51HOME_6TH_CHAR == gMapManager.WorldActive))
 	{
 		CMsgBoxIGSCommon* pMsgBox = NULL;
-		CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+		//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+        TMsgBoxLayoutContainer<CMsgBoxIGSCommonLayout> container;
+        CreateMessageBox(container, &pMsgBox);
 		pMsgBox->Initialize(GlobalText[3028], GlobalText[3051]);
 		g_ConsoleDebug->Write(MCD_NORMAL,"InGameShopStatue.Txt Return - false <%s>", GlobalText[3051]);
 		return false;
@@ -633,7 +680,9 @@ bool CNewUIInGameShop::IsInGameShopOpen()
 	if( g_InGameShopSystem->IsShopOpen() == false)
 	{
 		CMsgBoxIGSCommon* pMsgBox = NULL;
-		CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+		//CreateMessageBox(MSGBOX_LAYOUT_CLASS(CMsgBoxIGSCommonLayout), &pMsgBox);
+        TMsgBoxLayoutContainer<CMsgBoxIGSCommonLayout> container;
+        CreateMessageBox(container, &pMsgBox);
 		pMsgBox->Initialize(GlobalText[3028], GlobalText[3035]);
 		g_ConsoleDebug->Write(MCD_NORMAL,"InGameShopStatue.Txt Return - false <%s>", GlobalText[3035]);
 		return false;

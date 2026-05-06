@@ -83,7 +83,7 @@
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)source\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);thirdparty\SDL2_image-2.6.3\include;thirdparty\SDL2_mixer-2.6.3\include;thirdparty\libevent_vs2019\include;thirdparty\SDL2_gfx-1.0.4\includes;thirdparty\SDL2_ttf-2.20.2\include;thirdparty\SDL2-2.26.5\include;thirdparty\libcurl\include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);thirdparty\SDL2_image-2.6.3\include;thirdparty\SDL2_mixer-2.6.3\include;thirdparty\libevent_vs2019\include;thirdparty\SDL2_gfx-1.0.4\includes;thirdparty\SDL2_ttf-2.20.2\include;thirdparty\SDL2-2.26.5\include;thirdparty\libcurl\include;thirdparty\glm</IncludePath>
     <LibraryPath>$(LibraryPath);thirdparty\SDL2_image-2.6.3\lib\x86;thirdparty\SDL2_mixer-2.6.3\lib\x86;thirdparty\SDL2-2.26.5\lib\x86;thirdparty\SDL2_ttf-2.20.2\lib\x86;thirdparty\SDL2_gfx-1.0.4\lib\x86;thirdparty\libevent_vs2019\lib;thirdparty\libcurl\lib</LibraryPath>
     <ExecutablePath>$(VC_ExecutablePath_x86);$(CommonExecutablePath)</ExecutablePath>
   </PropertyGroup>

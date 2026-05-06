@@ -3315,6 +3315,14 @@ void RenderObjects()
 			{
 				OBJECT *o  = ob->Head;
 
+				//if (SceneFlag == CHARACTER_SCENE && o != NULL) {
+				//	if (o->Type == 5)
+				//		continue;
+				//	char Sbuf[128] = { 0 };
+				//	sprintf(Sbuf, "[RenderObjects] Type=%d Live=%d\n", o->Type, o->Live);
+				//	OutputDebugStringA(Sbuf);
+				//}
+
 				while(1)
 				{
 					if(o != NULL)
@@ -3324,9 +3332,7 @@ void RenderObjects()
 							RenderObject(o);
 							RenderObjectVisual(o);
 						}
-						else 
-#ifdef PJH_NEW_SERVER_SELECT_MAP
-						if(gMapManager.WorldActive == WD_73NEW_LOGIN_SCENE)
+						else if(gMapManager.WorldActive == WD_73NEW_LOGIN_SCENE)
 						{
 							float fDistance_x = CameraPosition[0] - o->Position[0];
 							float fDistance_y = CameraPosition[1] - o->Position[1];
@@ -3366,48 +3372,6 @@ void RenderObjects()
 								o->AlphaTarget = 0.0f;
 							}
 						}
-#else	// PJH_NEW_SERVER_SELECT_MAP
-						if(World == WD_77NEW_LOGIN_SCENE)
-						{
-							float fDistance_x = CameraPosition[0] - o->Position[0];
-							float fDistance_y = CameraPosition[1] - o->Position[1];
-							float fDistance = sqrtf(fDistance_x * fDistance_x + fDistance_y * fDistance_y);
-
-							if (((o->Type>=5 && o->Type<=14) || (o->Type>=87 && o->Type<=88) || (o->Type == 4 || o->Type == 129))
-								&& TestFrustrum2D(o->Position[0]*0.01f,o->Position[1]*0.01f,-500.f) && fDistance < 5000.f)
-							{
- 								if (o->AlphaTarget < 1.0f)
- 									o->AlphaTarget += 0.03f;
-								else
-									o->AlphaTarget = 1.0f;
-
-								RenderObject(o);
-								RenderObjectVisual(o);
-							}
-							else if (o->Type == 130
-								|| (TestFrustrum2D(o->Position[0]*0.01f,o->Position[1]*0.01f,-500.f) && fDistance < 4500.f))
-							{
-								if (o->BlendMeshLight < 1.0f)
-									o->BlendMeshLight += 0.03f;
-								else
-									o->BlendMeshLight = 1.0f;
-
- 								if (o->AlphaTarget < 1.0f)
- 									o->AlphaTarget += 0.03f;
-								else
-									o->AlphaTarget = 1.0f;
-
-								RenderObject(o);
-								RenderObjectVisual(o);
-							}
-							else if (o->AlphaTarget != 0 && fDistance > 2000.f)
-							{
-								o->BlendMeshLight = 0.0f;
-								o->Alpha = 0.0f;
-								o->AlphaTarget = 0.0f;
-							}
-						}
-#endif //PJH_NEW_SERVER_SELECT_MAP
 						else if((gMapManager.WorldActive == WD_51HOME_6TH_CHAR
 #ifndef PJH_NEW_SERVER_SELECT_MAP
 							|| World == WD_78NEW_CHARACTER_SCENE
@@ -7713,16 +7677,7 @@ void RenderPartObjectBody(BMD *b,OBJECT *o,int Type,float Alpha,int RenderType)
 	{
 		if (b->HideSkin)
 		{
-			//::glColor3fv(b->BodyLight);
-
-			glDisableVertexAttribArray(2);
-			glVertexAttrib4f(
-				2,
-				b->BodyLight[0],
-				b->BodyLight[1],
-				b->BodyLight[2],
-				1.0f
-			);
+			glColor3fv(b->BodyLight);
 
 			int anMesh[6] = { 2, 1, 0, 2, 1, 2 };
 			b->RenderMesh(anMesh[Type-(MODEL_HELM+39)], RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV);

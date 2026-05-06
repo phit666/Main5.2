@@ -60,7 +60,7 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 		VectorAdd(ObjectPosition,Position[3],Position[3]);
 
 		GLfloat oldColor[4];
-		glGetFloatv(GL_CURRENT_COLOR, oldColor);
+		MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
 
 		MU3DColorVertex quad[4];
 

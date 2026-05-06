@@ -7178,9 +7178,7 @@ void RenderJoints( BYTE bRenderOneMore )
                 {
                     float Luminosity = ((float)((o->MaxTails-j)/(float)(o->MaxTails))*2);
                     Luminosity *= o->Light[0];
-                    //glColor3f(Luminosity,Luminosity,Luminosity);
-					glDisableVertexAttribArray(2);
-					glVertexAttrib4f(2, Luminosity, Luminosity, Luminosity, 1.0f);
+                    glColor3f(Luminosity,Luminosity,Luminosity);
 
 					MU3DVertex quad[4];
 
@@ -7287,22 +7285,15 @@ void RenderJoints( BYTE bRenderOneMore )
                         if( tail==j )
                         {
                             float l = o->Light[2] - j;
-                            //glColor3f(l, l, l);
-							glDisableVertexAttribArray(2);
-							glVertexAttrib4f(2, l, l, l, 1.0f);
+                            glColor3f(l, l, l);
 						}
                         else if( tail<j )
                         {
-                            //glColor3f(0.f,0.f,0.f);
-							glDisableVertexAttribArray(2);
-							glVertexAttrib4f(2, 0.f, 0.f, 0.f, 1.0f);
+                            glColor3f(0.f,0.f,0.f);
 						}
                         else
                         {
-                            //glColor3f(0.7f,0.7f,0.7f);
-							glDisableVertexAttribArray(2);
-							glVertexAttrib4f(2, 0.7f, 0.7f, 0.7f, 1.0f);
-
+                            glColor3f(0.7f,0.7f,0.7f);
                         }
                     }
                     else if ( o->Type==BITMAP_FLARE+1 && o->SubType==6 )

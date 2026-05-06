@@ -19,11 +19,13 @@
 # define SIZE_ENCRYPTION_KEY	( 4)	// SIZE_ENCRYPTION_BLOCK
 # define SIZE_ENCRYPTED_BLOCK	( 11)
 
+#pragma pack(1)
 struct ENCDEC_FILEHEADER
 {
     short sFileHeader;
     int dwSize;
 };
+#pragma pack()
 
 class CSimpleModulus  
 {

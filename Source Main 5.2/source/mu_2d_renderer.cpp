@@ -5,7 +5,6 @@
 
 extern bool TextureEnable;
 
-
 bool MU_ShouldDiscardBlack(int texID)
 {
     switch (texID) {
@@ -258,19 +257,24 @@ void MU_DrawTexturedColorQuad3D(int texID, const MU3DColorVertex* v)
 }
 
 
-void MU_DrawBoundQuad3D(const MU3DVertex* v,
-    GLubyte r, GLubyte g, GLubyte b, GLubyte a)
+void MU_DrawBoundQuad3D(
+    const MU3DVertex* v,
+    GLubyte r,
+    GLubyte g,
+    GLubyte b,
+    GLubyte a)
 {
     if (!v)
         return;
-
-    TextureEnable = true;
 
     glUseProgram(g_muProgram);
     MU_ApplyMatrices();
 
     if (g_uUseTexture >= 0)
         glUniform1i(g_uUseTexture, 1);
+
+    if (g_uDiscardBlack >= 0)
+        glUniform1i(g_uDiscardBlack, 0);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MU3DVertex), &v[0].x);
@@ -279,7 +283,13 @@ void MU_DrawBoundQuad3D(const MU3DVertex* v,
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(MU3DVertex), &v[0].u);
 
     glDisableVertexAttribArray(2);
-    glVertexAttrib4f(2, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+    glVertexAttrib4f(
+        2,
+        r / 255.0f,
+        g / 255.0f,
+        b / 255.0f,
+        a / 255.0f
+    );
 
     static const GLubyte idx[6] = { 0, 1, 2, 0, 2, 3 };
 
@@ -322,6 +332,7 @@ void MU_DrawTexturedColorQuad3D_Bound(const MU3DColorVertex* v)
 
 void MU_DrawLine3D(const vec3_t a, const vec3_t b)
 {
+
     GLfloat verts[6] =
     {
         a[0], a[1], a[2],
@@ -340,8 +351,16 @@ void MU_DrawLine3D(const vec3_t a, const vec3_t b)
     glDisableVertexAttribArray(1);
     glVertexAttrib2f(1, 0.0f, 0.0f);
 
+    //glDisableVertexAttribArray(2);
+    //glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
     glDisableVertexAttribArray(2);
-    glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
+    glVertexAttrib4f(
+        2,
+        g_CurrentColor[0],
+        g_CurrentColor[1],
+        g_CurrentColor[2],
+        g_CurrentColor[3]
+    );
 
     glDrawArrays(GL_LINES, 0, 2);
 

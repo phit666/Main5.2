@@ -99,40 +99,63 @@ namespace SEASON3B
 	void CNewUIRegistrationLuckyCoin::RenderLuckyCoin()
 	{
 		float x, y, width, height;
-		
-		x = GetPos().x -20;
+
+		x = GetPos().x - 20;
 		y = GetPos().y + 50;
-		
+
 		width = LUCKYCOIN_REG_WIDTH;
 		height = LUCKYCOIN_REG_HEIGHT;
-		
+
 		EndBitmap();
-		
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glViewport2(0,0,WindowWidth,WindowHeight);
-		gluPerspective2(1.f, (float)(WindowWidth)/(float)(WindowHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-		GetOpenGLMatrix(CameraMatrix);
+
+		glViewport(0, 0, WindowWidth, WindowHeight);
+
+		glm::mat4 proj = glm::perspective(
+			glm::radians(1.0f),
+			(float)WindowWidth / (float)WindowHeight,
+			RENDER_ITEMVIEW_NEAR,
+			RENDER_ITEMVIEW_FAR
+		);
+
+		glm::mat4 view(1.0f);
+
+		memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
+		memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
+
+		MU_CopyViewToCameraMatrix(CameraMatrix);
+
+		glUseProgram(g_muProgram);
+		MU_ApplyMatrices();
+
+		if (g_uUseTexture >= 0)
+			glUniform1i(g_uUseTexture, 1);
+
+		if (g_uDiscardBlack >= 0)
+			glUniform1i(g_uDiscardBlack, 0);
+
 		EnableDepthTest();
 		EnableDepthMask();
-		
+
 		glClear(GL_DEPTH_BUFFER_BIT);
-		
+
 		SetItemRotation(true);
-		RenderItem3D(x, y, width, height, m_CoinItem->Type, m_CoinItem->Level, 0, 0, true);
+
+		RenderItem3D(
+			x,
+			y,
+			width,
+			height,
+			m_CoinItem->Type,
+			m_CoinItem->Level,
+			0,
+			0,
+			true
+		);
+
 		SetItemRotation(false);
-		
+
 		UpdateMousePositionn();
-		
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		
+
 		BeginBitmap();
 	}
 	

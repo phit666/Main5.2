@@ -42,35 +42,6 @@ void CreatePlane(int Type,vec3_t Position,vec3_t Light,float Angle)
 	}
 }
 
-void RenderPlane(int Texture,vec3_t Position,float Scale,float Angle)
-{/*
-	BindTexture(Texture);
-	EnableAlphaBlend();
-
-	glPushMatrix();
-    glTranslatef(Position[0],Position[1],Position[2]);
-	glRotatef(Angle,0.f,0.f,1.f);
-
-	vec3_t BoundingVertices[4];
-	Vector(-Scale,-Scale,0.f,BoundingVertices[0]);
-	Vector( Scale,-Scale,0.f,BoundingVertices[1]);
-	Vector(-Scale, Scale,0.f,BoundingVertices[2]);
-	Vector( Scale, Scale,0.f,BoundingVertices[3]);
-	
-	glBegin(GL_QUADS);
-
-	glTexCoord2f(0.f,1.f);glVertex3fv(BoundingVertices[0]);
-	glTexCoord2f(1.f,1.f);glVertex3fv(BoundingVertices[2]);
-	glTexCoord2f(1.f,0.f);glVertex3fv(BoundingVertices[3]);
-	glTexCoord2f(0.f,0.f);glVertex3fv(BoundingVertices[1]);
-	
-	glEnd();
-
-	glPopMatrix();
-	DisableAlphaBlend();
-	*/
-}
-
 void MovePlanes()
 {
 	for(int i=0;i<MAX_PLANES;i++)
@@ -92,20 +63,7 @@ void MovePlanes()
 	}
 }
 
-void RenderPlanes()
-{
-	for(int i=0;i<MAX_PLANES;i++)
-	{
-		OBJECT *o = &Planes[i];
-		if(o->Live)
-		{
-			 //glColor3f(o->Light[0],o->Light[1],o->Light[2]);
-			 glDisableVertexAttribArray(2);
-			 glVertexAttrib4f(2, o->Light[0], o->Light[1], o->Light[2], 1.0f);
-             RenderPlane(o->Type,o->Position,o->Scale,o->Angle[2]);
-		}
-	}
-}
+
 
 void RenderShpere(int Type,vec3_t ShperePosition,float Scale,vec3_t ShpereLight,float Rotation,float TextureV)
 {/*

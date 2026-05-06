@@ -34,3 +34,7 @@ int MU_Connect(char* serverip, unsigned short port);
 void MU_CloseBev();
 int MU_BevSend(const void* data, int len);
 evutil_socket_t MU_GetFD();
+
+void UpdateDebugCameraByKeyboard(float dt);
+
+

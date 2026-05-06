@@ -155,7 +155,7 @@ void RenderBlurs()
 				for (int j = 0; j < b->Number - 1; j++)
 				{
 					GLfloat oldColor[4];
-					glGetFloatv(GL_CURRENT_COLOR, oldColor);
+					MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
 
 					MU3DColorVertex quad[4];
 
@@ -379,7 +379,7 @@ void RenderObjectBlurs()
 					}
 
 					GLfloat oldColor[4];
-					glGetFloatv(GL_CURRENT_COLOR, oldColor);
+					MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
 
 					MU3DColorVertex quad[4];
 
@@ -704,7 +704,7 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 		verts.reserve(n);
 
 		GLfloat oldColor[4];
-		glGetFloatv(GL_CURRENT_COLOR, oldColor);
+		MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
 
 		for (int i = 0; i < n; i++)
 		{
@@ -793,7 +793,7 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 		verts.reserve(n);
 
 		GLfloat oldColor[4];
-		glGetFloatv(GL_CURRENT_COLOR, oldColor);
+		MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
 
 		for (int i = n - 1; i >= 0; i--)
 		{

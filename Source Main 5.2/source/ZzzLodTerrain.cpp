@@ -24,9 +24,7 @@
 #include "MapManager.h"
 #include "./Utilities/Log/muConsoleDebug.h"
 #include "w_MapHeaders.h"
-#ifdef PJH_NEW_SERVER_SELECT_MAP
 #include "CameraMove.h"
-#endif //PJH_NEW_SERVER_SELECT_MAP
 
 
 //-------------------------------------------------------------------------------------------------------------
@@ -1847,51 +1845,9 @@ bool RenderTerrainTile(float xf,float yf,int xi,int yi,float lodf,int lodi,bool 
 	if(!Flag)
 	{
 		RenderTerrainFace(xf,yf,xi,yi,lodf);
-#ifdef SHOW_PATH_INFO
-#ifdef CSK_DEBUG_MAP_PATHFINDING
-		if(g_bShowPath == true)
-#endif // CSK_DEBUG_MAP_PATHFINDING
-		{
-			if ( 2 <= path->GetClosedStatus( TerrainIndex1))
-			{
-				EnableAlphaTest();
-				DisableTexture();
-				glBegin(GL_TRIANGLE_FAN);
-				if ( 4 <= path->GetClosedStatus( TerrainIndex1))
-				{
-					glColor4f(0.3f,0.3f,1.0f,0.5f);
-				}
-				else
-				{
-					glColor4f(1.0f,1.0f,1.0f,0.3f);
-				}
-				for(int i=0;i<4;i++)
-				{
-					glVertex3fv(TerrainVertex[i]);
-				}
-				glEnd();
-				DisableAlphaBlend();
-			}
-		}
-#endif // SHOW_PATH_INFO
 	}
 	else
-	{
-#ifdef _DEBUG
-        if(EditFlag!=EDIT_LIGHT)
-		{
-			DisableTexture();
-			glColor3f(0.5f,0.5f,0.5f);
-			glBegin(GL_LINE_STRIP);
-			for(int i=0;i<4;i++)
-			{
-				glVertex3fv(TerrainVertex[i]);
-			}
-			glEnd();
-			DisableAlphaBlend();
-		}
-#endif// _DEBUG
-		
+	{	
 		vec3_t Normal;
 		FaceNormalize ( TerrainVertex[0], TerrainVertex[1], TerrainVertex[2], Normal );
 		bool Success = CollisionDetectLineToFace ( MousePosition, MouseTarget, 3, TerrainVertex[0], TerrainVertex[1], TerrainVertex[2], TerrainVertex[3], Normal );
@@ -1906,37 +1862,6 @@ bool RenderTerrainTile(float xf,float yf,int xi,int yi,float lodf,int lodi,bool 
 			SelectXF = xf;
 			SelectYF = yf;
 		}
-#ifdef CSK_DEBUG_MAP_ATTRIBUTE
-		if ( EditFlag == EDIT_WALL && 
-            ( ( SelectWall==0 && (TerrainWall[TerrainIndex1]&TW_NOMOVE)==TW_NOMOVE) 
-           || ( SelectWall==2 && (TerrainWall[TerrainIndex1]&TW_SAFEZONE)==TW_SAFEZONE)
-           || ( SelectWall==6 && (TerrainWall[TerrainIndex1]&TW_CAMERA_UP)==TW_CAMERA_UP)
-           || ( SelectWall==7 && (TerrainWall[TerrainIndex1]&TW_NOATTACKZONE)==TW_NOATTACKZONE)
-           || ( SelectWall==8 && (TerrainWall[TerrainIndex1]&TW_ATT1)==TW_ATT1)
-           || ( SelectWall==9 && (TerrainWall[TerrainIndex1]&TW_ATT2)==TW_ATT2)
-           || ( SelectWall==10&& (TerrainWall[TerrainIndex1]&TW_ATT3)==TW_ATT3)
-           || ( SelectWall==11&& (TerrainWall[TerrainIndex1]&TW_ATT4)==TW_ATT4)
-           || ( SelectWall==12&& (TerrainWall[TerrainIndex1]&TW_ATT5)==TW_ATT5)
-           || ( SelectWall==13&& (TerrainWall[TerrainIndex1]&TW_ATT6)==TW_ATT6)
-           || ( SelectWall==14&& (TerrainWall[TerrainIndex1]&TW_ATT7)==TW_ATT7)
-           ) )
-		{
-			DisableDepthTest();
-			EnableAlphaTest();
-			DisableTexture();
-     		
-			glBegin(GL_TRIANGLE_FAN);
-			glColor4f(1.f,0.5f,0.5f,0.3f);
-			for(int i=0;i<4;i++)
-			{
-				glVertex3fv(TerrainVertex[i]);
-			}
-			glEnd();
-
-			DisableAlphaBlend();
-		}
-#endif // CSK_DEBUG_MAP_ATTRIBUTE
-
 		return Success;
 	}
 	return false;
@@ -2003,7 +1928,7 @@ void RenderTerrainBitmapTile(float xf, float yf, float lodf, int lodi,
 	}
 
 	GLfloat oldColor[4];
-	glGetFloatv(GL_CURRENT_COLOR, oldColor);
+	MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
 
 	MU3DColorVertex quad[4];
 
@@ -2213,7 +2138,7 @@ void CreateFrustrum2D(vec3_t Position)
 				}
 				else if(SceneFlag == CHARACTER_SCENE)
 				{
-					Width = (float)GetScreenWidth()/640.f * 9.1f * 0.404998f;
+					Width = (float)GetScreenWidth() / 640.f * 9.1f * 0.404998f;
 				}
 				else if(g_Direction.m_CKanturu.IsMayaScene() )
 				{
@@ -2366,7 +2291,7 @@ void CreateFrustrum(float Aspect, vec3_t position)
 	float FrustrumMaxX = 0.f;
 	float FrustrumMaxY = 0.f;
 	float Matrix[3][4];
-	GetOpenGLMatrix(Matrix);
+	MU_CopyViewToCameraMatrix(Matrix);
 	for(int i=0;i<5;i++)
 	{
 		vec3_t t;
@@ -2417,100 +2342,6 @@ bool TestFrustrum(vec3_t Position,float Range)
 	}
 	return true;
 }
-
-#ifdef DYNAMIC_FRUSTRUM
-
-void CFrustrum::Make(vec3_t vEye, float fFov, float fAspect, float fDist)
-{
-	float Width    = tanf(fFov*0.5f*3.141592f/180.f) * fDist * fAspect + 100.f;
-	float Height   = Width * 3.f / 4.f;
-	vec3_t Temp[5];
-	vec3_t FrustrumVertex[5];
-	Vector(0.f, 0.f, 0.f, Temp[0]);
-	Vector(-Width, Height,-fDist,Temp[1]);
-	Vector( Width, Height,-fDist,Temp[2]);
-	Vector( Width,-Height,-fDist,Temp[3]);
-	Vector(-Width,-Height,-fDist,Temp[4]);
-	
-	float Matrix[3][4];
-	GetOpenGLMatrix(Matrix);
-	for(int i=0;i<5;i++)
-	{
-		vec3_t t;
-		VectorIRotate(Temp[i],Matrix,t);
-		VectorAdd(t,vEye,FrustrumVertex[i]);
-	}
-
-	FaceNormalize(FrustrumVertex[0],FrustrumVertex[1],FrustrumVertex[2],m_FrustrumNorm[0]);
-	FaceNormalize(FrustrumVertex[0],FrustrumVertex[2],FrustrumVertex[3],m_FrustrumNorm[1]);
-	FaceNormalize(FrustrumVertex[0],FrustrumVertex[3],FrustrumVertex[4],m_FrustrumNorm[2]);
-	FaceNormalize(FrustrumVertex[0],FrustrumVertex[4],FrustrumVertex[1],m_FrustrumNorm[3]);
-	FaceNormalize(FrustrumVertex[3],FrustrumVertex[2],FrustrumVertex[1],m_FrustrumNorm[4]);
-    m_FrustrumD[0] = -DotProduct(FrustrumVertex[0],m_FrustrumNorm[0]);
-    m_FrustrumD[1] = -DotProduct(FrustrumVertex[0],m_FrustrumNorm[1]);
-    m_FrustrumD[2] = -DotProduct(FrustrumVertex[0],m_FrustrumNorm[2]);
-    m_FrustrumD[3] = -DotProduct(FrustrumVertex[0],m_FrustrumNorm[3]);
-    m_FrustrumD[4] = -DotProduct(FrustrumVertex[1],m_FrustrumNorm[4]);
-}
-
-void CFrustrum::Create(vec3_t vEye, float fFov, float fAspect, float fDist)
-{
-	Make(vEye, fFov, fAspect, fDist);
-
-	SetEye(vEye);
-	SetFOV(fFov);
-	SetAspect(fAspect);
-	SetDist(fDist);
-}
-
-bool CFrustrum::Test(vec3_t vPos, float fRange)
-{
-	for(int i=0; i<5; ++i)
-	{
-		float fValue;
-		fValue = m_FrustrumD[i] + DotProduct(vPos, m_FrustrumNorm[i]);
-		if(fValue < -fRange) return false;
-	}
-	return true;
-}
-
-void CFrustrum::Reset()
-{
-	Make(m_vEye, m_fFov, m_fAspect, m_fDist);
-}
-
-void ResetAllFrustrum()
-{
-	FrustrumMap_t::iterator iter = g_FrustrumMap.begin();
-	for(; iter != g_FrustrumMap.end(); ++iter)
-	{
-		CFrustrum* pData = iter->second;
-		if(!pData) continue;
-		pData->SetEye(CameraPosition);
-		pData->Reset();
-	}
-}
-
-CFrustrum* FindFrustrum(unsigned int iID)
-{
-	FrustrumMap_t::iterator iter = g_FrustrumMap.find(iID);
-	if(iter != g_FrustrumMap.end()) return (CFrustrum*)iter->second;
-	return NULL;
-}
-
-void DeleteAllFrustrum()
-{
-	FrustrumMap_t::iterator iter = g_FrustrumMap.begin();
-	for(; iter != g_FrustrumMap.end(); ++iter)
-	{
-		CFrustrum* pData = iter->second;
-		SAFE_DELETE(pData);
-	}
-	g_FrustrumMap.clear();
-}
-
-#endif// DYNAMIC_FRUSTRUM
-
 
 /*bool TestFrustrum(vec3_t Position,float Range)
 {

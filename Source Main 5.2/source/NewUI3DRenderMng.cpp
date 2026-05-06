@@ -104,46 +104,61 @@ float SEASON3B::CNewUI3DCamera::GetLayerDepth()
 
 bool SEASON3B::CNewUI3DCamera::Render()
 {
-	if(m_list3DObjs.empty())
+	if (m_list3DObjs.empty())
 		return true;
 
 	EndBitmap();
-	glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glViewport2(0,0,m_uiWidth,m_uiHeight);
-    gluPerspective2(1.f, (float)(m_uiWidth)/(float)(m_uiHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-	GetOpenGLMatrix(CameraMatrix);
-    EnableDepthTest();
-    EnableDepthMask();
+
+	glViewport(0, 0, m_uiWidth, m_uiHeight);
+
+	MU_Perspective(
+		g_muProjection,
+		1.0f,
+		(float)m_uiWidth / (float)m_uiHeight,
+		RENDER_ITEMVIEW_NEAR,
+		RENDER_ITEMVIEW_FAR
+	);
+
+	MU_LoadIdentity(g_muView);
+
+	glUseProgram(g_muProgram);
+	MU_ApplyMatrices();
+
+	if (g_uUseTexture >= 0)
+		glUniform1i(g_uUseTexture, 1);
+
+	if (g_uDiscardBlack >= 0)
+		glUniform1i(g_uDiscardBlack, 0);
+
+	EnableDepthTest();
+	EnableDepthMask();
 	glClear(GL_DEPTH_BUFFER_BIT);
-	
-	type_list_3dobj::iterator li = m_list3DObjs.begin();
-	for(; li != m_list3DObjs.end(); li++)
+
+	for (type_list_3dobj::iterator li = m_list3DObjs.begin();
+		li != m_list3DObjs.end();
+		++li)
 	{
-		if((*li)->IsVisible())
-		{
+		if ((*li)->IsVisible())
 			(*li)->Render3D();
-		}
 	}
+
 	UpdateMousePositionn();
 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
 	BeginBitmap();
 
-	while(!m_deque2DEffects.empty())
+	while (!m_deque2DEffects.empty())
 	{
 		UI_2DEFFECT_INFO& UI2DEffectInfo = m_deque2DEffects.front();
-		if(UI2DEffectInfo.pCallbackFunc)
+
+		if (UI2DEffectInfo.pCallbackFunc)
 		{
-			(*UI2DEffectInfo.pCallbackFunc)(UI2DEffectInfo.pClass, UI2DEffectInfo.dwParamA, UI2DEffectInfo.dwParamB);
+			(*UI2DEffectInfo.pCallbackFunc)(
+				UI2DEffectInfo.pClass,
+				UI2DEffectInfo.dwParamA,
+				UI2DEffectInfo.dwParamB
+				);
 		}
+
 		m_deque2DEffects.pop_front();
 	}
 

@@ -117,9 +117,7 @@ void    CSWaterTerrain::Render ( void )
         &verts[0].u
     );
 
-    // replacement for glColor3f(0.2f, 0.5f, 0.65f)
-    glDisableVertexAttribArray(2);
-    glVertexAttrib4f(2, 0.2f, 0.5f, 0.65f, 1.0f);
+    glColor3f(0.2f, 0.5f, 0.65f);
 
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
 
@@ -518,7 +516,7 @@ void CSWaterTerrain::RenderWaterBitmapTile(
     }
 
     GLfloat oldColor[4];
-    glGetFloatv(GL_CURRENT_COLOR, oldColor);
+    MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
 
     MU3DColorVertex quad[4];
 

@@ -10,6 +10,18 @@ GLint g_uView = -1;
 GLint g_uTexture = -1;
 GLint g_uUseTexture = -1;
 GLint g_uDiscardBlack = -1;
+GLint g_uMinLight = -1;
+
+MU_Mat4 g_savedViewForSprite;
+
+float g_CurrentColor[4] = { 1.f, 1.f, 1.f, 1.f };
+
+void MU_TransformPoint(const MU_Mat4& m, const vec3_t in, vec3_t out)
+{
+    out[0] = m.m[0] * in[0] + m.m[4] * in[1] + m.m[8] * in[2] + m.m[12];
+    out[1] = m.m[1] * in[0] + m.m[5] * in[1] + m.m[9] * in[2] + m.m[13];
+    out[2] = m.m[2] * in[0] + m.m[6] * in[1] + m.m[10] * in[2] + m.m[14];
+}
 
 void MU_Ortho(MU_Mat4& out, float w, float h)
 {
@@ -160,6 +172,7 @@ void InitShader()
     g_uTexture = glGetUniformLocation(g_muProgram, "uTexture");
     g_uUseTexture = glGetUniformLocation(g_muProgram, "uUseTexture");
     g_uDiscardBlack = glGetUniformLocation(g_muProgram, "uDiscardBlack");
+    //g_uMinLight = glGetUniformLocation(g_muProgram, "uMinLight");
 
     glUseProgram(g_muProgram);
 

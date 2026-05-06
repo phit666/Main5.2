@@ -2833,7 +2833,7 @@ void CUIRenderTextOriginal::UploadText(int sx, int sy, int Width, int Height)
 
 	glDepthMask(GL_TRUE);
 
-	CachTexture = -999999;
+	//CachTexture = -999999;
 }
 
 void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_char* pszText, 
@@ -5108,7 +5108,7 @@ BOOL CUINewGuildMemberListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D();
 	g_pRenderText->SetBgColor(0);
 
 	int iPos_x = m_iPos_x + 8;
@@ -5301,7 +5301,7 @@ BOOL CUIUnionGuildListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 220, 255);
 	}
-	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D();
 	g_pRenderText->SetBgColor(0);
 
 	int iPos_x = m_iPos_x + 4;
@@ -5476,7 +5476,7 @@ BOOL CUIUnmixgemList::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D();
 	g_pRenderText->SetBgColor(0);
 	int iPos_x = m_iPos_x + 4;
 	int iPos_y = GetRenderLinePos_y(iLineNumber);
@@ -5655,7 +5655,7 @@ BOOL CUIBCDeclareGuildListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D();
 	g_pRenderText->SetBgColor(0);
 	
 	int iPos_x = m_iPos_x + 4;
@@ -5822,7 +5822,7 @@ BOOL CUIBCGuildListBox::RenderDataLine(int iLineNumber)
 	{
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
-	glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+	glEnable_TEXTURE_2D();
 	g_pRenderText->SetBgColor(0);
 	
 	int iPos_x = m_iPos_x + 4;
@@ -6064,7 +6064,7 @@ BOOL CUICurQuestListBox::RenderDataLine(int iLineNumber)
 		::glColor4f(0.5f, 0.7f, 0.3f, 0.5f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D();
 	}
 
 	g_pRenderText->SetTextColor(255, 230, 210, 255);
@@ -6373,7 +6373,7 @@ BOOL CUIInGameShopListBox::RenderDataLine(int iLineNumber)
 		::glColor4f(0.15f, 0.3f, 0.4f, 0.5f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 4, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D();
 	}
 
 	g_pRenderText->SetTextColor(255, 230, 210, 255);
@@ -6519,7 +6519,7 @@ BOOL CUIBuyingListBox::RenderDataLine(int iLineNumber)
 		::glColor4f(0.15f, 0.3f, 0.4f, 0.5f);
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D();
 	}
 
 	g_pRenderText->SetTextColor(255, 230, 210, 255);
@@ -6665,7 +6665,7 @@ BOOL CUIPackCheckBuyingListBox::RenderDataLine(int nLine)
 		::glColor4f(0.07f, 0.31f, 0.31f, 0.5f);
 		RenderColor(m_iPos_x+3, GetRenderLinePos_y(nLine)+1, m_iWidth - m_fScrollBarWidth + 1, TEXT_HEIGHTSIZE-6);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		glEnable_TEXTURE_2D(GL_TEXTURE_2D);
+		glEnable_TEXTURE_2D();
 	}
 
 	g_pRenderText->SetTextColor(255, 230, 210, 255);
