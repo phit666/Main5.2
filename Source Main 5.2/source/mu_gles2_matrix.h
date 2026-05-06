@@ -25,6 +25,7 @@ extern GLint g_uProjection;
 extern GLint g_uView;
 extern GLint g_uTexture;
 extern GLint g_uUseTexture;
+extern GLint g_uDiscardBlack;
 
 
 void MU_Ortho(MU_Mat4& out, float w, float h);

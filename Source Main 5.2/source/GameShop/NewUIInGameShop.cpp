@@ -315,30 +315,6 @@ void CNewUIInGameShop::RenderDisplayItems()
 {		
 	EndBitmap();
 
-#ifndef _WIN32
-	MU_Mat4 proj;
-	MU_Mat4 view;
-
-	MU_LoadIdentity(proj);
-	MU_LoadIdentity(view);
-
-	glViewport(0, 0, WindowWidth, WindowHeight);
-
-	MU_Perspective(
-			proj,
-			1.0f,
-			(float)WindowWidth / (float)WindowHeight,
-			RENDER_ITEMVIEW_NEAR,
-			RENDER_ITEMVIEW_FAR
-	);
-
-// TODO: convert GetOpenGLMatrix(CameraMatrix) to fill your view matrix.
-// For now, keep CameraMatrix if your renderer still uses it.
-	GetOpenGLMatrix(CameraMatrix);
-
-	EnableDepthTest();
-	EnableDepthMask();
-#else
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -350,7 +326,7 @@ void CNewUIInGameShop::RenderDisplayItems()
 	GetOpenGLMatrix(CameraMatrix);
 	EnableDepthTest();
 	EnableDepthMask();
-#endif
+
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	for(int i=0 ; i<g_InGameShopSystem->GetSizePackageAsDisplayPackage() ; i++ )

@@ -1411,50 +1411,28 @@ bool NewRenderLogInScene(HDC hDC)
 
 	if (CCameraMove::GetInstancePtr()->IsTourMode())
 	{
-#ifndef PJH_NEW_SERVER_SELECT_MAP
-		// 화면 흐리기
-		EnableAlphaBlend4();
-		glColor4f(0.7f,0.7f,0.7f,1.0f);
-		float fScale = (sinf(WorldTime*0.0005f) + 1.f) * 0.00011f;
-		//RenderBitmap(BITMAP_CHROME+3, 0.0f,0.0f, 640.0f,480.0f, 800.f,600.f, (800.f)/1024.f,(600.f)/1024.f);
-		RenderBitmap(BITMAP_CHROME+3, 0.0f,0.0f, 640.0f,480.0f, 800.f*fScale,600.f*fScale, (800.f)/1024.f-800.f*fScale*2,(600.f)/1024.f-600.f*fScale*2);
-		float fAngle = WorldTime * 0.00018f;
-		float fLumi = 1.0f - (sinf(WorldTime*0.0015f) + 1.f) * 0.25f;
-		glColor4f(fLumi*0.3f,fLumi*0.3f,fLumi*0.7f,fLumi);
-		fScale = (sinf(WorldTime*0.0015f) + 1.f) * 0.00021f;
-		RenderBitmapLocalRotate(BITMAP_CHROME+4,320.0f,240.0f, 1150.0f, 1150.0f, fAngle, fScale*512.f,fScale*512.f, (512.f)/512.f-fScale*2*512.f,(512.f)/512.f-fScale*2*512.f);
-
-		// 위아래 자르기
-		EnableAlphaTest();
-		glColor4f(0.0f,0.0f,0.0f,1.0f);
-		RenderColor(0, 0, 640, 25);
-		RenderColor(0, 480-25, 640, 25);
-
-		// 화면칠
-		glColor4f(0.0f,0.0f,0.0f,0.2f);
-		RenderColor(0, 25, 640, 430);
-#endif //PJH_NEW_SERVER_SELECT_MAP
-		// 뮤로고
 		g_fMULogoAlpha += 0.02f;
 		if (g_fMULogoAlpha > 10.0f) g_fMULogoAlpha = 10.0f;
-		
-		EnableAlphaBlend();
-		glColor4f(g_fMULogoAlpha-0.3f,g_fMULogoAlpha-0.3f,g_fMULogoAlpha-0.3f,g_fMULogoAlpha-0.3f);
-#ifdef PBG_ADD_MUBLUE_LOGO
-		BITMAP_t *pImage =NULL;
-		pImage = &Bitmaps[BITMAP_LOG_IN+17];
-		RenderBitmap(BITMAP_LOG_IN+17, 320.0f-432*0.4f*0.5f,25.0f, 432*0.4f,384*0.4f,0,0,(432-0.5f)/pImage->Width,(384-0.5f)/pImage->Height);
-#else //PBG_ADD_MUBLUE_LOGO
-		RenderBitmap(BITMAP_LOG_IN+17, 320.0f-128.0f*0.8f,25.0f, 256.0f*0.8f,128.0f*0.8f);
-#endif //PBG_ADD_MUBLUE_LOGO
-		EnableAlphaTest();
-		glColor4f(g_fMULogoAlpha,g_fMULogoAlpha,g_fMULogoAlpha,g_fMULogoAlpha);
-#ifdef PBG_ADD_MUBLUE_LOGO
-		pImage = &Bitmaps[BITMAP_LOG_IN+16];
-		RenderBitmap(BITMAP_LOG_IN+16, 320.0f-432*0.4f*0.5f,25.0f, 432*0.4f,384*0.4f,0,0,432/pImage->Width,384/pImage->Height);
-#else //PBG_ADD_MUBLUE_LOGO
-		RenderBitmap(BITMAP_LOG_IN+16, 320.0f-128.0f*0.8f,25.0f, 256.0f*0.8f,128.0f*0.8f);
-#endif //PBG_ADD_MUBLUE_LOGO
+
+		if (CCameraMove::GetInstancePtr()->IsTourMode())
+		{
+			EnableAlphaBlend(); // additive
+			RenderBitmap(BITMAP_LOG_IN + 17,
+				320.0f - 128.0f * 0.8f,
+				25.0f,
+				256.0f * 0.8f,
+				128.0f * 0.8f);
+
+
+			EnableAlphaTest(); // or normal alpha blend
+			RenderBitmap(BITMAP_LOG_IN + 16,
+				320.0f - 128.0f * 0.8f,
+				25.0f,
+				256.0f * 0.8f,
+				128.0f * 0.8f);
+
+		}
+
 	}
 
 	SIZE Size;
@@ -1551,7 +1529,9 @@ void LoadingScene(HDC hDC)
 	::glFlush();
 
 #ifdef MU_USE_SDL
+	CachTexture = -999999;
 	nk_sdl_render(NK_ANTI_ALIASING_ON);
+	CachTexture = -999999;
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);
@@ -2324,16 +2304,16 @@ void MainScene(HDC hDC)
 		{
 		case LOG_IN_SCENE:
 			NewMoveLogInScene();
-			OutputDebugStringA("[SDL-DEBUG] NewMoveLogInScene");
+			//OutputDebugStringA("[SDL-DEBUG] NewMoveLogInScene");
 			break;
 
 		case CHARACTER_SCENE:
-			OutputDebugStringA("[SDL-DEBUG] NewMoveCharacterScene");
+			//OutputDebugStringA("[SDL-DEBUG] NewMoveCharacterScene");
 			NewMoveCharacterScene();
 			break;
 
 		case MAIN_SCENE:
-			OutputDebugStringA("[SDL-DEBUG] MoveMainScene");
+			//OutputDebugStringA("[SDL-DEBUG] MoveMainScene");
 			MoveMainScene();
 			break;
 		}
@@ -2446,17 +2426,17 @@ void MainScene(HDC hDC)
 	if(SceneFlag == LOG_IN_SCENE)
 	{
 		Success = NewRenderLogInScene(hDC);
-		OutputDebugStringA("[SDL-DEBUG] NewRenderLogInScene");
+		//OutputDebugStringA("[SDL-DEBUG] NewRenderLogInScene");
 	}
 	else if(SceneFlag == CHARACTER_SCENE)
 	{
 		Success = NewRenderCharacterScene(hDC);
-		OutputDebugStringA("[SDL-DEBUG] NewRenderCharacterScene");
+		//OutputDebugStringA("[SDL-DEBUG] NewRenderCharacterScene");
 	}
 	else if(SceneFlag == MAIN_SCENE)
 	{
 		Success = RenderMainScene();
-		OutputDebugStringA("[SDL-DEBUG] RenderMainScene");
+		//OutputDebugStringA("[SDL-DEBUG] RenderMainScene");
 	}
 
 	g_PhysicsManager.Render();
@@ -2491,7 +2471,10 @@ void MainScene(HDC hDC)
 	{
 		glFlush();
 #ifdef MU_USE_SDL
+
+		CachTexture = -999999;
 		nk_sdl_render(NK_ANTI_ALIASING_ON);
+		CachTexture = -999999;
 		SDL_GL_SwapWindow(gSDLWindow);
 #else
 		::SwapBuffers(hDC);
@@ -2821,17 +2804,17 @@ void Scene(HDC hDC)
 		break;
 #endif // MOVIE_DIRECTSHOW
 	case WEBZEN_SCENE:
-		OutputDebugStringA("[SDL-DEBUG] WebzenScene");
+		//OutputDebugStringA("[SDL-DEBUG] WebzenScene");
         WebzenScene(hDC);
 		break;
 	case LOADING_SCENE:
-		OutputDebugStringA("[SDL-DEBUG] LoadingScene");
+		//OutputDebugStringA("[SDL-DEBUG] LoadingScene");
 		LoadingScene(hDC);
 		break;
 	case LOG_IN_SCENE:
 	case CHARACTER_SCENE:
 	case MAIN_SCENE:
-		OutputDebugStringA("[SDL-DEBUG] MainScene");
+		//OutputDebugStringA("[SDL-DEBUG] MainScene");
 		MainScene(hDC);
 		break;
 	}

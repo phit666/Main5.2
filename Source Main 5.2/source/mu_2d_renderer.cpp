@@ -5,6 +5,18 @@
 
 extern bool TextureEnable;
 
+
+bool MU_ShouldDiscardBlack(int texID)
+{
+    switch (texID) {
+    //case (BITMAP_LOG_IN + 16):
+    case (BITMAP_LOG_IN + 17):
+        return true;
+    }
+    return false;
+}
+
+
 void MU_DrawColorQuad(const MU2DVertex* v,
     GLubyte r, GLubyte g, GLubyte b, GLubyte a)
 {
@@ -42,10 +54,6 @@ void MU_DrawTexturedQuad(int texID, const MU2DVertex* v,
     if (!v || texID < 0)
         return;
 
-    char t[100] = { 0 };
-    sprintf(t, "[SDL-DEBUG] MU_DrawTexturedQuad %d", texID);
-    OutputDebugStringA(t);
-
     // convert color to float
     float cr = r / 255.0f;
     float cg = g / 255.0f;
@@ -53,6 +61,7 @@ void MU_DrawTexturedQuad(int texID, const MU2DVertex* v,
     float ca = a / 255.0f;
 
     glUseProgram(g_muProgram);
+
     MU_ApplyMatrices();
 
     if (g_uUseTexture >= 0)
@@ -155,7 +164,7 @@ void MU_DrawBoundTexturedColorQuad2D(const MU2DColorVertex* v)
     glDisableVertexAttribArray(0);
 }
 
-void MU_DrawBoundTexturedQuad2D(const MU2DVertex* v)
+void MU_DrawBoundTexturedQuad2D(const MU2DVertex* v, int texID)
 {
     if (!v)
         return;
@@ -164,6 +173,9 @@ void MU_DrawBoundTexturedQuad2D(const MU2DVertex* v)
 
     glUseProgram(g_muProgram);
     MU_ApplyMatrices();
+
+    if (g_uDiscardBlack >= 0)
+        glUniform1i(g_uDiscardBlack, MU_ShouldDiscardBlack(texID) ? 1 : 0);
 
     if (g_uUseTexture >= 0)
         glUniform1i(g_uUseTexture, 1);

@@ -106,6 +106,6 @@ void MU_DrawBoundQuad3D(
     GLubyte a);
 
 void MU_DrawTexturedColorQuad3D_Bound(const MU3DColorVertex* v);
-void MU_DrawBoundTexturedQuad2D(const MU2DVertex* v);
+void MU_DrawBoundTexturedQuad2D(const MU2DVertex* v, int texID);
 void MU_DrawBoundTexturedColorQuad2D(const MU2DColorVertex* v);
 void MU_DrawLine3D(const vec3_t a, const vec3_t b);

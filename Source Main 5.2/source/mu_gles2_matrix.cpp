@@ -9,6 +9,7 @@ GLint g_uProjection = -1;
 GLint g_uView = -1;
 GLint g_uTexture = -1;
 GLint g_uUseTexture = -1;
+GLint g_uDiscardBlack = -1;
 
 void MU_Ortho(MU_Mat4& out, float w, float h)
 {
@@ -114,10 +115,14 @@ void InitShader()
         "varying vec4 vColor;\n"
         "uniform sampler2D uTexture;\n"
         "uniform int uUseTexture;\n"
+        "uniform int uDiscardBlack;\n"
         "void main(){\n"
+        " vec4 tex = texture2D(uTexture, vTex);\n"
+        " if(uDiscardBlack == 1 && tex.r < 0.03 && tex.g < 0.03 && tex.b < 0.03)\n"
+        "     discard;\n"
         " vec4 color = vColor;\n"
         " if(uUseTexture == 1)\n"
-        "     color *= texture2D(uTexture, vTex);\n"
+        "     color *= tex;\n"
         " gl_FragColor = color;\n"
         "}";
 
@@ -154,6 +159,7 @@ void InitShader()
 
     g_uTexture = glGetUniformLocation(g_muProgram, "uTexture");
     g_uUseTexture = glGetUniformLocation(g_muProgram, "uUseTexture");
+    g_uDiscardBlack = glGetUniformLocation(g_muProgram, "uDiscardBlack");
 
     glUseProgram(g_muProgram);
 

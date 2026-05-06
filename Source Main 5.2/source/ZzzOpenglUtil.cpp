@@ -664,6 +664,11 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	if (g_uUseTexture >= 0)
 		glUniform1i(g_uUseTexture, 1);
 
+	if (g_uDiscardBlack >= 0)
+		glUniform1i(g_uDiscardBlack, 0);
+
+	CachTexture = -999999;
+
 	glDisable(GL_ALPHA_TEST);
 
 	glEnable(GL_DEPTH_TEST);
@@ -1454,7 +1459,7 @@ void RenderBitmap(int Texture, float x, float y, float Width, float Height, floa
 		quad[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad);
+	MU_DrawBoundTexturedQuad2D(quad, Texture);
 
 	if (Alpha > 0.f)
 		glColor4f(1.f, 1.f, 1.f, 1.f);
@@ -1504,7 +1509,7 @@ void RenderBitmapRotate(int Texture, float x, float y, float Width, float Height
 		quad[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad);
+	MU_DrawBoundTexturedQuad2D(quad, Texture);
 }
 
 void RenderBitRotate(int Texture, float x, float y, float Width, float Height, float Rotate)
@@ -1556,7 +1561,7 @@ void RenderBitRotate(int Texture, float x, float y, float Width, float Height, f
 		quad[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad);
+	MU_DrawBoundTexturedQuad2D(quad, Texture);
 }
 
 void RenderPointRotate(int Texture, float ix, float iy, float iWidth, float iHeight, float x, float y, float Width, float Height, float Rotate, float Rotate_Loc, float uWidth, float vHeight, int Num)
@@ -1612,7 +1617,7 @@ void RenderPointRotate(int Texture, float ix, float iy, float iWidth, float iHei
 		quad[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad);
+	MU_DrawBoundTexturedQuad2D(quad, Texture);
 
 	if (Num > -1)
 	{
@@ -1671,7 +1676,7 @@ void RenderBitmapLocalRotate(int Texture, float x, float y, float Width, float H
 		quad[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad);
+	MU_DrawBoundTexturedQuad2D(quad, Texture);
 }
 
 void RenderBitmapAlpha(int Texture, float sx, float sy, float Width, float Height)
@@ -1758,7 +1763,7 @@ void RenderBitmapUV(int Texture, float x, float y, float Width, float Height, fl
 		quad[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad);
+	MU_DrawBoundTexturedQuad2D(quad, Texture);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
