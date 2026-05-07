@@ -1,6 +1,14 @@
 #include "stdafx.h"
 #include "mu_gles2_matrix.h"
 
+Shader myShader;
+
+// Manual stacks to replace glPushMatrix/glPopMatrix
+std::vector<glm::mat4> projectionStack = { glm::mat4(1.0f) };
+std::vector<glm::mat4> modelViewStack = { glm::mat4(1.0f) };
+
+
+
 MU_Mat4 g_muProjection;
 MU_Mat4 g_muView;
 
@@ -11,6 +19,15 @@ GLint g_uTexture = -1;
 GLint g_uUseTexture = -1;
 GLint g_uDiscardBlack = -1;
 GLint g_uMinLight = -1;
+
+GLint g_aPosLoc = -1;
+GLint g_aTexLoc = -1;
+GLint g_aColorLoc = -1;
+// Global uniform locations (you should initialize these after linking your shader)
+GLint g_uTexEnabledLoc = -1, g_uAlphaTestLoc = -1, g_uFogEnabledLoc = -1, g_uFogColorLoc = -1, g_uFogDensityLoc = -1;
+GLint g_uColorLoc = -1;
+GLint g_uMvLoc = -1;
+GLint g_uMvpLoc = -1;
 
 MU_Mat4 g_savedViewForSprite;
 
@@ -107,49 +124,88 @@ GLuint CompileShader(GLenum type, const char* src)
 
 void InitShader()
 {
-    const char* vs_src =
-        "attribute vec3 aPosition;\n"
-        "attribute vec2 aTexCoord;\n"
-        "attribute vec4 aColor;\n"
-        "uniform mat4 uProjection;\n"
-        "uniform mat4 uView;\n"
-        "varying vec2 vTex;\n"
-        "varying vec4 vColor;\n"
-        "void main(){\n"
-        " gl_Position = uProjection * uView * vec4(aPosition, 1.0);\n"
-        " vTex = aTexCoord;\n"
-        " vColor = aColor;\n"
-        "}";
+    const char* vertexShaderSource = R"(
+    attribute vec4 a_position;
+    attribute vec2 a_texCoord;
+    attribute vec4 a_color;
+    uniform mat4 u_mvpMatrix;    // Combined Projection * ModelView
+    uniform mat4 u_mvMatrix;     // ModelView only (for distance calc)
 
-    const char* fs_src =
-        "precision mediump float;\n"
-        "varying vec2 vTex;\n"
-        "varying vec4 vColor;\n"
-        "uniform sampler2D uTexture;\n"
-        "uniform int uUseTexture;\n"
-        "uniform int uDiscardBlack;\n"
-        "void main(){\n"
-        " vec4 tex = texture2D(uTexture, vTex);\n"
-        " if(uDiscardBlack == 1 && tex.r < 0.03 && tex.g < 0.03 && tex.b < 0.03)\n"
-        "     discard;\n"
-        " vec4 color = vColor;\n"
-        " if(uUseTexture == 1)\n"
-        "     color *= tex;\n"
-        " gl_FragColor = color;\n"
-        "}";
+    varying vec2 v_texCoord;
+    varying float v_dist;
+    varying vec4 v_color;
+
+    void main() {
+        gl_Position = u_mvpMatrix * a_position;
+        v_texCoord = a_texCoord;
+        v_color = a_color;
+        // Calculate distance from camera for Fog
+        vec4 viewSpacePos = u_mvMatrix * a_position;
+        v_dist = length(viewSpacePos.xyz);        
+    }
+)";
+
+    const char* fragmentShaderSource = R"(
+    precision mediump float;
+
+    varying vec2 v_texCoord;
+    varying float v_dist;
+    varying vec4 v_color; 
+
+    uniform sampler2D u_texture;
+    uniform vec4 u_color;
+    
+    // Toggles
+    uniform bool u_hasTexture;       // New: Handle -1 texID logic
+    uniform bool u_alphaTestEnabled;
+    uniform bool u_fogEnabled;
+
+    // Fog Params
+    uniform vec4 u_fogColor;
+    uniform float u_fogDensity;
+
+    void main() {
+        vec4 finalColor;
+
+        if (u_hasTexture) {
+            // Multiply sampled texture by vertex color AND global uniform
+            finalColor = texture2D(u_texture, v_texCoord) * v_color * u_color;
+        } else {
+            // Just vertex color multiplied by global uniform
+            finalColor = v_color * u_color;
+        }
+
+        // Alpha Test (Replacement for glAlphaFunc)
+        if (u_alphaTestEnabled && finalColor.a <= 0.25) {
+            discard;
+        }
+
+        // Fog Calculation
+        if (u_fogEnabled) {
+            // Exponential fog: f = 1 / e^(dist * density)
+            float fogFactor = 1.0 / exp(v_dist * u_fogDensity);
+            fogFactor = clamp(fogFactor, 0.0, 1.0);
+            
+            // Mix finalColor with FogColor based on distance
+            gl_FragColor = vec4(mix(u_fogColor.rgb, finalColor.rgb, fogFactor), finalColor.a);
+        } else {
+            gl_FragColor = finalColor;
+        }
+    }
+)";
 
 
     GLuint program = glCreateProgram();
-    GLuint vs = CompileShader(GL_VERTEX_SHADER, vs_src);
-    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, fs_src);
+    GLuint vs = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
+    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
     glAttachShader(program, vs);
     glAttachShader(program, fs);
 
     // bind attribute BEFORE linking
-    glBindAttribLocation(program, 0, "aPosition");
-    glBindAttribLocation(program, 1, "aTexCoord");
-    glBindAttribLocation(program, 2, "aColor");
+    glBindAttribLocation(program, 0, "a_position");
+    glBindAttribLocation(program, 1, "a_texCoord");
+   // glBindAttribLocation(program, 2, "aColor");
 
     glLinkProgram(program);
 
@@ -168,11 +224,26 @@ void InitShader()
     glDeleteShader(fs);
 
     g_muProgram = program;
+    myShader.ID = program;
 
-    g_uTexture = glGetUniformLocation(g_muProgram, "uTexture");
-    g_uUseTexture = glGetUniformLocation(g_muProgram, "uUseTexture");
-    g_uDiscardBlack = glGetUniformLocation(g_muProgram, "uDiscardBlack");
+    //g_uTexture = glGetUniformLocation(g_muProgram, "uTexture");
+    //g_uUseTexture = glGetUniformLocation(g_muProgram, "uUseTexture");
+    //g_uDiscardBlack = glGetUniformLocation(g_muProgram, "uDiscardBlack");
     //g_uMinLight = glGetUniformLocation(g_muProgram, "uMinLight");
+
+    g_uTexEnabledLoc = glGetUniformLocation(g_muProgram, "u_hasTexture");
+    g_uAlphaTestLoc = glGetUniformLocation(g_muProgram, "u_alphaTestEnabled");
+    g_uFogEnabledLoc = glGetUniformLocation(g_muProgram, "u_fogEnabled");
+    g_uFogColorLoc = glGetUniformLocation(g_muProgram, "u_fogColor");
+    g_uFogDensityLoc = glGetUniformLocation(g_muProgram, "u_fogDensity");
+    g_uColorLoc = glGetUniformLocation(g_muProgram, "u_color");
+
+    // 2. Query the locations by the exact name used in your GLSL code
+    g_aPosLoc = glGetAttribLocation(g_muProgram, "a_position");
+    g_aTexLoc = glGetAttribLocation(g_muProgram, "a_texCoord");
+    g_aColorLoc = glGetAttribLocation(g_muProgram, "a_color");
+    g_uMvpLoc = glGetUniformLocation(g_muProgram, "u_mvpMatrix");
+    g_uMvLoc = glGetUniformLocation(g_muProgram, "u_mvMatrix");
 
     glUseProgram(g_muProgram);
 

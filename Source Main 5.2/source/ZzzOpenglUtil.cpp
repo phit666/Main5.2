@@ -194,17 +194,20 @@ int   ScreenCenterYFlip;
 
 void GetOpenGLMatrix(float Matrix[3][4])
 {
-	/*
-	float OpenGLMatrix[16];
-	MU_glGetColor4(GL_MODELVIEW_MATRIX, OpenGLMatrix);
-	for (int i = 0; i < 3; i++)
+	// Access the top matrix on the stack
+	const glm::mat4& m = modelViewStack.back();
+
+	for (int i = 0; i < 3; i++) // Rows
 	{
-		for (int j = 0; j < 4; j++)
+		for (int j = 0; j < 4; j++) // Columns
 		{
-			Matrix[i][j] = OpenGLMatrix[j * 4 + i];
+			// GLM is m[column][row]
+			// We map it to Matrix[row][column]
+			Matrix[i][j] = m[j][i];
 		}
-	}*/
+	}
 }
+
 
 void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 {
@@ -249,15 +252,10 @@ void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 
 void Projection(vec3_t Position, int* sx, int* sy)
 {
-	vec3_t p;
-	VectorTransform(Position, CameraMatrix, p);
-
-	if (p[2] >= -1.0f && p[2] <= 1.0f)
-		return;
-
-	*sx = -(int)(p[0] / PerspectiveX / p[2]) + ScreenCenterX;
-	*sy = (int)(p[1] / PerspectiveY / p[2]) + ScreenCenterY;
-
+	vec3_t TrasformPosition;
+	VectorTransform(Position, CameraMatrix, TrasformPosition);
+	*sx = -(int)(TrasformPosition[0] / PerspectiveX / TrasformPosition[2]) + ScreenCenterX;
+	*sy = (int)(TrasformPosition[1] / PerspectiveY / TrasformPosition[2]) + ScreenCenterY;
 	*sx = *sx * 640 / (int)WindowWidth;
 	*sy = *sy * 480 / (int)WindowHeight;
 }
@@ -302,65 +300,55 @@ bool CullFaceEnable;
 bool DepthMaskEnable;
 bool AlphaTestEnable;
 int  AlphaBlendType;
-
-void BindTexture(int tex)
-{
-	glActiveTexture(GL_TEXTURE0);
-
-	if (CachTexture != tex)
-	{
-		CachTexture = tex;
-
-		if (tex >= 0)
-		{
-			BITMAP_t* b = &Bitmaps[tex];
-			glBindTexture(GL_TEXTURE_2D, b->TextureNumber);
-		}
-		else
-		{
-			glBindTexture(GL_TEXTURE_2D, (GLuint)(-tex));
-		}
-	}
-}
-
 bool TextureStream = false;
 
 extern  int test;
 
+void BindTexture(int tex) {
+	if (CachTexture != tex) {
+		CachTexture = tex;
+		GLuint texID = (tex >= 0) ? Bitmaps[tex].TextureNumber : (GLuint)(-1 * tex);
+		glBindTexture(GL_TEXTURE_2D, texID);
+	}
+	myShader.setBool(g_uTexEnabledLoc, true);
+}
 
-void EnableDepthTest()
-{
-	if (!DepthTestEnable)
-	{
+// GLES2 does not support glBegin/glEnd. TextureStream must be handled 
+// by filling a buffer and calling glDrawArrays at the end.
+void BindTextureStream(int tex) {
+	if (CachTexture != tex) {
+		CachTexture = tex;
+		// You must manually flush your vertex buffer here
+		// FlushBuffer(); 
+		glBindTexture(GL_TEXTURE_2D, Bitmaps[tex].TextureNumber);
+	}
+}
+
+void EnableDepthTest() {
+	if (!DepthTestEnable) {
 		DepthTestEnable = true;
 		glEnable(GL_DEPTH_TEST);
 	}
 }
 
-void DisableDepthTest()
-{
-	if (DepthTestEnable)
-	{
+void DisableDepthTest() {
+	if (DepthTestEnable) {
 		DepthTestEnable = false;
 		glDisable(GL_DEPTH_TEST);
 	}
 }
 
-void EnableDepthMask()
-{
-	if (!DepthMaskEnable)
-	{
+void EnableDepthMask() {
+	if (!DepthMaskEnable) {
 		DepthMaskEnable = true;
-		glDepthMask(true);
+		glDepthMask(GL_TRUE);
 	}
 }
 
-void DisableDepthMask()
-{
-	if (DepthMaskEnable)
-	{
+void DisableDepthMask() {
+	if (DepthMaskEnable) {
 		DepthMaskEnable = false;
-		glDepthMask(false);
+		glDepthMask(GL_FALSE);
 	}
 }
 
@@ -384,99 +372,80 @@ void DisableCullFace()
 
 void DisableTexture(bool AlphaTest)
 {
+	// 1. Depth Mask is still a standard hardware call
 	EnableDepthMask();
 
+	// 2. Alpha Test Logic (Shader Uniform)
+	// We update the local boolean and the shader uniform
 	AlphaTestEnable = AlphaTest;
-	TextureEnable = false;
+	myShader.setBool(g_uAlphaTestLoc, AlphaTestEnable);
 
-	glUseProgram(g_muProgram);
+	// 3. Texture Logic (Shader Uniform)
+	// We tell the shader to stop sampling by setting u_hasTexture to false
+	if (TextureEnable)
+	{
+		TextureEnable = false;
+		myShader.setBool(g_uTexEnabledLoc, false);
 
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 0);
+		// Note: You don't technically need to call glBindTexture(GL_TEXTURE_2D, 0),
+		// because the shader if(u_hasTexture) check will bypass the sampler anyway.
+	}
 }
 
-void DisableAlphaBlend()
-{
-	if (AlphaBlendType != 0)
-	{
+void SetShaderTexture(bool enable) {
+	TextureEnable = enable;
+	myShader.setBool(g_uTexEnabledLoc, enable);
+}
+
+void SetShaderAlphaTest(bool enable) {
+	AlphaTestEnable = enable;
+	myShader.setBool(g_uAlphaTestLoc, enable);
+}
+
+void SetShaderFog(bool enable) {
+	myShader.setBool(g_uFogEnabledLoc, enable);
+}
+
+void DisableAlphaBlend() {
+	if (AlphaBlendType != 0) {
 		AlphaBlendType = 0;
 		glDisable(GL_BLEND);
 	}
 	EnableCullFace();
 	EnableDepthMask();
-	if (AlphaTestEnable)
-	{
-		AlphaTestEnable = false;
-		//glDisable(GL_ALPHA_TEST);
-	}
-	if (!TextureEnable)
-	{
-		TextureEnable = true;
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-		//glEnable(GL_TEXTURE_2D);
-	}
-	//if (FogEnable)
-		//glEnable(GL_FOG);
+	SetShaderAlphaTest(false);
+	SetShaderTexture(true);
+	SetShaderFog(true);
 }
 
-void EnableAlphaTest(bool DepthMask)
-{
-	if (AlphaBlendType != 2)
-	{
+void EnableAlphaTest(bool DepthMask) {
+	if (AlphaBlendType != 2) {
 		AlphaBlendType = 2;
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	DisableCullFace();
-	if (DepthMask)
-		EnableDepthMask();
-	if (!AlphaTestEnable)
-	{
-		AlphaTestEnable = true;
-		//glEnable(GL_ALPHA_TEST);
-	}
-	if (!TextureEnable)
-	{
-		TextureEnable = true;
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-		//glEnable(GL_TEXTURE_2D);
-	}
-	//if (FogEnable)
-		//glEnable(GL_FOG);
+	if (DepthMask) EnableDepthMask();
+
+	SetShaderAlphaTest(true);
+	SetShaderTexture(true);
+	SetShaderFog(true);
 }
 
-void EnableAlphaBlend()
-{
-	if (AlphaBlendType != 3)
-	{
+void EnableAlphaBlend() { // Additive
+	if (AlphaBlendType != 3) {
 		AlphaBlendType = 3;
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE);
 	}
 	DisableCullFace();
 	DisableDepthMask();
-	if (AlphaTestEnable)
-	{
-		AlphaTestEnable = false;
-		//glDisable(GL_ALPHA_TEST);
-	}
-	if (!TextureEnable)
-	{
-		TextureEnable = true;
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-		//glEnable(GL_TEXTURE_2D);
-	}
-	//if (FogEnable)
-		//glDisable(GL_FOG);
+	SetShaderAlphaTest(false);
+	SetShaderTexture(true);
+	SetShaderFog(false);
 }
 
-void EnableAlphaBlendMinus()
+void EnableAlphaBlendMinus() // Type 4
 {
 	if (AlphaBlendType != 4)
 	{
@@ -486,24 +455,14 @@ void EnableAlphaBlendMinus()
 	}
 	DisableCullFace();
 	DisableDepthMask();
-	if (AlphaTestEnable)
-	{
-		AlphaTestEnable = false;
-		//glDisable(GL_ALPHA_TEST);
-	}
-	if (!TextureEnable)
-	{
-		TextureEnable = true;
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-		//glEnable(GL_TEXTURE_2D);
-	}
-	//if (FogEnable)
-		//glEnable(GL_FOG);
+
+	// Shader Uniform Toggles
+	myShader.setBool(g_uAlphaTestLoc, false);
+	myShader.setBool(g_uTexEnabledLoc, true);
+	myShader.setBool(g_uFogEnabledLoc, FogEnable);
 }
 
-void EnableAlphaBlend2()
+void EnableAlphaBlend2() // Type 5
 {
 	if (AlphaBlendType != 5)
 	{
@@ -513,24 +472,13 @@ void EnableAlphaBlend2()
 	}
 	DisableCullFace();
 	DisableDepthMask();
-	if (AlphaTestEnable)
-	{
-		AlphaTestEnable = false;
-		//glDisable(GL_ALPHA_TEST);
-	}
-	if (!TextureEnable)
-	{
-		TextureEnable = true;
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-		//glEnable(GL_TEXTURE_2D);
-	}
-	//if (FogEnable)
-		//glEnable(GL_FOG);
+
+	myShader.setBool(g_uAlphaTestLoc, false);
+	myShader.setBool(g_uTexEnabledLoc, true);
+	myShader.setBool(g_uFogEnabledLoc, FogEnable);
 }
 
-void EnableAlphaBlend3()
+void EnableAlphaBlend3() // Type 6 (Standard Transparency)
 {
 	if (AlphaBlendType != 6)
 	{
@@ -540,24 +488,13 @@ void EnableAlphaBlend3()
 	}
 	DisableCullFace();
 	DisableDepthMask();
-	if (AlphaTestEnable)
-	{
-		AlphaTestEnable = false;
-		//glDisable(GL_ALPHA_TEST);
-	}
-	if (!TextureEnable)
-	{
-		TextureEnable = true;
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-		//glEnable(GL_TEXTURE_2D);
-	}
-	//if (FogEnable)
-		//glEnable(GL_FOG);
+
+	myShader.setBool(g_uAlphaTestLoc, false);
+	myShader.setBool(g_uTexEnabledLoc, true);
+	myShader.setBool(g_uFogEnabledLoc, FogEnable);
 }
 
-void EnableAlphaBlend4()
+void EnableAlphaBlend4() // Type 7
 {
 	if (AlphaBlendType != 7)
 	{
@@ -567,48 +504,24 @@ void EnableAlphaBlend4()
 	}
 	DisableCullFace();
 	DisableDepthMask();
-	if (AlphaTestEnable)
-	{
-		AlphaTestEnable = false;
-		//glDisable(GL_ALPHA_TEST);
-	}
-	if (!TextureEnable)
-	{
-		TextureEnable = true;
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-		//glEnable(GL_TEXTURE_2D);
-	}
-	//if (FogEnable)
-		//glEnable(GL_FOG);
+
+	myShader.setBool(g_uAlphaTestLoc, false);
+	myShader.setBool(g_uTexEnabledLoc, true);
+	myShader.setBool(g_uFogEnabledLoc, FogEnable);
 }
 
-void EnableLightMap()
-{
-	if (AlphaBlendType != 1)
-	{
+
+void EnableLightMap() { // Multiplicative
+	if (AlphaBlendType != 1) {
 		AlphaBlendType = 1;
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 	}
 	EnableCullFace();
 	EnableDepthMask();
-	if (AlphaTestEnable)
-	{
-		AlphaTestEnable = false;
-		//glDisable(GL_ALPHA_TEST);
-	}
-	if (!TextureEnable)
-	{
-		TextureEnable = true;
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-		//glEnable(GL_TEXTURE_2D);
-	}
-	//if (FogEnable)
-		//glEnable(GL_FOG);
+	SetShaderAlphaTest(false);
+	SetShaderTexture(true);
+	SetShaderFog(true);
 }
 
 void glViewport2(int x, int y, int Width, int Height)
@@ -632,77 +545,87 @@ float ConvertY(float y)
 
 void BeginOpengl(int x, int y, int Width, int Height)
 {
+	// Scaling logic remains identical
 	x = x * WindowWidth / 640;
 	y = y * WindowHeight / 480;
 	Width = Width * WindowWidth / 640;
 	Height = Height * WindowHeight / 480;
 
-	glViewport2(x, y, Width, Height);
+	// --- PROJECTION REPLACEMENT ---
+	projectionStack.push_back(projectionStack.back());
+	glViewport(x, y, Width, Height);
 
-	glm::mat4 proj = glm::perspective(
-		glm::radians(CameraFOV),
-		(float)Width / (float)Height,
-		CameraViewNear,
-		CameraViewFar * 1.4f
-	);
+	float aspect = (float)Width / (float)Height;
+	// gluPerspective replacement
+	projectionStack.back() = glm::perspective(glm::radians(CameraFOV), aspect, CameraViewNear, CameraViewFar * 1.4f);
 
-	memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
+	// --- MODELVIEW REPLACEMENT ---
+	modelViewStack.push_back(glm::mat4(1.0f)); // glLoadIdentity
 
-	glm::mat4 view(1.0f);
-
-	view = glm::rotate(view, glm::radians(CameraAngle[1]), glm::vec3(0.f, 1.f, 0.f));
-
+	// Applying rotations and translations (GLM matches GL order)
+	modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[1]), glm::vec3(0, 1, 0));
 	if (!CameraTopViewEnable)
-		view = glm::rotate(view, glm::radians(CameraAngle[0]), glm::vec3(1.f, 0.f, 0.f));
+		modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[0]), glm::vec3(1, 0, 0));
 
-	view = glm::rotate(view, glm::radians(CameraAngle[2]), glm::vec3(0.f, 0.f, 1.f));
+	modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[2]), glm::vec3(0, 0, 1));
+	modelViewStack.back() = glm::translate(modelViewStack.back(), glm::vec3(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]));
 
-	view = glm::translate(
-		view,
-		glm::vec3(
-			-CameraPosition[0],
-			-CameraPosition[1],
-			-CameraPosition[2]
-		)
-	);
-
-	memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
-
-	glUseProgram(g_muProgram);
-
-	MU_ApplyMatrices();
-
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
-
-	if (g_uDiscardBlack >= 0)
-		glUniform1i(g_uDiscardBlack, 0);
-
-	glDisable(GL_ALPHA_TEST);
+	// --- RENDER STATES ---
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glDepthMask(true);
-	AlphaTestEnable = false;
-	TextureEnable = true;
-	DepthTestEnable = true;
-	CullFaceEnable = true;
-	DepthMaskEnable = true;
 	glDepthFunc(GL_LEQUAL);
-	glAlphaFunc(GL_GREATER, 0.25f);
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
 
-	MU_CopyViewToCameraMatrix(CameraMatrix);
+    AlphaTestEnable = false;
+	TextureEnable   = true;
+	DepthTestEnable = true;
+	CullFaceEnable  = true;
+	DepthMaskEnable = true;
+
+	// Alpha Test & Fog: These no longer use glEnable. 
+	// You must set uniform variables that your shader will read.
+	myShader.use();
+	myShader.setBool(g_uFogEnabledLoc, FogEnable);
+	myShader.setBool(g_uAlphaTestLoc, AlphaTestEnable);
+	myShader.setBool(g_uTexEnabledLoc, TextureEnable);
+	myShader.setVec4(g_uFogColorLoc, FogColor[0], FogColor[1], FogColor[2], FogColor[3]);
+	myShader.setFloat(g_uFogDensityLoc, FogDensity);
+
+	// GetOpenGLMatrix Replacement: Just copy the current top of the stack
+	//memcpy(CameraMatrix, &modelViewStack.back()[0][0], sizeof(float) * 16);
+	GetOpenGLMatrix(CameraMatrix);
 }
 
 void EndOpengl()
 {
+	if (modelViewStack.size() > 1) modelViewStack.pop_back();
+	if (projectionStack.size() > 1) projectionStack.pop_back();
 }
 
 void UpdateMousePositionn()
 {
-	// camera/world position
-	MousePosition[0] = CameraPosition[0];
-	MousePosition[1] = CameraPosition[1];
-	MousePosition[2] = CameraPosition[2];
+	// 1. Calculate the View Matrix (Manual glLoadIdentity + glTranslatef)
+	// We create a fresh matrix and translate it by the negative camera position.
+	glm::mat4 cameraMat = glm::translate(glm::mat4(1.0f),
+		glm::vec3(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]));
+
+	// 2. Extract Translation (Equivalent to -CameraMatrix[i][3])
+	// In a column-major glm::mat4, .[3] is the translation column.
+	// We take the negative of x, y, z as per your original logic.
+	glm::vec3 vPos(-cameraMat[3][0], -cameraMat[3][1], -cameraMat[3][2]);
+
+	// 3. Inverse Rotation (Equivalent to VectorIRotate)
+	// VectorIRotate usually means multiplying the vector by the transposed 
+	// (inverse) 3x3 rotation part of the matrix.
+	glm::mat3 rotationPart = glm::mat3(cameraMat); // Extracts the top-left 3x3
+	glm::mat3 inverseRotation = glm::transpose(rotationPart);
+
+	glm::vec3 finalMousePos = inverseRotation * vPos;
+
+	// 4. Store result back into your array
+	MousePosition[0] = finalMousePos.x;
+	MousePosition[1] = finalMousePos.y;
+	MousePosition[2] = finalMousePos.z;
 }
 
 #ifdef LDS_ADD_MULTISAMPLEANTIALIASING
@@ -970,29 +893,57 @@ void RenderBox(float Matrix[3][4])
 void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 {
 	vec3_t BoundingVertices[4];
-
 	Vector(-Width, -Width, Height, BoundingVertices[3]);
 	Vector(Width, Width, Height, BoundingVertices[2]);
 	Vector(Width, Width, -Height, BoundingVertices[1]);
 	Vector(-Width, -Width, -Height, BoundingVertices[0]);
 
 	vec3_t TransformVertices[4];
-
 	for (int j = 0; j < 4; j++)
+	{
 		VectorTransform(BoundingVertices[j], Matrix, TransformVertices[j]);
+	}
 
-	MU3DVertex quad[4];
+	// 1. Pack the TransformVertices and UVs into your struct
+	SpriteVertex3D vao[4];
 
-	quad[0] = { TransformVertices[0][0], TransformVertices[0][1], TransformVertices[0][2], 0.f, 1.f };
-	quad[1] = { TransformVertices[1][0], TransformVertices[1][1], TransformVertices[1][2], 1.f, 1.f };
-	quad[2] = { TransformVertices[2][0], TransformVertices[2][1], TransformVertices[2][2], 1.f, 0.f };
-	quad[3] = { TransformVertices[3][0], TransformVertices[3][1], TransformVertices[3][2], 0.f, 0.f };
+	// Vertex 0
+	vao[0].x = TransformVertices[0][0]; vao[0].y = TransformVertices[0][1]; vao[0].z = TransformVertices[0][2];
+	vao[0].u = 0.0f; vao[0].v = 1.0f;
 
-	MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
+	// Vertex 1
+	vao[1].x = TransformVertices[1][0]; vao[1].y = TransformVertices[1][1]; vao[1].z = TransformVertices[1][2];
+	vao[1].u = 1.0f; vao[1].v = 1.0f;
+
+	// Vertex 2
+	vao[2].x = TransformVertices[2][0]; vao[2].y = TransformVertices[2][1]; vao[2].z = TransformVertices[2][2];
+	vao[2].u = 1.0f; vao[2].v = 0.0f;
+
+	// Vertex 3
+	vao[3].x = TransformVertices[3][0]; vao[3].y = TransformVertices[3][1]; vao[3].z = TransformVertices[3][2];
+	vao[3].u = 0.0f; vao[3].v = 0.0f;
+
+	// 2. Set Attributes
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+
+	// Disable color attribute if not used, or use glVertexAttrib4f for a constant color
+	glDisableVertexAttribArray(g_aColorLoc);
+	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	// 3. Draw
+	// GL_TRIANGLE_FAN draws 0-1-2 and then 0-2-3, forming the quad.
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup
+	glDisableVertexAttribArray(g_aTexLoc);
+
 }
 
-
-void BeginSprite()
+void BeginSprite_OLD()
 {
 	g_savedViewForSprite = g_muView;
 
@@ -1008,7 +959,7 @@ void BeginSprite()
 	glDisable(GL_CULL_FACE);
 }
 
-void EndSprite()
+void EndSprite_OLD()
 {
 	g_muView = g_savedViewForSprite;
 
@@ -1018,23 +969,33 @@ void EndSprite()
 	glDepthMask(GL_TRUE);
 }
 
+void BeginSprite()
+{
+	// Save the current state by pushing a copy
+	modelViewStack.push_back(modelViewStack.back());
+
+	// glLoadIdentity equivalent: set the top of the stack to identity
+	modelViewStack.back() = glm::mat4(1.0f);
+}
+
+void EndSprite()
+{
+	// Restore the previous state
+	if (modelViewStack.size() > 1) {
+		modelViewStack.pop_back();
+	}
+}
+
+//
 void RenderSprite(int Texture, vec3_t Position, float Width, float Height, vec3_t Light, float Rotation, float u, float v, float uWidth, float vHeight)
 {
 	BindTexture(Texture);
 
 	vec3_t p2;
-	MU_TransformPoint(g_savedViewForSprite, Position, p2);
-
-	//vec3_t p2;
-	//VectorTransform(Position, CameraMatrix, p2);
-	//VectorCopy(Position,p2);
+	VectorTransform(Position, CameraMatrix, p2);
 	float x = p2[0];
 	float y = p2[1];
 	float z = p2[2];
-
-	//float x = Position[0];
-	//float y = Position[1];
-	//float z = Position[2];
 
 	Width *= 0.5f;
 	Height *= 0.5f;
@@ -1072,46 +1033,56 @@ void RenderSprite(int Texture, vec3_t Position, float Width, float Height, vec3_
 	TEXCOORD(c[1], u + uWidth, v + vHeight);
 	TEXCOORD(c[0], u, v + vHeight);
 
-	float alpha = 1.0f;
-
-	if (Bitmaps[Texture].Components != 3)
-	{
+	// 1. Calculate the Color (replacing the conditional glColor calls)
+	float finalAlpha = 1.0f;
+	if (Bitmaps[Texture].Components != 3) {
 		if (Texture == BITMAP_BLOOD + 1 || Texture == BITMAP_FONT_HIT)
-			alpha = 1.0f;
+			finalAlpha = 1.0f;
 		else
-			alpha = Light[0];
+			finalAlpha = Light[0]; // Matches your glColor4f(..., Light[0]) logic
 	}
 
-	GLubyte r = MU_FloatToColorByte(Light[0]);
-	GLubyte g = MU_FloatToColorByte(Light[1]);
-	GLubyte b = MU_FloatToColorByte(Light[2]);
-	GLubyte a = MU_FloatToColorByte(alpha);
+	// Send the color to the shader as a uniform
+	myShader.setVec4(g_uColorLoc, Light[0], Light[1], Light[2], finalAlpha);
 
-	MU3DVertex quad[4];
-
-	for (int i = 0; i < 4; ++i)
-	{
-		quad[i].x = p[i][0];
-		quad[i].y = p[i][1];
-		quad[i].z = p[i][2];
-
-		quad[i].u = c[i][0];
-		quad[i].v = c[i][1];
+	// 2. Pack the Vertex Data (4 vertices for the Quad)
+	SpriteVertex3D vao[4];
+	for (int i = 0; i < 4; i++) {
+		vao[i].x = p[i][0];
+		vao[i].y = p[i][1];
+		vao[i].z = p[i][2];
+		vao[i].u = c[i][0];
+		vao[i].v = c[i][1];
 	}
 
-	MU_DrawBoundQuad3D(quad, r, g, b, a);
+	// 3. Set Attributes
+	// Position
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+
+	// Texture UV
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+
+	// Disable per-vertex color attribute (we are using the uniform u_color instead)
+	glDisableVertexAttribArray(g_aColorLoc);
+	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default to white
+
+	// 4. Draw
+	// GL_TRIANGLE_FAN is the GLES2 replacement for GL_QUADS
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 5. Cleanup
+	glDisableVertexAttribArray(g_aTexLoc);
+
 }
-
+//
 void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, float (*UV)[2], vec3_t Light[4], float Alpha)
 {
 	BindTexture(Texture);
 
 	vec3_t p2;
-	MU_TransformPoint(g_savedViewForSprite, Position, p2);
-
-	//vec3_t p2;
-	//VectorTransform(Position, CameraMatrix, p2);
-	//VectorCopy(Position,p2);
+	VectorTransform(Position, CameraMatrix, p2);
 	float x = p2[0];
 	float y = p2[1];
 	float z = p2[2];
@@ -1124,26 +1095,48 @@ void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, flo
 	Vector(x + Width, y + Height, z, p[2]);
 	Vector(x - Width, y + Height, z, p[3]);
 
-	MU3DColorVertex quad[4];
+	// 1. Pack interleaved data (XYZ, UV, RGBA) into your full vertex struct
+	SpriteVertexFull vao[4];
 
-	GLubyte a = MU_FloatToColorByte(Alpha);
-
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 4; i++)
 	{
-		quad[i].x = p[i][0];
-		quad[i].y = p[i][1];
-		quad[i].z = p[i][2];
+		// Position
+		vao[i].x = p[i][0];
+		vao[i].y = p[i][1];
+		vao[i].z = p[i][2];
 
-		quad[i].u = UV[i][0];
-		quad[i].v = UV[i][1];
+		// Texture UVs
+		vao[i].u = UV[i][0];
+		vao[i].v = UV[i][1];
 
-		quad[i].r = MU_FloatToColorByte(Light[i][0]);
-		quad[i].g = MU_FloatToColorByte(Light[i][1]);
-		quad[i].b = MU_FloatToColorByte(Light[i][2]);
-		quad[i].a = a;
+		// Per-vertex Color (Light[i]) + Global Alpha
+		vao[i].r = Light[i][0];
+		vao[i].g = Light[i][1];
+		vao[i].b = Light[i][2];
+		vao[i].a = Alpha;
 	}
 
-	MU_DrawTexturedColorQuad3D_Bound(quad);
+	// 2. Set Attributes
+	// Position (3 floats)
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+
+	// UV (2 floats)
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+	// Color (4 floats - pulls from the Light[i] data we packed)
+	glEnableVertexAttribArray(g_aColorLoc);
+	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+	// 3. Draw
+	// Using GL_TRIANGLE_FAN as the quad replacement
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup optional attributes
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aColorLoc);
+
 }
 
 void RenderNumber(vec3_t Position, int Num, vec3_t Color, float Alpha, float Scale)
@@ -1207,43 +1200,31 @@ float RenderNumber2D(float x, float y, int Num, float Width, float Height)
 	return x;
 }
 
-void BeginBitmap()
-{
+void BeginBitmap() {
+	// 1. Replacement for glMatrixMode(GL_PROJECTION) + glPushMatrix()
+	projectionStack.push_back(projectionStack.back());
+
+	// 2. Replacement for glViewport + gluPerspective + gluOrtho2D
 	glViewport(0, 0, WindowWidth, WindowHeight);
 
-	glm::mat4 proj = glm::ortho(
-		0.0f,
-		(float)WindowWidth,
-		0.0f,
-		(float)WindowHeight,
-		-1.0f,
-		1.0f
-	);
+	// Instead of glLoadIdentity + gluPerspective + glLoadIdentity + gluOrtho2D
+	// we just calculate the final projection matrix we want:
+	projectionStack.back() = glm::ortho(0.0f, (float)WindowWidth, 0.0f, (float)WindowHeight, -1.0f, 1.0f);
 
-	glm::mat4 view(1.0f);
+	// 3. Replacement for glMatrixMode(GL_MODELVIEW) + glPushMatrix() + glLoadIdentity
+	modelViewStack.push_back(glm::mat4(1.0f));
 
-	memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
-	memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
-
-	glUseProgram(g_muProgram);
-	MU_ApplyMatrices();
-
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
-
-	if (g_uDiscardBlack >= 0)
-		glUniform1i(g_uDiscardBlack, 0);
-
-
-	glDisable(GL_DEPTH_TEST);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	glDisable(GL_DEPTH_TEST); // Replacement for DisableDepthTest()
 }
 
-void EndBitmap()
-{
+void EndBitmap() {
+	// 4. Replacement for glPopMatrix() on ModelView
+	if (modelViewStack.size() > 1) modelViewStack.pop_back();
+
+	// 5. Replacement for glPopMatrix() on Projection
+	if (projectionStack.size() > 1) projectionStack.pop_back();
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 void RenderColor(float x, float y, float Width, float Height, float Alpha, int Flag)
@@ -1255,40 +1236,41 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 	Width = ConvertX(Width);
 	Height = ConvertY(Height);
 
+	float p[4][2];
 	y = WindowHeight - y;
 
-	MU2DVertex v[4];
+	p[0][0] = x; p[0][1] = y;
+	p[1][0] = x; p[1][1] = y - Height;
+	p[2][0] = x + Width; p[2][1] = y - Height;
+	p[3][0] = x + Width; p[3][1] = y;
 
-	v[0] = { x,         y,          0.f, 0.f };
-	v[1] = { x,         y - Height, 0.f, 0.f };
-	v[2] = { x + Width, y - Height, 0.f, 0.f };
-	v[3] = { x + Width, y,          0.f, 0.f };
+	// 1. Set the uniform color based on Flag
+	float finalAlpha = (Alpha > 0.0f) ? Alpha : 1.0f;
+	if (Flag == 0)
+		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, finalAlpha); // White
+	else if (Flag == 1)
+		myShader.setVec4(g_uColorLoc, 0.0f, 0.0f, 0.0f, finalAlpha); // Black
 
-	GLubyte r = 255;
-	GLubyte g = 255;
-	GLubyte b = 255;
-	GLubyte a = MU_FloatToColorByte(Alpha);
+	// 3. Set Attributes (Position only)
+	glEnableVertexAttribArray(g_aPosLoc);
+	// p is your float p[4][2] array from the original code
+	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, p);
 
-	if (Flag == 1)
-	{
-		r = g = b = 0;
-	}
+	// Disable UV and Color attributes as they aren't needed here
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aColorLoc);
 
-	MU_DrawColorQuad(v, r, g, b, a);
-
-	MU_glColor4f(1.f, 1.f, 1.f, 1.f);
+	// 4. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void EndRenderColor()
 {
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-	glUseProgram(g_muProgram);
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
-	//glEnable(GL_TEXTURE_2D);
+	// Reset shader to white and re-enable texture sampling logic
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	myShader.setBool(g_uTexEnabledLoc, true);
 }
-
+//???
 void RenderColorBitmap(int Texture, float x, float y, float Width, float Height, float u, float v, float uWidth, float vHeight, unsigned int color)
 {
 	x = ConvertX(x);
@@ -1314,31 +1296,47 @@ void RenderColorBitmap(int Texture, float x, float y, float Width, float Height,
 	TEXCOORD(c[2], u + uWidth, v + vHeight);
 	TEXCOORD(c[1], u, v + vHeight);
 
-	MU2DColorVertex quad[4];
+	// 1. Convert hex color to 0.0 - 1.0 floats
+	float r = (float)(color & 0xff) / 255.0f;
+	float g = (float)((color >> 8) & 0xff) / 255.0f;
+	float b = (float)((color >> 16) & 0xff) / 255.0f;
+	float a = (float)((color >> 24) & 0xff) / 255.0f;
 
-	GLubyte r = (GLubyte)(color & 0xff);
-	GLubyte g = (GLubyte)((color >> 8) & 0xff);
-	GLubyte b = (GLubyte)((color >> 16) & 0xff);
-	GLubyte a = (GLubyte)((color >> 24) & 0xff);
-
-	for (int i = 0; i < 4; ++i)
-	{
-		quad[i].x = p[i][0];
-		quad[i].y = p[i][1];
-
-		quad[i].u = c[i][0];
-		quad[i].v = c[i][1];
-
-		quad[i].r = r;
-		quad[i].g = g;
-		quad[i].b = b;
-		quad[i].a = a;
+	// 2. Pack the data
+	SpriteVertexFull vao[4];
+	for (int i = 0; i < 4; i++) {
+		vao[i].x = p[i][0];
+		vao[i].y = p[i][1];
+		vao[i].z = 0.0f;
+		vao[i].u = c[i][0];
+		vao[i].v = c[i][1];
+		// Every vertex gets the same color from your hex variable
+		vao[i].r = r; vao[i].g = g; vao[i].b = b; vao[i].a = a;
 	}
 
-	MU_DrawBoundTexturedColorQuad2D(quad);
+	// 3. Set Attributes
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+	glEnableVertexAttribArray(g_aColorLoc);
+	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+	// 4. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 5. Cleanup
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
+
 }
 
-void RenderBitmap(int Texture, float x, float y, float Width, float Height, float u, float v, float uWidth, float vHeight, bool Scale, bool StartScale, float Alpha)
+//
+void RenderBitmap(int Texture, float x, float y, float Width, float Height,
+	float u, float v, float uWidth, float vHeight,
+	bool Scale, bool StartScale, float Alpha)
 {
 	if (StartScale)
 	{
@@ -1368,35 +1366,36 @@ void RenderBitmap(int Texture, float x, float y, float Width, float Height, floa
 	TEXCOORD(c[2], u + uWidth, v + vHeight);
 	TEXCOORD(c[1], u, v + vHeight);
 
-	GLfloat oldColor[4];
-	MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+	// 1. Set the global color uniform (replaces glColor4f inside the loop)
+	float finalAlpha = (Alpha > 0.0f) ? Alpha : 1.0f;
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, finalAlpha);
 
-	if (Alpha > 0.f)
-	{
-		if (Alpha > 1.f)
-			Alpha = 1.f;
-
-		glColor4f(1.f, 1.f, 1.f, Alpha);
+	// 2. Pack the 4 vertices into a local struct array
+	SpriteVertex vao[4];
+	for (int i = 0; i < 4; i++) {
+		vao[i].x = p[i][0];
+		vao[i].y = p[i][1];
+		vao[i].u = c[i][0];
+		vao[i].v = c[i][1];
 	}
 
-	MU2DVertex quad[4];
+	// 3. Set Attributes
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
-	for (int i = 0; i < 4; ++i)
-	{
-		quad[i].x = p[i][0];
-		quad[i].y = p[i][1];
-		quad[i].u = c[i][0];
-		quad[i].v = c[i][1];
-	}
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
 
-	MU_DrawBoundTexturedQuad2D(quad, Texture);
+	// Ensure per-vertex color attribute is OFF (we're using the uniform instead)
+	glDisableVertexAttribArray(g_aColorLoc);
 
-	if (Alpha > 0.f)
-		glColor4f(1.f, 1.f, 1.f, 1.f);
-	else
-		glColor4fv(oldColor);
+	// 4. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 5. Reset global color to full opaque for subsequent calls
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 }
-
+//
 void RenderBitmapRotate(int Texture, float x, float y, float Width, float Height, float Rotate, float u, float v, float uWidth, float vHeight)
 {
 	x = ConvertX(x);
@@ -1427,21 +1426,42 @@ void RenderBitmapRotate(int Texture, float x, float y, float Width, float Height
 	TEXCOORD(c[2], u + uWidth, v + vHeight);
 	TEXCOORD(c[1], u, v + vHeight);
 
-	MU2DVertex quad[4];
+	// 1. Prepare vertex data array
+	SpriteVertex vao[4];
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 4; i++)
 	{
+		// Apply the legacy rotation math
 		VectorRotate(p[i], Matrix, p2[i]);
 
-		quad[i].x = p2[i][0] + x;
-		quad[i].y = p2[i][1] + y;
-		quad[i].u = c[i][0];
-		quad[i].v = c[i][1];
+		// Calculate final screen positions
+		vao[i].x = p2[i][0] + x;
+		vao[i].y = p2[i][1] + y;
+
+		// Assign UVs
+		vao[i].u = c[i][0];
+		vao[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad, Texture);
-}
+	// 2. Set Attributes
+	// Position
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
+	// Texture UV
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
+
+	// Ensure per-vertex color is disabled (uses u_color uniform set by previous helpers)
+	glDisableVertexAttribArray(g_aColorLoc);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup optional attributes
+	glDisableVertexAttribArray(g_aTexLoc);
+}
+//
 void RenderBitRotate(int Texture, float x, float y, float Width, float Height, float Rotate)
 {
 	x = ConvertX(x);
@@ -1479,21 +1499,42 @@ void RenderBitRotate(int Texture, float x, float y, float Width, float Height, f
 	TEXCOORD(c[2], 1.f, 1.f);
 	TEXCOORD(c[1], 0.f, 1.f);
 
-	MU2DVertex quad[4];
+	// 1. Prepare vertex data
+	SpriteVertex vao[4];
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 4; i++)
 	{
+		// Apply the original rotation math
 		VectorRotate(p[i], Matrix, p2[i]);
 
-		quad[i].x = p2[i][0] + (WindowWidth / 2.f);
-		quad[i].y = p2[i][1] + (WindowHeight / 2.f);
-		quad[i].u = c[i][0];
-		quad[i].v = c[i][1];
+		// Set screen positions (Relative to screen center)
+		vao[i].x = p2[i][0] + (WindowWidth / 2.0f);
+		vao[i].y = p2[i][1] + (WindowHeight / 2.0f);
+
+		// Set texture coordinates
+		vao[i].u = c[i][0];
+		vao[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad, Texture);
-}
+	// 2. Set Attributes
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
+
+	// Ensure the constant color is white (unless set otherwise by a previous helper)
+	glDisableVertexAttribArray(g_aColorLoc);
+	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup
+	glDisableVertexAttribArray(g_aTexLoc);
+
+}
+//
 void RenderPointRotate(int Texture, float ix, float iy, float iWidth, float iHeight, float x, float y, float Width, float Height, float Rotate, float Rotate_Loc, float uWidth, float vHeight, int Num)
 {
 	int i = 0;
@@ -1532,22 +1573,44 @@ void RenderPointRotate(int Texture, float ix, float iy, float iWidth, float iHei
 	TEXCOORD(c[2], uWidth, vHeight);
 	TEXCOORD(c[1], 0.f, vHeight);
 
-	MU2DVertex quad[4];
 
-	for (i = 0; i < 4; i++)
+	// 1. Prepare vertex data array
+	SpriteVertex vao[4];
+
+	for (int i = 0; i < 4; i++)
 	{
+		// Apply the original matrix translation and transformation
 		Matrix[0][3] = p3[0] + 25;
 		Matrix[1][3] = p3[1];
-
 		VectorTransform(p2[i], Matrix, p4[i]);
 
-		quad[i].x = p4[i][0] + (WindowWidth / 2.f);
-		quad[i].y = p4[i][1] + (WindowHeight / 2.f);
-		quad[i].u = c[i][0];
-		quad[i].v = c[i][1];
+		// Calculate final screen positions (Center + Transformed Offset)
+		vao[i].x = p4[i][0] + (WindowWidth / 2.0f);
+		vao[i].y = p4[i][1] + (WindowHeight / 2.0f);
+
+		// Assign UVs
+		vao[i].u = c[i][0];
+		vao[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad, Texture);
+	// 2. Set Attributes
+	// Position (using global ID)
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
+
+	// Texture UV (using global ID)
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
+
+	// Ensure per-vertex color is disabled (uses u_color uniform)
+	glDisableVertexAttribArray(g_aColorLoc);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup optional attributes
+	glDisableVertexAttribArray(g_aTexLoc);
+
 
 	if (Num > -1)
 	{
@@ -1566,7 +1629,7 @@ void RenderPointRotate(int Texture, float ix, float iy, float iWidth, float iHei
 		}
 	}
 }
-
+// xx
 void RenderBitmapLocalRotate(int Texture, float x, float y, float Width, float Height, float Rotate, float u, float v, float uWidth, float vHeight)
 {
 	BindTexture(Texture);
@@ -1608,7 +1671,7 @@ void RenderBitmapLocalRotate(int Texture, float x, float y, float Width, float H
 
 	MU_DrawBoundTexturedQuad2D(quad, Texture);
 }
-
+// xx
 void RenderBitmapAlpha(int Texture, float sx, float sy, float Width, float Height)
 {
 	EnableAlphaTest();
@@ -1661,7 +1724,7 @@ void RenderBitmapAlpha(int Texture, float sx, float sy, float Width, float Heigh
 		}
 	}
 }
-
+//
 void RenderBitmapUV(int Texture, float x, float y, float Width, float Height, float u, float v, float uWidth, float vHeight)
 {
 	x = ConvertX(x);
@@ -1683,17 +1746,33 @@ void RenderBitmapUV(int Texture, float x, float y, float Width, float Height, fl
 	TEXCOORD(c[2], u + uWidth, v + vHeight);
 	TEXCOORD(c[1], u, v + vHeight - vHeight * 0.25f);
 
-	MU2DVertex quad[4];
-
-	for (int i = 0; i < 4; ++i)
-	{
-		quad[i].x = p[i][0];
-		quad[i].y = p[i][1];
-		quad[i].u = c[i][0];
-		quad[i].v = c[i][1];
+	// 1. Pack the data into your struct array
+	SpriteVertex vao[4];
+	for (int i = 0; i < 4; i++) {
+		vao[i].x = p[i][0];
+		vao[i].y = p[i][1];
+		vao[i].u = c[i][0];
+		vao[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad, Texture);
+	// 2. Set Attributes
+	// Position
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
+
+	// Texture UV
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
+
+	// Ensure per-vertex color is disabled (uses u_color uniform)
+	glDisableVertexAttribArray(g_aColorLoc);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup
+	glDisableVertexAttribArray(g_aTexLoc);
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -484,29 +484,22 @@ void CSWaterTerrain::RenderWaterBitmapTile(
     vec3_t c[4], bool LightEnable, float Alpha, float Height)
 {
     vec3_t TerrainVertex[4];
-
     int xi = (int)xf;
     int yi = (int)yf;
-
-    if (xi < 0 || yi < 0 || xi >= TERRAIN_SIZE_MASK || yi >= TERRAIN_SIZE_MASK)
-        return;
-
+    if (xi < 0 || yi < 0 || xi >= TERRAIN_SIZE_MASK || yi >= TERRAIN_SIZE_MASK) return;
     float TileScale = WAVE_SCALE;
     float sx = xf * WAVE_SCALE;
     float sy = yf * WAVE_SCALE;
-
     int TerrainIndex1 = xi + (yi * WATER_TERRAIN_SIZE);
     int TerrainIndex2 = xi + lodi + (yi * WATER_TERRAIN_SIZE);
     int TerrainIndex3 = xi + lodi + ((yi + lodi) * WATER_TERRAIN_SIZE);
     int TerrainIndex4 = xi + ((yi + lodi) * WATER_TERRAIN_SIZE);
-
     Vector(sx, sy, m_iWaveHeight[0][TerrainIndex1] + 400.f + Height, TerrainVertex[0]);
     Vector(sx + TileScale, sy, m_iWaveHeight[0][TerrainIndex2] + 400.f + Height, TerrainVertex[1]);
     Vector(sx + TileScale, sy + TileScale, m_iWaveHeight[0][TerrainIndex3] + 400.f + Height, TerrainVertex[2]);
     Vector(sx, sy + TileScale, m_iWaveHeight[0][TerrainIndex4] + 400.f + Height, TerrainVertex[3]);
 
     vec3_t Light[4];
-
     if (LightEnable)
     {
         VectorCopy(PrimaryTerrainLight[TerrainIndex1], Light[0]);
@@ -515,42 +508,55 @@ void CSWaterTerrain::RenderWaterBitmapTile(
         VectorCopy(PrimaryTerrainLight[TerrainIndex4], Light[3]);
     }
 
-    GLfloat oldColor[4];
-    MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+    // 1. Pack the data into the Full Vertex struct (9 floats per vertex)
+    SpriteVertexFull vao[4];
 
-    MU3DColorVertex quad[4];
+    for (int i = 0; i < 4; i++) {
+        // Position (XYZ)
+        vao[i].x = TerrainVertex[i][0];
+        vao[i].y = TerrainVertex[i][1];
+        vao[i].z = TerrainVertex[i][2];
 
-    for (int i = 0; i < 4; ++i)
-    {
-        quad[i].x = TerrainVertex[i][0];
-        quad[i].y = TerrainVertex[i][1];
-        quad[i].z = TerrainVertex[i][2];
+        // UVs
+        vao[i].u = c[i][0];
+        vao[i].v = c[i][1];
 
-        quad[i].u = c[i][0];
-        quad[i].v = c[i][1];
-
-        if (LightEnable)
-        {
-            quad[i].r = MU_FloatToColorByte(Light[i][0]);
-            quad[i].g = MU_FloatToColorByte(Light[i][1]);
-            quad[i].b = MU_FloatToColorByte(Light[i][2]);
-
-            // glColor3fv keeps previous alpha
-            if (Alpha == 1.f)
-                quad[i].a = MU_FloatToColorByte(oldColor[3]);
-            else
-                quad[i].a = MU_FloatToColorByte(Alpha);
+        // Color (RGBA)
+        if (LightEnable) {
+            vao[i].r = Light[i][0];
+            vao[i].g = Light[i][1];
+            vao[i].b = Light[i][2];
+            vao[i].a = Alpha; // Alpha is applied even if it's 1.0f
         }
-        else
-        {
-            quad[i].r = MU_FloatToColorByte(oldColor[0]);
-            quad[i].g = MU_FloatToColorByte(oldColor[1]);
-            quad[i].b = MU_FloatToColorByte(oldColor[2]);
-            quad[i].a = MU_FloatToColorByte(oldColor[3]);
+        else {
+            // Default to white if lighting is off
+            vao[i].r = 1.0f; vao[i].g = 1.0f; vao[i].b = 1.0f; vao[i].a = 1.0f;
         }
     }
 
-    MU_DrawTexturedColorQuad3D_Bound(quad);
+    // 2. Set Uniforms
+    myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+    myShader.setMat4(g_uMvLoc, modelViewStack.back()); // Needed for Fog distance
+    //myShader.setBool(g_uTexEnabledLoc, true);
 
-    glColor4fv(oldColor);
+    // 3. Set Attributes
+    // Position
+    glEnableVertexAttribArray(g_aPosLoc);
+    glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+
+    // UV
+    glEnableVertexAttribArray(g_aTexLoc);
+    glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+    // Color (Light)
+    glEnableVertexAttribArray(g_aColorLoc);
+    glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+    // 4. Draw
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    // 5. Cleanup optional attributes
+    glDisableVertexAttribArray(g_aTexLoc);
+    glDisableVertexAttribArray(g_aColorLoc);
+
 }

@@ -293,40 +293,53 @@ void CSprite::Update(double dDeltaTick)
 	}
 }
 
+
+
+
 void CSprite::Render()
 {
-	if (!m_bShow)
-		return;
+	if (!m_bShow) return;
 
-	MU2DVertex v[4];
+	// 1. Prepare vertex data (4 vertices for the quad)
+	SpriteVertex vertices[4];
+	for (int i = 0; i < 4; ++i) {
+		vertices[i].x = m_aScrCoord[i].fX * m_fScaleX;
+		vertices[i].y = m_aScrCoord[i].fY * m_fScaleY;
 
-	for (int i = LT; i < POS_MAX; ++i)
-	{
-		v[i].x = m_aScrCoord[i].fX * m_fScaleX;
-		v[i].y = m_aScrCoord[i].fY * m_fScaleY;
-		v[i].u = m_aTexCoord[i].fTU;
-		v[i].v = m_aTexCoord[i].fTV;
+		if (m_nTexID > -1) {
+			vertices[i].u = m_aTexCoord[i].fTU;
+			vertices[i].v = m_aTexCoord[i].fTV;
+		}
+		else {
+			vertices[i].u = 0.0f; vertices[i].v = 0.0f;
+		}
 	}
 
-	if (m_nTexID >= 0)
-	{
-		MU_DrawTexturedQuad(
-			m_nTexID,
-			v,
-			m_byRed,
-			m_byGreen,
-			m_byBlue,
-			m_byAlpha
-		);
+	// 2. Set the Color (glUniform4f replaces glColor4ub)
+	// Convert 0-255 to 0.0-1.0
+	glUniform4f(g_uColorLoc, m_byRed / 255.0f, m_byGreen / 255.0f, m_byBlue / 255.0f, m_byAlpha / 255.0f);
+
+	// 3. Handle Texture
+	if (m_nTexID > -1) {
+		BindTexture(m_nTexID);
+		glUniform1i(g_uTexEnabledLoc, 1); // Tell shader to use texture
 	}
-	else
-	{
-		MU_DrawColorQuad(
-			v,
-			m_byRed,
-			m_byGreen,
-			m_byBlue,
-			m_byAlpha
-		);
+	else {
+		glUniform1i(g_uTexEnabledLoc, 0); // Tell shader to use flat color
 	}
+
+	// 4. Pass Vertex Data to Attributes
+	// Position attribute (x, y)
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vertices[0].x);
+
+	// Texture Coordinate attribute (u, v)
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vertices[0].u);
+
+	// 5. Draw!
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glDisableVertexAttribArray(g_aPosLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
 }

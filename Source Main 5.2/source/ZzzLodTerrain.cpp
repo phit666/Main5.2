@@ -1391,49 +1391,48 @@ void RenderFace(int Texture,int mx,int my)
 	   	DisableAlphaBlend();
 	BindTexture(BITMAP_MAPTILE+Texture);
 
-	MU3DColorVertex quad[4];
+	// 1. Pack the data from the variables used in Vertex0-3 into your struct
+	SpriteVertexFull vao[4];
 
-	quad[0].x = TerrainVertex[0][0];
-	quad[0].y = TerrainVertex[0][1];
-	quad[0].z = TerrainVertex[0][2];
-	quad[0].u = TerrainTextureCoord[0][0];
-	quad[0].v = TerrainTextureCoord[0][1];
-	quad[0].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][0]);
-	quad[0].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][1]);
-	quad[0].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex1][2]);
-	quad[0].a = 255;
+	// Equivalent to Vertex0()
+	vao[0].x = TerrainVertex[0][0]; vao[0].y = TerrainVertex[0][1]; vao[0].z = TerrainVertex[0][2];
+	vao[0].u = TerrainTextureCoord[0][0]; vao[0].v = TerrainTextureCoord[0][1];
+	vao[0].r = PrimaryTerrainLight[TerrainIndex1][0]; vao[0].g = PrimaryTerrainLight[TerrainIndex1][1]; vao[0].b = PrimaryTerrainLight[TerrainIndex1][2]; vao[0].a = 1.0f;
 
-	quad[1].x = TerrainVertex[1][0];
-	quad[1].y = TerrainVertex[1][1];
-	quad[1].z = TerrainVertex[1][2];
-	quad[1].u = TerrainTextureCoord[1][0];
-	quad[1].v = TerrainTextureCoord[1][1];
-	quad[1].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][0]);
-	quad[1].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][1]);
-	quad[1].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex2][2]);
-	quad[1].a = 255;
+	// Equivalent to Vertex1()
+	vao[1].x = TerrainVertex[1][0]; vao[1].y = TerrainVertex[1][1]; vao[1].z = TerrainVertex[1][2];
+	vao[1].u = TerrainTextureCoord[1][0]; vao[1].v = TerrainTextureCoord[1][1];
+	vao[1].r = PrimaryTerrainLight[TerrainIndex2][0]; vao[1].g = PrimaryTerrainLight[TerrainIndex2][1]; vao[1].b = PrimaryTerrainLight[TerrainIndex2][2]; vao[1].a = 1.0f;
 
-	quad[2].x = TerrainVertex[2][0];
-	quad[2].y = TerrainVertex[2][1];
-	quad[2].z = TerrainVertex[2][2];
-	quad[2].u = TerrainTextureCoord[2][0];
-	quad[2].v = TerrainTextureCoord[2][1];
-	quad[2].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][0]);
-	quad[2].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][1]);
-	quad[2].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex3][2]);
-	quad[2].a = 255;
+	// Equivalent to Vertex2()
+	vao[2].x = TerrainVertex[2][0]; vao[2].y = TerrainVertex[2][1]; vao[2].z = TerrainVertex[2][2];
+	vao[2].u = TerrainTextureCoord[2][0]; vao[2].v = TerrainTextureCoord[2][1];
+	vao[2].r = PrimaryTerrainLight[TerrainIndex3][0]; vao[2].g = PrimaryTerrainLight[TerrainIndex3][1]; vao[2].b = PrimaryTerrainLight[TerrainIndex3][2]; vao[2].a = 1.0f;
 
-	quad[3].x = TerrainVertex[3][0];
-	quad[3].y = TerrainVertex[3][1];
-	quad[3].z = TerrainVertex[3][2];
-	quad[3].u = TerrainTextureCoord[3][0];
-	quad[3].v = TerrainTextureCoord[3][1];
-	quad[3].r = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][0]);
-	quad[3].g = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][1]);
-	quad[3].b = MU_FloatToColorByte(PrimaryTerrainLight[TerrainIndex4][2]);
-	quad[3].a = 255;
+	// Equivalent to Vertex3()
+	vao[3].x = TerrainVertex[3][0]; vao[3].y = TerrainVertex[3][1]; vao[3].z = TerrainVertex[3][2];
+	vao[3].u = TerrainTextureCoord[3][0]; vao[3].v = TerrainTextureCoord[3][1];
+	vao[3].r = PrimaryTerrainLight[TerrainIndex4][0]; vao[3].g = PrimaryTerrainLight[TerrainIndex4][1]; vao[3].b = PrimaryTerrainLight[TerrainIndex4][2]; vao[3].a = 1.0f;
 
-	MU_DrawTexturedColorQuad3D_Bound(quad);
+	// 2. Set Attributes
+	// Position
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+
+	// Texture
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+	// Color (Terrain Light)
+	glEnableVertexAttribArray(g_aColorLoc);
+	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aColorLoc);
 }
 
 void RenderFace_After(int Texture, int mx, int my)
@@ -1927,43 +1926,47 @@ void RenderTerrainBitmapTile(float xf, float yf, float lodf, int lodi,
 		VectorCopy(PrimaryTerrainLight[TerrainIndex4], Light[3]);
 	}
 
-	GLfloat oldColor[4];
-	MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+	// 1. Pack the data into the vertex struct (XYZ, UV, RGBA)
+	SpriteVertexFull vao[4];
 
-	MU3DColorVertex quad[4];
+	for (int i = 0; i < 4; i++) {
+		// Position
+		vao[i].x = TerrainVertex[i][0];
+		vao[i].y = TerrainVertex[i][1];
+		vao[i].z = TerrainVertex[i][2];
 
-	for (int i = 0; i < 4; ++i)
-	{
-		quad[i].x = TerrainVertex[i][0];
-		quad[i].y = TerrainVertex[i][1];
-		quad[i].z = TerrainVertex[i][2];
+		// Texture UVs
+		vao[i].u = c[i][0];
+		vao[i].v = c[i][1];
 
-		quad[i].u = c[i][0];
-		quad[i].v = c[i][1];
-
-		if (LightEnable)
-		{
-			quad[i].r = MU_FloatToColorByte(Light[i][0]);
-			quad[i].g = MU_FloatToColorByte(Light[i][1]);
-			quad[i].b = MU_FloatToColorByte(Light[i][2]);
-
-			if (Alpha == 1.f)
-				quad[i].a = MU_FloatToColorByte(oldColor[3]);
-			else
-				quad[i].a = MU_FloatToColorByte(Alpha);
+		// Color (RGBA)
+		if (LightEnable) {
+			vao[i].r = Light[i][0];
+			vao[i].g = Light[i][1];
+			vao[i].b = Light[i][2];
+			vao[i].a = Alpha;
 		}
-		else
-		{
-			quad[i].r = MU_FloatToColorByte(oldColor[0]);
-			quad[i].g = MU_FloatToColorByte(oldColor[1]);
-			quad[i].b = MU_FloatToColorByte(oldColor[2]);
-			quad[i].a = MU_FloatToColorByte(oldColor[3]);
+		else {
+			vao[i].r = 1.0f; vao[i].g = 1.0f; vao[i].b = 1.0f; vao[i].a = 1.0f;
 		}
 	}
 
-	MU_DrawTexturedColorQuad3D_Bound(quad);
+	// 2. Set Attributes (Position, TexCoord, and Color)
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
-	glColor4fv(oldColor);
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+	glEnableVertexAttribArray(g_aColorLoc);
+	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup optional attributes so they don't leak into the next draw call
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aColorLoc);
 }
 
 void RenderTerrainBitmap(int Texture,int mxi,int myi,float Rotation)

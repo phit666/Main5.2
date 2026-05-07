@@ -147,3 +147,61 @@ extern int  CachTexture;
 extern MU_Mat4 g_savedViewForSprite;
 void MU_TransformPoint(const MU_Mat4& m, const vec3_t in, vec3_t out);
 
+class Shader {
+public:
+    GLuint ID; // Your linked Program ID
+
+    void use() { glUseProgram(ID); }
+
+    void setBool(GLuint iID, bool value) const {
+        glUniform1i(iID, (int)value);
+    }
+    void setFloat(GLuint iID, float value) const {
+        glUniform1f(iID, value);
+    }
+    void setVec4(GLuint iID, float x, float y, float z, float w) const {
+        glUniform4f(iID, x, y, z, w);
+    }
+    void setMat4(GLuint iID, const glm::mat4& mat) const {
+        glUniformMatrix4fv(iID, 1, GL_FALSE, glm::value_ptr(mat));
+    }
+};
+
+struct SpriteVertex {
+    float x, y; // Position
+    float u, v; // Texture Coordinates
+};
+
+struct SpriteVertex3D {
+    float x, y, z;
+    float u, v;
+};
+
+struct SpriteVertexFull {
+    float x, y, z;
+    float u, v;
+    float r, g, b, a;
+};
+
+struct BitmapVertex {
+    float x, y;
+    float u, v;
+};
+
+extern GLint g_aPosLoc;
+extern GLint g_aTexLoc;
+extern GLint g_aColorLoc;
+extern GLint g_uTexEnabledLoc;
+extern GLint g_uAlphaTestLoc;
+extern GLint g_uFogEnabledLoc;
+extern GLint g_uFogColorLoc;
+extern GLint g_uFogDensityLoc;
+extern GLint g_uColorLoc;
+extern GLint g_uMvpLoc; // projection * model view
+extern GLint g_uMvLoc; // model view only
+
+extern Shader myShader;
+extern std::vector<glm::mat4> projectionStack;
+extern std::vector<glm::mat4> modelViewStack;
+
+

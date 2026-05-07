@@ -59,30 +59,47 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 		VectorRotate(p,Matrix1,Position[3]);
 		VectorAdd(ObjectPosition,Position[3],Position[3]);
 
-		GLfloat oldColor[4];
-		MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+		// Use your Full Vertex struct (9 floats: XYZ, UV, RGBA)
+		SpriteVertexFull vao[4];
 
-		MU3DColorVertex quad[4];
-
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < 4; i++)
 		{
-			quad[i].x = Position[i][0];
-			quad[i].y = Position[i][1];
-			quad[i].z = Position[i][2];
+			// 1. Position (XYZ)
+			vao[i].x = Position[i][0];
+			vao[i].y = Position[i][1];
+			vao[i].z = Position[i][2];
 
-			quad[i].u = UV[i][0];
-			quad[i].v = UV[i][1] + TextureV;
+			// 2. Texture UV with the Vertical Offset (TextureV)
+			vao[i].u = UV[i][0];
+			vao[i].v = UV[i][1] + TextureV;
 
-			quad[i].r = MU_FloatToColorByte(Light[i][0]);
-			quad[i].g = MU_FloatToColorByte(Light[i][1]);
-			quad[i].b = MU_FloatToColorByte(Light[i][2]);
-
-			quad[i].a = MU_FloatToColorByte(oldColor[3]);
+			// 3. Per-Vertex Color (RGB) + Full Alpha (1.0)
+			vao[i].r = Light[i][0];
+			vao[i].g = Light[i][1];
+			vao[i].b = Light[i][2];
+			vao[i].a = 1.0f;
 		}
 
-		MU_DrawTexturedColorQuad3D_Bound(quad);
+		// 4. Set Shader State
+		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default global white
 
-		glColor4fv(oldColor);
+		// 5. Attributes
+		glEnableVertexAttribArray(g_aPosLoc);
+		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+
+		glEnableVertexAttribArray(g_aTexLoc);
+		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+		glEnableVertexAttribArray(g_aColorLoc);
+		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+		// 6. Draw (GL_TRIANGLE_FAN is the direct GLES2 replacement for a single QUAD)
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+		// 7. Cleanup optional attributes
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aColorLoc);
 	}
 }
 /*

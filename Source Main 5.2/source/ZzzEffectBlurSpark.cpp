@@ -152,77 +152,61 @@ void RenderBlurs()
 			if(b->Number >= 2)
 			{
 				BindTexture(nTexture);
+
+				// 1. Prepare a buffer for all vertices
+				// Each quad has 4 vertices, and we have (b->Number - 1) quads
+				std::vector<SpriteVertexFull> vao;
+				vao.reserve((b->Number - 1) * 4);
+
 				for (int j = 0; j < b->Number - 1; j++)
 				{
-					GLfloat oldColor[4];
-					MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+					float light1, light2;
+					float texU1 = (float)j / (float)b->Number;
+					float texU2 = (float)(j + 1) / (float)b->Number;
 
-					MU3DColorVertex quad[4];
+					if (b->Owner->Level == 0) {
+						light1 = (float)(b->Number - j) / (float)b->Number;
+						light2 = (float)(b->Number - (j + 1)) / (float)b->Number;
+					}
+					else {
+						light1 = 1.0f;
+						light2 = 1.0f;
+					}
 
-					float Light1;
-					float Light2;
-
-					if (b->Owner->Level == 0)
-						Light1 = (b->Number - j) / (float)b->Number;
-					else
-						Light1 = 1.f;
-
-					if (b->Owner->Level == 0)
-						Light2 = (b->Number - (j + 1)) / (float)b->Number;
-					else
-						Light2 = 1.f;
-
-					float TexU1 = j / (float)b->Number;
-					float TexU2 = (j + 1) / (float)b->Number;
-
-					// p1[j]
-					quad[0].x = b->p1[j][0];
-					quad[0].y = b->p1[j][1];
-					quad[0].z = b->p1[j][2];
-					quad[0].u = TexU1;
-					quad[0].v = 1.f;
-					quad[0].r = MU_FloatToColorByte(b->Light[0] * Light1);
-					quad[0].g = MU_FloatToColorByte(b->Light[1] * Light1);
-					quad[0].b = MU_FloatToColorByte(b->Light[2] * Light1);
-					quad[0].a = MU_FloatToColorByte(oldColor[3]); // glColor3f preserves alpha
-
-					// p2[j]
-					quad[1].x = b->p2[j][0];
-					quad[1].y = b->p2[j][1];
-					quad[1].z = b->p2[j][2];
-					quad[1].u = TexU1;
-					quad[1].v = 0.f;
-					quad[1].r = MU_FloatToColorByte(b->Light[0] * Light1);
-					quad[1].g = MU_FloatToColorByte(b->Light[1] * Light1);
-					quad[1].b = MU_FloatToColorByte(b->Light[2] * Light1);
-					quad[1].a = MU_FloatToColorByte(oldColor[3]);
-
-					// p2[j+1]
-					quad[2].x = b->p2[j + 1][0];
-					quad[2].y = b->p2[j + 1][1];
-					quad[2].z = b->p2[j + 1][2];
-					quad[2].u = TexU2;
-					quad[2].v = 0.f;
-					quad[2].r = MU_FloatToColorByte(b->Light[0] * Light2);
-					quad[2].g = MU_FloatToColorByte(b->Light[1] * Light2);
-					quad[2].b = MU_FloatToColorByte(b->Light[2] * Light2);
-					quad[2].a = MU_FloatToColorByte(oldColor[3]);
-
-					// p1[j+1]
-					quad[3].x = b->p1[j + 1][0];
-					quad[3].y = b->p1[j + 1][1];
-					quad[3].z = b->p1[j + 1][2];
-					quad[3].u = TexU2;
-					quad[3].v = 1.f;
-					quad[3].r = MU_FloatToColorByte(b->Light[0] * Light2);
-					quad[3].g = MU_FloatToColorByte(b->Light[1] * Light2);
-					quad[3].b = MU_FloatToColorByte(b->Light[2] * Light2);
-					quad[3].a = MU_FloatToColorByte(oldColor[3]);
-
-					MU_DrawTexturedColorQuad3D_Bound(quad);
-
-					glColor4fv(oldColor);
+					// Vertex 1 (p1[j])
+					vao.push_back({ b->p1[j][0], b->p1[j][1], b->p1[j][2], texU1, 1.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
+					// Vertex 2 (p2[j])
+					vao.push_back({ b->p2[j][0], b->p2[j][1], b->p2[j][2], texU1, 0.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
+					// Vertex 3 (p2[j+1])
+					vao.push_back({ b->p2[j + 1][0], b->p2[j + 1][1], b->p2[j + 1][2], texU2, 0.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
+					// Vertex 4 (p1[j+1])
+					vao.push_back({ b->p1[j + 1][0], b->p1[j + 1][1], b->p1[j + 1][2], texU2, 1.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
 				}
+
+				// 2. Setup Shader and Uniforms
+				myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+				//myShader.setBool(g_uTexEnabledLoc, true);
+
+				// 3. Set Attributes
+				glEnableVertexAttribArray(g_aPosLoc);
+				glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+
+				glEnableVertexAttribArray(g_aTexLoc);
+				glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+				glEnableVertexAttribArray(g_aColorLoc);
+				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+				// 4. Draw all quads at once
+				// Since we used GL_TRIANGLE_FAN for 4 vertices per quad, we draw them in batches of 4
+				for (int i = 0; i < (b->Number - 1); i++) {
+					glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
+				}
+
+				// 5. Cleanup
+				glDisableVertexAttribArray(g_aTexLoc);
+				glDisableVertexAttribArray(g_aColorLoc);
+
 			}
 		}
 	}
@@ -368,75 +352,68 @@ void RenderObjectBlurs()
 			if(b->Number >= 2)
 			{
 				BindTexture(nTexture);
-				for(int j=0;j<b->Number-1;j++)
+
+				// Use your Full Vertex struct (9 floats: XYZ, UV, RGBA)
+				std::vector<SpriteVertexFull> vao;
+				// Pre-allocate space for performance (Max 4 vertices per segment)
+				vao.reserve((b->Number - 1) * 4);
+
+				for (int j = 0; j < b->Number - 1; j++)
 				{
+					// 1. Distance Check (Skip quads that are stretched too far)
 					float Data = 300.f;
-					if(b->SubType == 113 || b->SubType == 114)
+					if (b->SubType == 113 || b->SubType == 114)
 					{
-					if(abs(b->p1[j][0] - b->p1[j+1][0]) > Data||abs(b->p1[j][1] - b->p1[j+1][1]) > Data||abs(b->p1[j][2] - b->p1[j+1][2]) > Data||
-						abs(b->p1[j][0] - b->p2[j+1][0]) > Data||abs(b->p1[j][1] - b->p2[j+1][1]) > Data||abs(b->p2[j][2] - b->p2[j+1][2]) > Data)
-						continue;
+						if (abs(b->p1[j][0] - b->p1[j + 1][0]) > Data || abs(b->p1[j][1] - b->p1[j + 1][1]) > Data || abs(b->p1[j][2] - b->p1[j + 1][2]) > Data ||
+							abs(b->p1[j][0] - b->p2[j + 1][0]) > Data || abs(b->p1[j][1] - b->p2[j + 1][1]) > Data || abs(b->p2[j][2] - b->p2[j + 1][2]) > Data)
+							continue;
 					}
 
-					GLfloat oldColor[4];
-					MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+					// 2. Calculate Lighting and UVs
+					float light1 = (float)(b->Number - j) / (float)b->Number;
+					float light2 = (float)(b->Number - (j + 1)) / (float)b->Number;
+					float texU1 = (float)j / (float)b->Number;
+					float texU2 = (float)(j + 1) / (float)b->Number;
 
-					MU3DColorVertex quad[4];
-
-					float Light1 = (b->Number - j) / (float)b->Number;
-					float Light2 = (b->Number - (j + 1)) / (float)b->Number;
-
-					float TexU1 = j / (float)b->Number;
-					float TexU2 = (j + 1) / (float)b->Number;
-
-					// p1[j]
-					quad[0].x = b->p1[j][0];
-					quad[0].y = b->p1[j][1];
-					quad[0].z = b->p1[j][2];
-					quad[0].u = TexU1;
-					quad[0].v = 1.f;
-					quad[0].r = MU_FloatToColorByte(b->Light[0] * Light1);
-					quad[0].g = MU_FloatToColorByte(b->Light[1] * Light1);
-					quad[0].b = MU_FloatToColorByte(b->Light[2] * Light1);
-					quad[0].a = MU_FloatToColorByte(oldColor[3]);
-
-					// p2[j]
-					quad[1].x = b->p2[j][0];
-					quad[1].y = b->p2[j][1];
-					quad[1].z = b->p2[j][2];
-					quad[1].u = TexU1;
-					quad[1].v = 0.f;
-					quad[1].r = MU_FloatToColorByte(b->Light[0] * Light1);
-					quad[1].g = MU_FloatToColorByte(b->Light[1] * Light1);
-					quad[1].b = MU_FloatToColorByte(b->Light[2] * Light1);
-					quad[1].a = MU_FloatToColorByte(oldColor[3]);
-
-					// p2[j + 1]
-					quad[2].x = b->p2[j + 1][0];
-					quad[2].y = b->p2[j + 1][1];
-					quad[2].z = b->p2[j + 1][2];
-					quad[2].u = TexU2;
-					quad[2].v = 0.f;
-					quad[2].r = MU_FloatToColorByte(b->Light[0] * Light2);
-					quad[2].g = MU_FloatToColorByte(b->Light[1] * Light2);
-					quad[2].b = MU_FloatToColorByte(b->Light[2] * Light2);
-					quad[2].a = MU_FloatToColorByte(oldColor[3]);
-
-					// p1[j + 1]
-					quad[3].x = b->p1[j + 1][0];
-					quad[3].y = b->p1[j + 1][1];
-					quad[3].z = b->p1[j + 1][2];
-					quad[3].u = TexU2;
-					quad[3].v = 1.f;
-					quad[3].r = MU_FloatToColorByte(b->Light[0] * Light2);
-					quad[3].g = MU_FloatToColorByte(b->Light[1] * Light2);
-					quad[3].b = MU_FloatToColorByte(b->Light[2] * Light2);
-					quad[3].a = MU_FloatToColorByte(oldColor[3]);
-
-					MU_DrawTexturedColorQuad3D_Bound(quad);
-
-					glColor4fv(oldColor);
+					// 3. Pack 4 vertices for this quad
+					// Vertex 0: p1[j]
+					vao.push_back({ b->p1[j][0], b->p1[j][1], b->p1[j][2], texU1, 1.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
+					// Vertex 1: p2[j]
+					vao.push_back({ b->p2[j][0], b->p2[j][1], b->p2[j][2], texU1, 0.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
+					// Vertex 2: p2[j+1]
+					vao.push_back({ b->p2[j + 1][0], b->p2[j + 1][1], b->p2[j + 1][2], texU2, 0.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
+					// Vertex 3: p1[j+1]
+					vao.push_back({ b->p1[j + 1][0], b->p1[j + 1][1], b->p1[j + 1][2], texU2, 1.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
 				}
+
+				if (!vao.empty())
+				{
+					// 4. Set Shader State
+					myShader.use();
+					myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+					myShader.setBool(g_uTexEnabledLoc, true);
+					myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Reset global tint to white
+
+					// 5. Attributes
+					glEnableVertexAttribArray(g_aPosLoc);
+					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+
+					glEnableVertexAttribArray(g_aTexLoc);
+					glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+					glEnableVertexAttribArray(g_aColorLoc);
+					glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+					// 6. Draw the quads in batches of 4
+					for (int i = 0; i < vao.size() / 4; i++) {
+						glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
+					}
+
+					// 7. Cleanup
+					glDisableVertexAttribArray(g_aTexLoc);
+					glDisableVertexAttribArray(g_aColorLoc);
+				}
+
 			}
 		}
 	}
