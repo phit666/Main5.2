@@ -547,19 +547,18 @@ namespace battleCastle
         }
     }
 
-    void    StartFog ( vec3_t Color )
+    void StartFog(vec3_t Color)
     {
-        glEnable ( GL_FOG );
-
-        glFogfv ( GL_FOG_COLOR, Color );
-        glFogf ( GL_FOG_MODE, GL_LINEAR );
-        glFogf ( GL_FOG_START, 2000.f );
-        glFogf ( GL_FOG_END,   2700.f );
+        myShader.setFloat(g_uFogEnabledLoc, 1.0f);
+        myShader.setFloat(g_uFogDensityLoc, 0.0f);
+        myShader.setVec4(g_uFogColorLoc, Color[0], Color[1], Color[2], 1.0f);
+        myShader.setFloat(g_uFogStartLoc, 2000.0f);
+        myShader.setFloat(g_uFogEndLoc, 2700.0f);
     }
 
-    void    EndFog ( void )
+    void EndFog()
     {
-        glDisable ( GL_FOG );
+        myShader.setFloat(g_uFogEnabledLoc, 0.0);
     }
 
     void    RenderBaseSmoke ( void )

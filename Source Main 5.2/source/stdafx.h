@@ -77,8 +77,9 @@
 #include <GLES2/gl2ext.h>
 #else
 #pragma warning( pop )
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include <SDL.h>
+#include "glad.h"
+#include <SDL_opengles2.h>
 #endif
 
 //patch

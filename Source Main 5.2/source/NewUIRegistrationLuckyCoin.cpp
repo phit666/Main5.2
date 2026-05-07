@@ -129,7 +129,7 @@ namespace SEASON3B
 		// 5. SHADER SYNC & RENDER
 		myShader.use();
 		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-		myShader.setBool(g_uFogEnabledLoc, false); // No fog for UI items
+		myShader.setFloat(g_uFogEnabledLoc, 0.0f); // No fog for UI items
 
 		SetItemRotation(true);
 		RenderItem3D(x, y, width, height, m_CoinItem->Type, m_CoinItem->Level, 0, 0, true);

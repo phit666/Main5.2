@@ -83,7 +83,7 @@
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)source\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);thirdparty\SDL2_image-2.6.3\include;thirdparty\SDL2_mixer-2.6.3\include;thirdparty\libevent_vs2019\include;thirdparty\SDL2_gfx-1.0.4\includes;thirdparty\SDL2_ttf-2.20.2\include;thirdparty\SDL2-2.26.5\include;thirdparty\libcurl\include;thirdparty\glm</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);thirdparty\SDL2_image-2.6.3\include;thirdparty\SDL2_mixer-2.6.3\include;thirdparty\libevent_vs2019\include;thirdparty\SDL2_gfx-1.0.4\includes;thirdparty\SDL2_ttf-2.20.2\include;thirdparty\SDL2-2.26.5\include;thirdparty\libcurl\include;thirdparty\glm;thirdparty\glad</IncludePath>
     <LibraryPath>$(LibraryPath);thirdparty\SDL2_image-2.6.3\lib\x86;thirdparty\SDL2_mixer-2.6.3\lib\x86;thirdparty\SDL2-2.26.5\lib\x86;thirdparty\SDL2_ttf-2.20.2\lib\x86;thirdparty\SDL2_gfx-1.0.4\lib\x86;thirdparty\libevent_vs2019\lib;thirdparty\libcurl\lib</LibraryPath>
     <ExecutablePath>$(VC_ExecutablePath_x86);$(CommonExecutablePath)</ExecutablePath>
   </PropertyGroup>
@@ -231,7 +231,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <RuntimeTypeInfo>
       </RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)Main.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -254,7 +254,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>glew32.lib;libcurl.lib;zlib.lib;crypt32.lib;Wininet.lib;libevent.lib;libevent_core.lib;SDL2.lib;SDL2main.lib;SDL2_gfx.lib;SDL2_ttf.lib;SDL2_mixer.lib;SDL2_image.lib;imm32.lib;vfw32.lib;dsound.lib;dxguid.lib;jpeglib.lib;opengl32.lib;glu32.lib;winmm.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;version.lib;glprocs.lib;Jpeglib.lib;ShareMemory.lib;wzAudio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl.lib;zlib.lib;crypt32.lib;Wininet.lib;libevent.lib;libevent_core.lib;SDL2.lib;SDL2main.lib;SDL2_gfx.lib;SDL2_ttf.lib;SDL2_mixer.lib;SDL2_image.lib;imm32.lib;vfw32.lib;dsound.lib;dxguid.lib;jpeglib.lib;winmm.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;version.lib;Jpeglib.lib;ShareMemory.lib;wzAudio.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(SolutionDir)\dependencies\lib;$(MU_SDK)\DXSDK\Lib;%(AdditionalLibraryDirectories);C:\Libraries\boost_1_75_0\stage\lib</AdditionalLibraryDirectories>
@@ -384,6 +384,7 @@
     <ClCompile Include="source\GameShop\ShopListManager\StringToken.cpp" />
     <ClCompile Include="source\GaugeBar.cpp" />
     <ClCompile Include="source\GIPetManager.cpp" />
+    <ClCompile Include="source\glad.c" />
     <ClCompile Include="source\GlobalBitmap.cpp" />
     <ClCompile Include="source\GM3rdChangeUp.cpp" />
     <ClCompile Include="source\GMAida.cpp" />
@@ -783,6 +784,7 @@
     <ClInclude Include="source\GameShop\ShopListManager\StringToken.h" />
     <ClInclude Include="source\GaugeBar.h" />
     <ClInclude Include="source\GIPetManager.h" />
+    <ClInclude Include="source\glad.h" />
     <ClInclude Include="source\GlobalBitmap.h" />
     <ClInclude Include="source\GlobalText.h" />
     <ClInclude Include="source\GM3rdChangeUp.h" />

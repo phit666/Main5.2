@@ -6380,11 +6380,32 @@ void RenderGuild(OBJECT *o,int Type)
 	}
 #endif //PBG_ADD_NEWCHAR_MONK
 	R_ConcatTransforms(o->BoneTransform[26],Matrix,ParentMatrix);
-	glTranslatef(o->Position[0],o->Position[1],o->Position[2]);
-	RenderPlane3D(5.f,7.f,ParentMatrix);
-	
-	glPopMatrix();
-    DisableCullFace();
+
+	// 1. glTranslatef(o->Position[0], o->Position[1], o->Position[2]);
+	// Apply translation to the top of our manual stack
+	modelViewStack.back() = glm::translate(modelViewStack.back(),
+		glm::vec3(o->Position[0], o->Position[1], o->Position[2]));
+
+	// 2. Sync the Shader (Required before drawing)
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+	myShader.setMat4(g_uMvLoc, modelViewStack.back()); // For Fog distance
+
+	// 3. RenderPlane3D(5.f, 7.f, ParentMatrix);
+	// Ensure this function uses glDrawArrays internally
+	RenderPlane3D(5.0f, 7.0f, ParentMatrix);
+
+	// 4. glPopMatrix();
+	if (modelViewStack.size() > 1) {
+		modelViewStack.pop_back();
+	}
+
+	// 5. IMPORTANT: Sync shader AFTER pop
+	// Re-sync so the next object doesn't use the 'o->Position' translation
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+
+	// 6. DisableCullFace();
+	glDisable(GL_CULL_FACE);
+
 }
 
 void RenderBrightEffect(BMD *b,int Bitmap,int Link,float Scale,vec3_t Light,OBJECT *o)

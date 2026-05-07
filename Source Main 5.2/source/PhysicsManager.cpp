@@ -900,10 +900,6 @@ void CPhysicsCloth::PackVertex(SpriteVertexFull& v, vec3_t* pvRenderPos, int xVe
 
 void CPhysicsCloth::RenderVertex( vec3_t *pvRenderPos, int xVertex, int yVertex)
 {
-	int iVertex = m_iNumHor * yVertex + xVertex;
-	vec3_t *pvPos = &pvRenderPos[iVertex];
-	glTexCoord2f( ( float)xVertex / ( float)( m_iNumHor - 1), min( 0.99f, ( float)yVertex / ( float)( m_iNumVer - 1)));
-	glVertex3f( ( *pvPos)[0], ( *pvPos)[1], ( *pvPos)[2]);
 }
 
 void CPhysicsCloth::RenderCollisions( void)

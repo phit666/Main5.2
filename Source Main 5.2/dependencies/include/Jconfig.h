@@ -52,8 +52,9 @@
 
 /* Define this if your system has an ANSI-conforming <stddef.h> file.
  */
-#define HAVE_STDDEF_H
-
+#ifndef HAVE_STDDEF_H
+#define HAVE_STDDEF_H   1
+#endif
 /* Define this if your system has an ANSI-conforming <stdlib.h> file.
  */
 #define HAVE_STDLIB_H

@@ -918,6 +918,8 @@ void BMD::BindLightMaps()
 			SmoothBitmap(lmp->Width,lmp->Height,lmp->Buffer);
 
 			glBindTexture(GL_TEXTURE_2D,i+IndexLightMap);
+			myShader.setFloat(g_uTexEnabledLoc, 1.0);
+
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_MODULATE);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -1972,142 +1974,12 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 //xx
 void BMD::RenderObjectBoundingBox()
 {
-	DisableTexture();
-	glPushMatrix();
-    glTranslatef(BodyOrigin[0],BodyOrigin[1],BodyOrigin[2]);
-	glScalef(BodyScale,BodyScale,BodyScale);
-	for(int i=0;i<NumBones;i++)
-	{
-		Bone_t *b = &Bones[i];
-		if(b->BoundingBox)
-		{
-			vec3_t BoundingVertices[8];
-			for(int j=0;j<8;j++)
-			{
-				VectorTransform(b->BoundingVertices[j],BoneTransform[i],BoundingVertices[j]);
-			}
-			
 
-			// face 1 - color 0.2
-			{
-				MU3DVertex quad[4];
-
-				quad[0] = { BoundingVertices[7][0], BoundingVertices[7][1], BoundingVertices[7][2], 1.f, 1.f };
-				quad[1] = { BoundingVertices[6][0], BoundingVertices[6][1], BoundingVertices[6][2], 1.f, 0.f };
-				quad[2] = { BoundingVertices[4][0], BoundingVertices[4][1], BoundingVertices[4][2], 0.f, 0.f };
-				quad[3] = { BoundingVertices[5][0], BoundingVertices[5][1], BoundingVertices[5][2], 0.f, 1.f };
-
-				MU_DrawBoundQuad3D(quad, 51, 51, 51, 255);
-			}
-
-			// face 2 - color 0.2
-			{
-				MU3DVertex quad[4];
-
-				quad[0] = { BoundingVertices[0][0], BoundingVertices[0][1], BoundingVertices[0][2], 0.f, 1.f };
-				quad[1] = { BoundingVertices[2][0], BoundingVertices[2][1], BoundingVertices[2][2], 1.f, 1.f };
-				quad[2] = { BoundingVertices[3][0], BoundingVertices[3][1], BoundingVertices[3][2], 1.f, 0.f };
-				quad[3] = { BoundingVertices[1][0], BoundingVertices[1][1], BoundingVertices[1][2], 0.f, 0.f };
-
-				MU_DrawBoundQuad3D(quad, 51, 51, 51, 255);
-			}
-
-			// face 3 - color 0.6
-			{
-				MU3DVertex quad[4];
-
-				quad[0] = { BoundingVertices[7][0], BoundingVertices[7][1], BoundingVertices[7][2], 1.f, 1.f };
-				quad[1] = { BoundingVertices[3][0], BoundingVertices[3][1], BoundingVertices[3][2], 1.f, 0.f };
-				quad[2] = { BoundingVertices[2][0], BoundingVertices[2][1], BoundingVertices[2][2], 0.f, 0.f };
-				quad[3] = { BoundingVertices[6][0], BoundingVertices[6][1], BoundingVertices[6][2], 0.f, 1.f };
-
-				MU_DrawBoundQuad3D(quad, 153, 153, 153, 255);
-			}
-
-			// face 4 - color 0.6
-			{
-				MU3DVertex quad[4];
-
-				quad[0] = { BoundingVertices[0][0], BoundingVertices[0][1], BoundingVertices[0][2], 0.f, 1.f };
-				quad[1] = { BoundingVertices[1][0], BoundingVertices[1][1], BoundingVertices[1][2], 1.f, 1.f };
-				quad[2] = { BoundingVertices[5][0], BoundingVertices[5][1], BoundingVertices[5][2], 1.f, 0.f };
-				quad[3] = { BoundingVertices[4][0], BoundingVertices[4][1], BoundingVertices[4][2], 0.f, 0.f };
-
-				MU_DrawBoundQuad3D(quad, 153, 153, 153, 255);
-			}
-
-			// face 5 - color 0.4
-			{
-				MU3DVertex quad[4];
-
-				quad[0] = { BoundingVertices[7][0], BoundingVertices[7][1], BoundingVertices[7][2], 1.f, 1.f };
-				quad[1] = { BoundingVertices[5][0], BoundingVertices[5][1], BoundingVertices[5][2], 1.f, 0.f };
-				quad[2] = { BoundingVertices[1][0], BoundingVertices[1][1], BoundingVertices[1][2], 0.f, 0.f };
-				quad[3] = { BoundingVertices[3][0], BoundingVertices[3][1], BoundingVertices[3][2], 0.f, 1.f };
-
-				MU_DrawBoundQuad3D(quad, 102, 102, 102, 255);
-			}
-
-			// face 6 - color 0.4
-			{
-				MU3DVertex quad[4];
-
-				quad[0] = { BoundingVertices[0][0], BoundingVertices[0][1], BoundingVertices[0][2], 0.f, 1.f };
-				quad[1] = { BoundingVertices[4][0], BoundingVertices[4][1], BoundingVertices[4][2], 1.f, 1.f };
-				quad[2] = { BoundingVertices[6][0], BoundingVertices[6][1], BoundingVertices[6][2], 1.f, 0.f };
-				quad[3] = { BoundingVertices[2][0], BoundingVertices[2][1], BoundingVertices[2][2], 0.f, 0.f };
-
-				MU_DrawBoundQuad3D(quad, 102, 102, 102, 255);
-			}
-
-			glColor4f(1.f, 1.f, 1.f, 1.f);
-
-		}
-	}
-	//glPopMatrix();
-	DisableAlphaBlend();
 }
 //xx
 void BMD::RenderBone(float (*BoneMatrix)[3][4])
 {
-	DisableTexture();
-	glDepthFunc(GL_ALWAYS);
-    glColor3f(0.8f,0.8f,0.2f);
-	for(int i=0;i<NumBones;i++)
-	{
-		Bone_t *b = &Bones[i];
-		if(!b->Dummy)
-		{
-          	BoneMatrix_t *bm = &b->BoneMatrixes[CurrentAction];
-			int Parent = b->Parent;
-			if(Parent > 0)
-			{
-				float Scale = 1.f;
-				float dx = bm->Position[CurrentAnimationFrame][0];
-				float dy = bm->Position[CurrentAnimationFrame][1];
-				float dz = bm->Position[CurrentAnimationFrame][2];
-				Scale = sqrtf(dx*dx+dy*dy+dz*dz)*0.05f;
-				vec3_t Position[3];
-				Vector(0.f,0.f,-Scale,Position[0]);
-				Vector(0.f,0.f, Scale,Position[1]);
-				Vector(0.f,0.f, 0.f  ,Position[2]);
-				vec3_t BoneVertices[3];
-				VectorTransform(Position[0],BoneMatrix[Parent],BoneVertices[0]);
-				VectorTransform(Position[1],BoneMatrix[Parent],BoneVertices[1]);
-				VectorTransform(Position[2],BoneMatrix[i     ],BoneVertices[2]);
-				for(int j=0;j<3;j++)
-				{
-     				VectorMA(BodyOrigin,BodyScale,BoneVertices[j],BoneVertices[j]);
-				}
 
-				MU_DrawLine3D(BoneVertices[0], BoneVertices[1]);
-				MU_DrawLine3D(BoneVertices[1], BoneVertices[2]);
-				MU_DrawLine3D(BoneVertices[2], BoneVertices[0]);
-
-			}
-		}
-	}
-	glDepthFunc(GL_LEQUAL);
 }
 
 void BlurShadow()

@@ -1204,6 +1204,9 @@
     <ClCompile Include="source\mu_gles2_matrix.cpp">
       <Filter>MU\Client\core</Filter>
     </ClCompile>
+    <ClCompile Include="source\glad.c">
+      <Filter>MU\Client\Compats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\BlackWin.h">
@@ -2305,6 +2308,9 @@
       <Filter>MU\Client\core</Filter>
     </ClInclude>
     <ClInclude Include="source\mu_gles_matrix.h">
+      <Filter>MU\Client\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glad.h">
       <Filter>MU\Client\core</Filter>
     </ClInclude>
   </ItemGroup>

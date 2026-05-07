@@ -306,7 +306,7 @@ void CSprite::Render()
 		if (!TextureEnable)
 		{
 			TextureEnable = true;
-			::glEnable(GL_TEXTURE_2D);
+			myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 		}
 
 		BindTexture(m_nTexID);
@@ -358,7 +358,7 @@ void CSprite::Render()
 		if (TextureEnable)
 		{
 			TextureEnable = false;
-			::glDisable(GL_TEXTURE_2D);
+			myShader.setFloat(g_uTexEnabledLoc, 0.0f);
 		}
 
 		// 1. Pack the positions into a simple array

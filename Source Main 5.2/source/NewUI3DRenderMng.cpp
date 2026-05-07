@@ -129,9 +129,8 @@ bool SEASON3B::CNewUI3DCamera::Render()
 	glClear(GL_DEPTH_BUFFER_BIT); // Ensure 3D objects don't clip with previous world depth
 
 	// 5. SHADER SYNC
-	myShader.use();
 	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-	myShader.setBool(g_uFogEnabledLoc, false); // No fog for UI 3D objects
+	myShader.setFloat(g_uFogEnabledLoc, 0.0f); // No fog for UI 3D objects
 
 	// 6. RENDER OBJECT LIST
 	for (auto li = m_list3DObjs.begin(); li != m_list3DObjs.end(); ++li)

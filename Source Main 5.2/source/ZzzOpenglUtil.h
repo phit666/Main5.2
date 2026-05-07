@@ -68,7 +68,6 @@ void DisableDepthMask();
 void DisableTexture( bool AlphaTest=false );
 void DisableAlphaBlend();
 void EnableLightMap();
-void EnableAlphaTest(bool DepthMake=true);
 void EnableAlphaBlend();
 void EnableAlphaBlendMinus();
 void EnableAlphaBlend2();

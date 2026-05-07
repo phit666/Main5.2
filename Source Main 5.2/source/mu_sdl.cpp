@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #define NK_IMPLEMENTATION
 #include "w_nuklear.h"
-#define NK_SDL_GL2_IMPLEMENTATION
-#include "nuklear_sdl_gl2.h"
+#define NK_SDL_GLES2_IMPLEMENTATION
+#include "nuklear_sdl_gles2.h"
 #include "mu_sdl.h"
 #include "WSclient.h"
 #include "wsctlc.h"
@@ -417,18 +417,25 @@ bool MU_InitSDL(int width, int height)
         return false;
 
     SDL_GL_MakeCurrent(gSDLWindow, gGLContext);
+
+    if (!gladLoadGLES2Loader((GLADloadproc)SDL_GL_GetProcAddress))
+    {
+        OutputDebugStringA("[SDL-DEBUG] gladLoadGLES2Loader failed.");
+        return false;
+    }
+
     SDL_GL_SetSwapInterval(1);
     SDL_StartTextInput();
 
 
-    glewExperimental = GL_TRUE;
+    /*glewExperimental = GL_TRUE;
     GLenum err = glewInit();
 
     if (err != GLEW_OK)
     {
         OutputDebugStringA("[SDL-DEBUG] glewInit failed");
         return false;
-    }
+    }*/
 
     OutputDebugStringA("[SDL-DEBUG] InitShader");
 

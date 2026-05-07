@@ -1,6 +1,6 @@
 #pragma once
-
-#include <SDL.h>
+//#include <SDL.h>
+//#include <SDL_opengles2.h>
 #include "w_nuklear.h"
 #include "mu_file.h"
 #include <event2/bufferevent.h>

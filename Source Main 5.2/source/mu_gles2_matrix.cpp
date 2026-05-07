@@ -7,8 +7,6 @@ Shader myShader;
 std::vector<glm::mat4> projectionStack = { glm::mat4(1.0f) };
 std::vector<glm::mat4> modelViewStack = { glm::mat4(1.0f) };
 
-
-
 MU_Mat4 g_muProjection;
 MU_Mat4 g_muView;
 
@@ -24,7 +22,8 @@ GLint g_aPosLoc = -1;
 GLint g_aTexLoc = -1;
 GLint g_aColorLoc = -1;
 // Global uniform locations (you should initialize these after linking your shader)
-GLint g_uTexEnabledLoc = -1, g_uAlphaTestLoc = -1, g_uFogEnabledLoc = -1, g_uFogColorLoc = -1, g_uFogDensityLoc = -1;
+GLint g_uTexEnabledLoc = -1, g_uAlphaTestLoc = -1, g_uFogEnabledLoc = -1, g_uFogColorLoc = -1, g_uFogDensityLoc = -1, g_uAlphaThresholdLoc = -1;
+GLint g_uFogStartLoc = -1, g_uFogEndLoc = -1;
 GLint g_uColorLoc = -1;
 GLint g_uMvLoc = -1;
 GLint g_uMvpLoc = -1;
@@ -116,7 +115,9 @@ GLuint CompileShader(GLenum type, const char* src)
     {
         char log[512];
         glGetShaderInfoLog(shader, 512, NULL, log);
-        OutputDebugStringA("[SDL-DEBUG] Shader compile error: %s");
+        char t[100] = { 0 };
+        sprintf(t, "[SDL-DEBUG] Shader compile error, type %d %s", (int)type, log);
+        OutputDebugStringA(t);
     }
 
     return shader;
@@ -125,73 +126,92 @@ GLuint CompileShader(GLenum type, const char* src)
 void InitShader()
 {
     const char* vertexShaderSource = R"(
-    attribute vec4 a_position;
-    attribute vec2 a_texCoord;
-    attribute vec4 a_color;
-    uniform mat4 u_mvpMatrix;    // Combined Projection * ModelView
-    uniform mat4 u_mvMatrix;     // ModelView only (for distance calc)
 
-    varying vec2 v_texCoord;
-    varying float v_dist;
-    varying vec4 v_color;
+precision mediump float;
 
-    void main() {
-        gl_Position = u_mvpMatrix * a_position;
-        v_texCoord = a_texCoord;
-        v_color = a_color;
-        // Calculate distance from camera for Fog
-        vec4 viewSpacePos = u_mvMatrix * a_position;
-        v_dist = length(viewSpacePos.xyz);        
-    }
+attribute vec4 a_position;
+attribute vec2 a_texCoord;
+attribute vec4 a_color;
+
+uniform mat4 u_mvpMatrix;
+uniform mat4 u_mvMatrix;
+
+varying vec2 v_texCoord;
+varying float v_dist;
+varying vec4 v_color;
+
+void main()
+{
+    gl_Position = u_mvpMatrix * a_position;
+
+    v_texCoord = a_texCoord;
+    v_color = a_color;
+
+    // Calculate distance from camera for fog
+    vec4 viewSpacePos = u_mvMatrix * a_position;
+    v_dist = length(viewSpacePos.xyz);
+}
+
 )";
 
     const char* fragmentShaderSource = R"(
-    precision mediump float;
 
-    varying vec2 v_texCoord;
-    varying float v_dist;
-    varying vec4 v_color; 
+precision mediump float;
 
-    uniform sampler2D u_texture;
-    uniform vec4 u_color;
-    
-    // Toggles
-    uniform bool u_hasTexture;       // New: Handle -1 texID logic
-    uniform bool u_alphaTestEnabled;
-    uniform bool u_fogEnabled;
+varying vec2 v_texCoord;
+varying float v_dist;
+varying vec4 v_color;
 
-    // Fog Params
-    uniform vec4 u_fogColor;
-    uniform float u_fogDensity;
+uniform sampler2D u_texture;
+uniform vec4 u_color;
 
-    void main() {
-        vec4 finalColor;
+// Toggles
+uniform float u_hasTexture;
+uniform float u_alphaTestEnabled;
+uniform float u_alphaThreshold;
+uniform float u_fogEnabled;
 
-        if (u_hasTexture) {
-            // Multiply sampled texture by vertex color AND global uniform
-            finalColor = texture2D(u_texture, v_texCoord) * v_color * u_color;
-        } else {
-            // Just vertex color multiplied by global uniform
-            finalColor = v_color * u_color;
-        }
+// Fog Params
+uniform vec4 u_fogColor;
+uniform float u_fogDensity;
+uniform float u_fogStart;
+uniform float u_fogEnd;
 
-        // Alpha Test (Replacement for glAlphaFunc)
-        if (u_alphaTestEnabled && finalColor.a <= 0.25) {
-            discard;
-        }
+void main()
+{
+    vec4 finalColor;
 
-        // Fog Calculation
-        if (u_fogEnabled) {
-            // Exponential fog: f = 1 / e^(dist * density)
-            float fogFactor = 1.0 / exp(v_dist * u_fogDensity);
-            fogFactor = clamp(fogFactor, 0.0, 1.0);
-            
-            // Mix finalColor with FogColor based on distance
-            gl_FragColor = vec4(mix(u_fogColor.rgb, finalColor.rgb, fogFactor), finalColor.a);
-        } else {
-            gl_FragColor = finalColor;
-        }
+    if (u_hasTexture > 0.5)
+    {
+        finalColor =
+            texture2D(u_texture, v_texCoord) *
+            v_color *
+            u_color;
     }
+    else
+    {
+        finalColor = v_color * u_color;
+    }
+
+    // Alpha Test
+    if (u_alphaTestEnabled > 0.5 &&
+        finalColor.a <= u_alphaThreshold)
+    {
+        discard;
+    }
+
+    if (u_fogEnabled > 0.5)
+    {
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // red = fog branch active
+    }
+    else
+    {
+        gl_FragColor = finalColor;
+    }
+
+
+}
+
 )";
 
 
@@ -229,10 +249,14 @@ void InitShader()
 
     g_uTexEnabledLoc = glGetUniformLocation(g_muProgram, "u_hasTexture");
     g_uAlphaTestLoc = glGetUniformLocation(g_muProgram, "u_alphaTestEnabled");
+    g_uAlphaThresholdLoc = glGetUniformLocation(g_muProgram, "u_alphaThreshold");
     g_uFogEnabledLoc = glGetUniformLocation(g_muProgram, "u_fogEnabled");
     g_uFogColorLoc = glGetUniformLocation(g_muProgram, "u_fogColor");
     g_uFogDensityLoc = glGetUniformLocation(g_muProgram, "u_fogDensity");
     g_uColorLoc = glGetUniformLocation(g_muProgram, "u_color");
+
+    g_uFogStartLoc = glGetUniformLocation(g_muProgram, "u_fogStart");
+    g_uFogEndLoc = glGetUniformLocation(g_muProgram, "u_fogEnd");
 
     g_aPosLoc = glGetAttribLocation(g_muProgram, "a_position");
     g_aTexLoc = glGetAttribLocation(g_muProgram, "a_texCoord");

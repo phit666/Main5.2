@@ -211,17 +211,6 @@ void GetOpenGLMatrix(float Matrix[3][4])
 
 void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 {
-	gluPerspective(Fov, Aspect, ZNear, ZFar);
-
-	ScreenCenterX = OpenglWindowX + OpenglWindowWidth / 2;
-	ScreenCenterY = OpenglWindowY + OpenglWindowHeight / 2;
-	ScreenCenterYFlip = WindowWidth - ScreenCenterY;
-
-	float AspectY = (float)(WindowHeight) / (float)(OpenglWindowHeight);
-	PerspectiveX = tanf(Fov * 0.5f * 3.141592f / 180.f) / (float)(OpenglWindowWidth / 2) * Aspect;
-	PerspectiveY = tanf(Fov * 0.5f * 3.141592f / 180.f) / (float)(OpenglWindowHeight / 2) * AspectY;
-	//PerspectiveX = (float)ScreenCenterX/tanf(Fov*0.5f*3.141592f/180.f)*Aspect;
-	//PerspectiveY = (float)ScreenCenterY/tanf(Fov*0.5f*3.141592f/180.f);
 }
 
 void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
@@ -310,7 +299,7 @@ void BindTexture(int tex) {
 		GLuint texID = (tex >= 0) ? Bitmaps[tex].TextureNumber : (GLuint)(-1 * tex);
 		glBindTexture(GL_TEXTURE_2D, texID);
 	}
-	myShader.setBool(g_uTexEnabledLoc, true);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
 }
 
 // GLES2 does not support glBegin/glEnd. TextureStream must be handled 
@@ -321,6 +310,8 @@ void BindTextureStream(int tex) {
 		// You must manually flush your vertex buffer here
 		// FlushBuffer(); 
 		glBindTexture(GL_TEXTURE_2D, Bitmaps[tex].TextureNumber);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
+
 	}
 }
 
@@ -378,14 +369,14 @@ void DisableTexture(bool AlphaTest)
 	// 2. Alpha Test Logic (Shader Uniform)
 	// We update the local boolean and the shader uniform
 	AlphaTestEnable = AlphaTest;
-	myShader.setBool(g_uAlphaTestLoc, AlphaTestEnable);
+	myShader.setFloat(g_uAlphaTestLoc, AlphaTest ? 1.0 : 0.0);
 
 	// 3. Texture Logic (Shader Uniform)
 	// We tell the shader to stop sampling by setting u_hasTexture to false
 	if (TextureEnable)
 	{
 		TextureEnable = false;
-		myShader.setBool(g_uTexEnabledLoc, false);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
 
 		// Note: You don't technically need to call glBindTexture(GL_TEXTURE_2D, 0),
 		// because the shader if(u_hasTexture) check will bypass the sampler anyway.
@@ -394,16 +385,16 @@ void DisableTexture(bool AlphaTest)
 
 void SetShaderTexture(bool enable) {
 	TextureEnable = enable;
-	myShader.setBool(g_uTexEnabledLoc, enable);
+	myShader.setFloat(g_uTexEnabledLoc, enable ? 1.0f : 0.0f);
 }
 
 void SetShaderAlphaTest(bool enable) {
 	AlphaTestEnable = enable;
-	myShader.setBool(g_uAlphaTestLoc, enable);
+	myShader.setFloat(g_uAlphaTestLoc, enable ? 1.0f : 0.0f);
 }
 
 void SetShaderFog(bool enable) {
-	myShader.setBool(g_uFogEnabledLoc, enable);
+	myShader.setFloat(g_uFogEnabledLoc, enable ? 1.0f : 0.0f);
 }
 
 void DisableAlphaBlend() {
@@ -457,9 +448,9 @@ void EnableAlphaBlendMinus() // Type 4
 	DisableDepthMask();
 
 	// Shader Uniform Toggles
-	myShader.setBool(g_uAlphaTestLoc, false);
-	myShader.setBool(g_uTexEnabledLoc, true);
-	myShader.setBool(g_uFogEnabledLoc, FogEnable);
+	myShader.setFloat(g_uAlphaTestLoc, 0.0);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
+	myShader.setFloat(g_uFogEnabledLoc, FogEnable ? 1.0 : 0.0);
 }
 
 void EnableAlphaBlend2() // Type 5
@@ -473,9 +464,9 @@ void EnableAlphaBlend2() // Type 5
 	DisableCullFace();
 	DisableDepthMask();
 
-	myShader.setBool(g_uAlphaTestLoc, false);
-	myShader.setBool(g_uTexEnabledLoc, true);
-	myShader.setBool(g_uFogEnabledLoc, FogEnable);
+	myShader.setFloat(g_uAlphaTestLoc, 0.0);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
+	myShader.setFloat(g_uFogEnabledLoc, FogEnable ? 1.0 : 0.0);
 }
 
 void EnableAlphaBlend3() // Type 6 (Standard Transparency)
@@ -489,9 +480,9 @@ void EnableAlphaBlend3() // Type 6 (Standard Transparency)
 	DisableCullFace();
 	DisableDepthMask();
 
-	myShader.setBool(g_uAlphaTestLoc, false);
-	myShader.setBool(g_uTexEnabledLoc, true);
-	myShader.setBool(g_uFogEnabledLoc, FogEnable);
+	myShader.setFloat(g_uAlphaTestLoc, 0.0);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
+	myShader.setFloat(g_uFogEnabledLoc, FogEnable ? 1.0 : 0.0);
 }
 
 void EnableAlphaBlend4() // Type 7
@@ -505,9 +496,9 @@ void EnableAlphaBlend4() // Type 7
 	DisableCullFace();
 	DisableDepthMask();
 
-	myShader.setBool(g_uAlphaTestLoc, false);
-	myShader.setBool(g_uTexEnabledLoc, true);
-	myShader.setBool(g_uFogEnabledLoc, FogEnable);
+	myShader.setFloat(g_uAlphaTestLoc, 0.0);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
+	myShader.setFloat(g_uFogEnabledLoc, FogEnable ? 1.0 : 0.0);
 }
 
 
@@ -545,7 +536,7 @@ float ConvertY(float y)
 
 void BeginOpengl(int x, int y, int Width, int Height)
 {
-	// Scaling logic remains identical
+	// Scaling logic
 	x = x * WindowWidth / 640;
 	y = y * WindowHeight / 480;
 	Width = Width * WindowWidth / 640;
@@ -553,18 +544,18 @@ void BeginOpengl(int x, int y, int Width, int Height)
 
 	myShader.use();
 
-	// --- PROJECTION REPLACEMENT ---
+	// --- PROJECTION UPDATE ---
 	projectionStack.push_back(projectionStack.back());
 	glViewport(x, y, Width, Height);
 
 	float aspect = (float)Width / (float)Height;
-	// gluPerspective replacement
+	// Set perspective with far plane slightly extended for legacy compatibility
 	projectionStack.back() = glm::perspective(glm::radians(CameraFOV), aspect, CameraViewNear, CameraViewFar * 1.4f);
 
-	// --- MODELVIEW REPLACEMENT ---
-	modelViewStack.push_back(glm::mat4(1.0f)); // glLoadIdentity
+	// --- MODELVIEW UPDATE ---
+	modelViewStack.push_back(glm::mat4(1.0f)); // Equivalent to glLoadIdentity
 
-	// Applying rotations and translations (GLM matches GL order)
+	// Build the View Matrix (Applying rotations and translations)
 	modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[1]), glm::vec3(0, 1, 0));
 	if (!CameraTopViewEnable)
 		modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[0]), glm::vec3(1, 0, 0));
@@ -572,37 +563,66 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[2]), glm::vec3(0, 0, 1));
 	modelViewStack.back() = glm::translate(modelViewStack.back(), glm::vec3(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]));
 
+	// --- CRITICAL MATRIX SYNC ---
+	// Sync combined MVP (Projection * ModelView)
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+	// Sync MV matrix (for distance-based Fog calculations in the shader)
+	myShader.setMat4(g_uMvLoc, modelViewStack.back());
+
 	// --- RENDER STATES ---
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glDepthMask(GL_TRUE);
-	// NUKLEAR
-	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_SCISSOR_TEST); // Ensure Nuklear's scissor doesn't leak
 
-    AlphaTestEnable = false;
-	TextureEnable   = true;
-	DepthTestEnable = true;
-	CullFaceEnable  = true;
-	DepthMaskEnable = true;
+	// --- TOGGLE SYNC (Using Floats for Reliability) ---
+	AlphaTestEnable = false;
+	TextureEnable = true;
 
-	// Alpha Test & Fog: These no longer use glEnable. 
-	// You must set uniform variables that your shader will read.
-	myShader.setBool(g_uFogEnabledLoc, FogEnable);
-	myShader.setBool(g_uAlphaTestLoc, AlphaTestEnable);
-	myShader.setBool(g_uTexEnabledLoc, TextureEnable);
-	myShader.setVec4(g_uFogColorLoc, FogColor[0], FogColor[1], FogColor[2], FogColor[3]);
-	myShader.setFloat(g_uFogDensityLoc, FogDensity);
+	// Use setFloat or your updated setBool (sending 1.0f or 0.0f) 
+	// to avoid the GLES2 "Ghost Boolean" bug
+	myShader.setFloat(g_uAlphaTestLoc, AlphaTestEnable ? 1.0f : 0.0f);
+	myShader.setFloat(g_uTexEnabledLoc, TextureEnable ? 1.0f : 0.0f);
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	// GetOpenGLMatrix Replacement: Just copy the current top of the stack
-	//memcpy(CameraMatrix, &modelViewStack.back()[0][0], sizeof(float) * 16);
-	GetOpenGLMatrix(CameraMatrix);
+	// --- FOG SYNC ---
+	if (FogEnable)
+	{
+		// Set u_fogEnabled to 1.0 (True)
+		myShader.setFloat(g_uFogEnabledLoc, 1.0f);
+		myShader.setFloat(g_uFogDensityLoc, FogDensity);
+		myShader.setVec4(g_uFogColorLoc, FogColor[0], FogColor[1], FogColor[2], FogColor[3]);
+	}
+	else
+	{
+		// Set u_fogEnabled to 0.0 (False)
+		myShader.setFloat(g_uFogEnabledLoc, 0.0f);
+		myShader.setFloat(g_uFogDensityLoc, 0.0f);
+	}
+
+	// --- LEGACY SYNC ---
+	GetOpenGLMatrix(CameraMatrix); // Snapshot for legacy mouse logic
+	glAlphaFunc(0, 0.25f);           // Set threshold for Alpha Testing
+
+	//char t[100] = { 0 };
+	//float tval;
+	//glGetUniformfv(g_muProgram, g_uFogColorLoc, &tval);
+	//sprintf(t, "[SDL-DEBUG-0] Fog:%f (%u)", tval, g_uFogColorLoc);
+	//OutputDebugStringA(t);
 }
+
 
 void EndOpengl()
 {
 	if (modelViewStack.size() > 1) modelViewStack.pop_back();
 	if (projectionStack.size() > 1) projectionStack.pop_back();
+
+	float tval;
+	char t[100] = { 0 };
+	//glGetUniformfv(g_muProgram, g_uFogColorLoc, &tval);
+	//sprintf(t, "[SDL-DEBUG-1] Fog:%f (%u)", tval, g_uFogColorLoc);
+	//OutputDebugStringA(t);
 }
 
 void UpdateMousePositionn()
@@ -1204,21 +1224,30 @@ float RenderNumber2D(float x, float y, int Num, float Width, float Height)
 }
 
 void BeginBitmap() {
-	// 1. Replacement for glMatrixMode(GL_PROJECTION) + glPushMatrix()
+
 	projectionStack.push_back(projectionStack.back());
+	modelViewStack.push_back(modelViewStack.back());
 
-	// 2. Replacement for glViewport + gluPerspective + gluOrtho2D
-	glViewport(0, 0, WindowWidth, WindowHeight);
-
-	// Instead of glLoadIdentity + gluPerspective + glLoadIdentity + gluOrtho2D
-	// we just calculate the final projection matrix we want:
+	// BOTTOM-UP Ortho: 0.0 is Bottom, WindowHeight is Top
 	projectionStack.back() = glm::ortho(0.0f, (float)WindowWidth, 0.0f, (float)WindowHeight, -1.0f, 1.0f);
+	modelViewStack.back() = glm::mat4(1.0f);
 
-	// 3. Replacement for glMatrixMode(GL_MODELVIEW) + glPushMatrix() + glLoadIdentity
-	modelViewStack.push_back(glm::mat4(1.0f));
+	glViewport(0, 0, WindowWidth, WindowHeight);
+	glDisable(GL_DEPTH_TEST);
 
-	glDisable(GL_DEPTH_TEST); // Replacement for DisableDepthTest()
+	// Sync Shader
+	myShader.use();
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+	myShader.setFloat(g_uFogEnabledLoc, 0.0f);
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	//char t[100] = { 0 };
+	//float tval;
+	//glGetUniformfv(g_muProgram, g_uFogColorLoc, &tval);
+	//sprintf(t, "[SDL-DEBUG-2] Fog:%f (%u)", tval, g_uFogColorLoc);
+	//OutputDebugStringA(t);
 }
+
 
 void EndBitmap() {
 	// 4. Replacement for glPopMatrix() on ModelView
@@ -1228,6 +1257,16 @@ void EndBitmap() {
 	if (projectionStack.size() > 1) projectionStack.pop_back();
 
 	glEnable(GL_DEPTH_TEST);
+
+	char t[100] = { 0 };
+	GLint currentProgram = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+
+	sprintf(t, "[SDL-DEBUG] Current Program = %d, myProgram = %d",
+		currentProgram,
+		g_muProgram);
+
+	OutputDebugStringA(t);
 }
 
 void RenderColor(float x, float y, float Width, float Height, float Alpha, int Flag)
@@ -1271,7 +1310,7 @@ void EndRenderColor()
 {
 	// Reset shader to white and re-enable texture sampling logic
 	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-	myShader.setBool(g_uTexEnabledLoc, true);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
 }
 //???
 void RenderColorBitmap(int Texture, float x, float y, float Width, float Height, float u, float v, float uWidth, float vHeight, unsigned int color)

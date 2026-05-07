@@ -747,6 +747,8 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 
 		glGenTextures(1, &(pNewBitmap->TextureNumber));
 		glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
+
 
 		glTexImage2D(
 			GL_TEXTURE_2D,
@@ -887,6 +889,7 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 
 	glGenTextures(1, &(pNewBitmap->TextureNumber));
 	glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
 
 	glTexImage2D(
 		GL_TEXTURE_2D,

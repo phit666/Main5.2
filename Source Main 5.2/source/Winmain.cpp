@@ -183,6 +183,7 @@ void CheckHack( void)
 
 GLvoid KillGLWindow(GLvoid)								
 {
+#ifndef USE_GLES2_PORT
 	if (g_hRC)
 	{
 		if (!wglMakeCurrent(NULL,NULL))
@@ -206,7 +207,7 @@ GLvoid KillGLWindow(GLvoid)
 		MessageBox(NULL,"OpenGL Release Error.","Error",MB_OK | MB_ICONINFORMATION);
 		g_hDC=NULL;
 	}
-
+#endif
 #if (defined WINDOWMODE)
 	if (g_bUseWindowMode == FALSE)
 	{
@@ -845,6 +846,7 @@ LONG FAR PASCAL WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 
 bool CreateOpenglWindow()
 {
+#ifndef USE_GLES2_PORT
     PIXELFORMATDESCRIPTOR pfd;
 
     memset(&pfd, 0, sizeof(pfd));
@@ -900,6 +902,7 @@ bool CreateOpenglWindow()
 	ShowWindow(g_hWnd,SW_SHOW);
 	SetForegroundWindow(g_hWnd);
 	SetFocus(g_hWnd);
+#endif
 	return true;
 }
 
@@ -1696,8 +1699,8 @@ int main(int argc, char* argv[])
 
 	// 2. Set Default Uniforms (So the first draw isn't invisible)
 	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default White
-	myShader.setBool(g_uTexEnabledLoc, true);              // Default Textures On
-	myShader.setBool(g_uFogEnabledLoc, false);             // Default Fog Off
+	myShader.setFloat(g_uTexEnabledLoc, 1.0f);              // Default Textures On
+	myShader.setFloat(g_uFogEnabledLoc, 0.0f);             // Default Fog Off
 	myShader.setFloat(g_uFogDensityLoc, 0.001f);
 
 	// 3. Initialize your Matrix Stacks with Identity
@@ -1943,6 +1946,7 @@ void MU_ProcessSDLEvents()
 			{
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 			case SDL_WINDOWEVENT_RESIZED:
+			{
 				WindowWidth = e.window.data1;
 				WindowHeight = e.window.data2;
 
@@ -1964,7 +1968,7 @@ void MU_ProcessSDLEvents()
 				// 5. Update Shader Uniforms
 				myShader.use();
 				myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-
+			}
 				
 				break;
 

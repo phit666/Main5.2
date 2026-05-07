@@ -551,7 +551,7 @@ void RenderInfomation3D()
 		// 4. SHADER SYNC (Crucial for GLES2)
 		myShader.use();
 		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-		myShader.setBool(g_uFogEnabledLoc, false); // UI items usually don't have fog
+		myShader.setFloat(g_uFogEnabledLoc, 0.0f); // UI items usually don't have fog
 
 		// 5. COORDINATE LOGIC
 		float Width = 40.0f;
@@ -1370,25 +1370,23 @@ bool NewRenderLogInScene(HDC hDC)
 		g_fMULogoAlpha += 0.02f;
 		if (g_fMULogoAlpha > 10.0f) g_fMULogoAlpha = 10.0f;
 
-		if (CCameraMove::GetInstancePtr()->IsTourMode())
-		{
-			EnableAlphaBlend(); // additive
-			RenderBitmap(BITMAP_LOG_IN + 17,
-				320.0f - 128.0f * 0.8f,
-				25.0f,
-				256.0f * 0.8f,
-				128.0f * 0.8f);
-
-
-			EnableAlphaTest(); // or normal alpha blend
-			RenderBitmap(BITMAP_LOG_IN + 16,
-				320.0f - 128.0f * 0.8f,
-				25.0f,
-				256.0f * 0.8f,
-				128.0f * 0.8f);
-
-		}
-
+		EnableAlphaBlend();
+		glColor4f(g_fMULogoAlpha - 0.3f, g_fMULogoAlpha - 0.3f, g_fMULogoAlpha - 0.3f, g_fMULogoAlpha - 0.3f);
+#ifdef PBG_ADD_MUBLUE_LOGO
+		BITMAP_t* pImage = NULL;
+		pImage = &Bitmaps[BITMAP_LOG_IN + 17];
+		RenderBitmap(BITMAP_LOG_IN + 17, 320.0f - 432 * 0.4f * 0.5f, 25.0f, 432 * 0.4f, 384 * 0.4f, 0, 0, (432 - 0.5f) / pImage->Width, (384 - 0.5f) / pImage->Height);
+#else //PBG_ADD_MUBLUE_LOGO
+		RenderBitmap(BITMAP_LOG_IN + 17, 320.0f - 128.0f * 0.8f, 25.0f, 256.0f * 0.8f, 128.0f * 0.8f);
+#endif //PBG_ADD_MUBLUE_LOGO
+		EnableAlphaTest();
+		glColor4f(g_fMULogoAlpha, g_fMULogoAlpha, g_fMULogoAlpha, g_fMULogoAlpha);
+#ifdef PBG_ADD_MUBLUE_LOGO
+		pImage = &Bitmaps[BITMAP_LOG_IN + 16];
+		RenderBitmap(BITMAP_LOG_IN + 16, 320.0f - 432 * 0.4f * 0.5f, 25.0f, 432 * 0.4f, 384 * 0.4f, 0, 0, 432 / pImage->Width, 384 / pImage->Height);
+#else //PBG_ADD_MUBLUE_LOGO
+		RenderBitmap(BITMAP_LOG_IN + 16, 320.0f - 128.0f * 0.8f, 25.0f, 256.0f * 0.8f, 128.0f * 0.8f);
+#endif //PBG_ADD_MUBLUE_LOGO
 	}
 
 	SIZE Size;
@@ -1485,9 +1483,7 @@ void LoadingScene(HDC hDC)
 	::glFlush();
 
 #ifdef MU_USE_SDL
-	//CachTexture = -999999;
-	nk_sdl_render(NK_ANTI_ALIASING_ON);
-	//CachTexture = -999999;
+	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);
@@ -2074,7 +2070,8 @@ bool RenderMainScene()
         }
         else
         {
-            glDisable ( GL_FOG );
+            //glDisable ( GL_FOG );
+			myShader.setFloat(g_uFogEnabledLoc, 0.0f);
         }
     }
 
@@ -2427,10 +2424,7 @@ void MainScene(HDC hDC)
 	{
 		glFlush();
 #ifdef MU_USE_SDL
-
-		//CachTexture = -999999;
-		nk_sdl_render(NK_ANTI_ALIASING_ON);
-		//CachTexture = -999999;
+		//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 		SDL_GL_SwapWindow(gSDLWindow);
 #else
 		::SwapBuffers(hDC);

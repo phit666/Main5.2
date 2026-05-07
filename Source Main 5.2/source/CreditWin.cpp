@@ -170,7 +170,7 @@ void CCreditWin::UpdateWhileActive(double dDeltaTick)
 
 void CCreditWin::RenderControls()
 {
-	::glDisable(GL_ALPHA_TEST);
+	EnableAlphaTest(false);
 
 	for (int i = 0; i <= CRW_SPR_LOGO; ++i)
 		m_aSpr[i].Render();
@@ -219,7 +219,7 @@ void CCreditWin::RenderControls()
 	for (int i = CRW_SPR_TXT_HIDE0; i <= CRW_SPR_TXT_HIDE2; ++i)
 		m_aSpr[i].Render();
 
-	glEnable(GL_ALPHA_TEST);
+	EnableAlphaTest(true);
 
 	CWin::RenderButtons();
 }

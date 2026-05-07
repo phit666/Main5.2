@@ -526,33 +526,54 @@ void RenderLeaves()
 			}
 			else
 			{
-				glPushMatrix();
-				glTranslatef(o->Position[0],o->Position[1],o->Position[2]);
+
+				// 1. glPushMatrix();
+				modelViewStack.push_back(modelViewStack.back());
+
+				// 2. glTranslatef(o->Position[0], o->Position[1], o->Position[2]);
+				modelViewStack.back() = glm::translate(modelViewStack.back(),
+					glm::vec3(o->Position[0], o->Position[1], o->Position[2]));
+
+				// 3. Sync the Shader for the position change
+				myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+
+				// 4. Matrix Math (AngleMatrix remains CPU-side)
 				float Matrix[3][4];
-				AngleMatrix(o->Angle,Matrix);
-                
-                if ( gMapManager.InChaosCastle()==true )
-                    RenderPlane3D ( o->TurningForce[0], o->TurningForce[1], Matrix );
-                else
-                {
-				    if ( o->Type==BITMAP_RAIN )
+				AngleMatrix(o->Angle, Matrix);
+
+				// 5. Render Logic
+				if (gMapManager.InChaosCastle())
+				{
+					RenderPlane3D(o->TurningForce[0], o->TurningForce[1], Matrix);
+				}
+				else
+				{
+					if (o->Type == BITMAP_RAIN)
 					{
-						if(gMapManager.WorldActive == WD_34CRYWOLF_1ST)
-						{
-							if(weather == 1)
-								RenderPlane3D ( 1.f, 20.f, Matrix );
-						}
-						else
-							RenderPlane3D ( 1.f, 20.f, Matrix );
+						if (gMapManager.WorldActive == WD_34CRYWOLF_1ST && weather == 1)
+							RenderPlane3D(1.f, 20.f, Matrix);
+						else if (gMapManager.WorldActive != WD_34CRYWOLF_1ST)
+							RenderPlane3D(1.f, 20.f, Matrix);
 					}
-                    else if ( o->Type==BITMAP_FIRE_SNUFF )
-					    RenderPlane3D ( o->Scale*2.f, o->Scale*4.f, Matrix );
-				    else
+					else if (o->Type == BITMAP_FIRE_SNUFF)
 					{
-					    RenderPlane3D ( 3.f, 3.f, Matrix );
+						RenderPlane3D(o->Scale * 2.f, o->Scale * 4.f, Matrix);
 					}
-                }
-				glPopMatrix();
+					else
+					{
+						RenderPlane3D(3.f, 3.f, Matrix);
+					}
+				}
+
+				// 6. glPopMatrix();
+				if (modelViewStack.size() > 1) {
+					modelViewStack.pop_back();
+				}
+
+				// 7. Re-sync Shader with the restored matrix
+				myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+
+
 			}
 		}
 	}

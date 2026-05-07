@@ -150,25 +150,37 @@ void CSideHair::RenderLine( vec3_t v1, vec3_t v2, vec3_t c1, vec3_t c2)
 	// 1. Pack data into the 3D vertex struct
 	SpriteVertex3D vao[4];
 
-	// Pre-calculate common texture Y offsets
-	float v0 = 0.0f + fTextureMove + fTextureV;
-	float v1 = 1.0f - fTextureMove + fTextureV;
+	// Using unique names for texture coordinates to avoid conflict with parameter v1/v2
+	float texV_Start = 0.0f + fTextureMove + fTextureV;
+	float texV_End = 1.0f - fTextureMove + fTextureV;
 
 	// Vertex 0
-	vao[0].x = p1[0] - vOrtho[0]; vao[0].y = p1[1] - vOrtho[1]; vao[0].z = p1[2] - vOrtho[2];
-	vao[0].u = 0.0f; vao[0].v = v0;
+	vao[0].x = p1[0] - vOrtho[0];
+	vao[0].y = p1[1] - vOrtho[1];
+	vao[0].z = p1[2] - vOrtho[2];
+	vao[0].u = 0.0f;
+	vao[0].v = texV_Start;
 
 	// Vertex 1
-	vao[1].x = p2[0] - vOrtho[0]; vao[1].y = p2[1] - vOrtho[1]; vao[1].z = p2[2] - vOrtho[2];
-	vao[1].u = 0.0f; vao[1].v = v1;
+	vao[1].x = p2[0] - vOrtho[0];
+	vao[1].y = p2[1] - vOrtho[1];
+	vao[1].z = p2[2] - vOrtho[2];
+	vao[1].u = 0.0f;
+	vao[1].v = texV_End;
 
 	// Vertex 2
-	vao[2].x = p2[0] + vOrtho[0]; vao[2].y = p2[1] + vOrtho[1]; vao[2].z = p2[2] + vOrtho[2];
-	vao[2].u = 1.0f; vao[2].v = v1;
+	vao[2].x = p2[0] + vOrtho[0];
+	vao[2].y = p2[1] + vOrtho[1];
+	vao[2].z = p2[2] + vOrtho[2];
+	vao[2].u = 1.0f;
+	vao[2].v = texV_End;
 
 	// Vertex 3
-	vao[3].x = p1[0] + vOrtho[0]; vao[3].y = p1[1] + vOrtho[1]; vao[3].z = p1[2] + vOrtho[2];
-	vao[3].u = 1.0f; vao[3].v = v0;
+	vao[3].x = p1[0] + vOrtho[0];
+	vao[3].y = p1[1] + vOrtho[1];
+	vao[3].z = p1[2] + vOrtho[2];
+	vao[3].u = 1.0f;
+	vao[3].v = texV_Start;
 
 	// 2. Set Attributes
 	glEnableVertexAttribArray(g_aPosLoc);
@@ -177,15 +189,10 @@ void CSideHair::RenderLine( vec3_t v1, vec3_t v2, vec3_t c1, vec3_t c2)
 	glEnableVertexAttribArray(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
-	// Ensure constant color is set (usually white for these effects)
-	glDisableVertexAttribArray(g_aColorLoc);
-	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-
-	// 3. Draw
+	// 3. Draw (Using the persistent shader state from BeginOpengl)
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	// 4. Cleanup
 	glDisableVertexAttribArray(g_aTexLoc);
 
-	//g_OpenglLib.Enable(GL_CULL_FACE);
 }

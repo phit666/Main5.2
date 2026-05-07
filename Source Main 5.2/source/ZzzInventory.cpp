@@ -7400,7 +7400,9 @@ void RenderItemName(int i,OBJECT *o,int ItemLevel,int ItemOption,int ItemExtOpti
 	}
 
 	GLfloat fCurColor[4] = { 1.f, 1.f, 1.f, 0.0f };
+
 	MU_glGetColor4(GL_CURRENT_COLOR, fCurColor);
+
 	if(fCurColor[0] < 0.9f || fCurColor[1] < 0.9f || fCurColor[2] < 0.9f)
 		g_pRenderText->SetTextColor(fCurColor[0]*255, fCurColor[1]*255, fCurColor[2]*255, 255);
 	
@@ -11757,6 +11759,7 @@ void CreateGuildMark( int nMarkIndex, bool blend )
 	}
 
 	glBindTexture(GL_TEXTURE_2D,b->TextureNumber);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
 
     glTexImage2D(GL_TEXTURE_2D,0,b->Components,Width,Height,0,GL_RGBA,GL_UNSIGNED_BYTE,b->Buffer);
 }
@@ -11839,6 +11842,7 @@ void CreateCastleMark ( int Type, BYTE* buffer, bool blend )
 		}
 	}
     glBindTexture(GL_TEXTURE_2D,b->TextureNumber);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
 
     glTexImage2D(GL_TEXTURE_2D,0, MU_GL_RGB_INTERNAL,Width,Height,0,GL_RGBA,GL_UNSIGNED_BYTE,b->Buffer);
 }
@@ -11894,6 +11898,7 @@ void RenderGuildColor(float x,float y,int SizeX,int SizeY,int Index)
 	}
 
 	glBindTexture(GL_TEXTURE_2D,b->TextureNumber);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
 
     glTexImage2D(GL_TEXTURE_2D,0,b->Components,Width,Height,0,GL_RGBA,GL_UNSIGNED_BYTE,b->Buffer);
     RenderBitmap(BITMAP_GUILD,x,y,(float)SizeX,(float)SizeY);

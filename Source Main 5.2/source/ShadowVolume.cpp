@@ -23,7 +23,7 @@ void InsertShadowVolume( CShadowVolume *psv)
 
 void RenderShadowVolumesAsFrame( void)
 {
-	glPolygonMode( GL_FRONT, GL_LINE);
+	/*glPolygonMode(GL_FRONT, GL_LINE);
 	glDepthMask( true);
 	DisableAlphaBlend();
 	DisableTexture();
@@ -38,7 +38,7 @@ void RenderShadowVolumesAsFrame( void)
 		delete psv;
 	}
 
-	glPolygonMode( GL_FRONT, GL_FILL);
+	glPolygonMode( GL_FRONT, GL_FILL);*/
 }
 
 void ShadeWithShadowVolumes( void)

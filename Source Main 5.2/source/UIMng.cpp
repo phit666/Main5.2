@@ -177,9 +177,7 @@ void CUIMng::RenderTitleSceneUI(HDC hDC, DWORD dwNow, DWORD dwTotal)
 	::glFlush();
 
 #ifdef MU_USE_SDL
-	//CachTexture = -999999;
-	nk_sdl_render(NK_ANTI_ALIASING_ON);
-	//CachTexture = -999999;
+	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);

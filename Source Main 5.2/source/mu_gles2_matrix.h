@@ -2,8 +2,11 @@
 #ifndef _WIN32
 #include <GLES2/gl2.h>
 #else
-#include <GL/glew.h>
-#include <GL/gl.h>
+//#include <GL/glew.h>
+//#include <GL/gl.h>
+#include <SDL.h>
+#include "glad.h"
+#include <SDL_opengles2.h>
 #endif
 #include <math.h>
 #include <string.h>
@@ -151,18 +154,22 @@ class Shader {
 public:
     GLuint ID; // Your linked Program ID
 
-    void use() { glUseProgram(ID); }
+    void use() {  }
 
     void setBool(GLuint iID, bool value) const {
+        glUseProgram(ID);
         glUniform1i(iID, (int)value);
     }
     void setFloat(GLuint iID, float value) const {
+        glUseProgram(ID);
         glUniform1f(iID, value);
     }
     void setVec4(GLuint iID, float x, float y, float z, float w) const {
+        glUseProgram(ID);
         glUniform4f(iID, x, y, z, w);
     }
     void setMat4(GLuint iID, const glm::mat4& mat) const {
+        glUseProgram(ID);
         glUniformMatrix4fv(iID, 1, GL_FALSE, glm::value_ptr(mat));
     }
 };
@@ -193,13 +200,14 @@ extern GLint g_aTexLoc;
 extern GLint g_aColorLoc;
 extern GLint g_uTexEnabledLoc;
 extern GLint g_uAlphaTestLoc;
+extern GLint g_uAlphaThresholdLoc;
 extern GLint g_uFogEnabledLoc;
 extern GLint g_uFogColorLoc;
 extern GLint g_uFogDensityLoc;
 extern GLint g_uColorLoc;
 extern GLint g_uMvpLoc; // projection * model view
 extern GLint g_uMvLoc; // model view only
-
+extern GLint g_uFogStartLoc, g_uFogEndLoc;
 extern Shader myShader;
 extern std::vector<glm::mat4> projectionStack;
 extern std::vector<glm::mat4> modelViewStack;

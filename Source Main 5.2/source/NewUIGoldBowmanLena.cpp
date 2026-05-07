@@ -282,7 +282,7 @@ void CNewUIGoldBowmanLena::Render3D()
 	// 5. SHADER SYNC
 	myShader.use();
 	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-	myShader.setBool(g_uFogEnabledLoc, false); // No fog for UI elements
+	myShader.setFloat(g_uFogEnabledLoc, 0.0f); // No fog for UI elements
 
 	// 6. RENDER ITEMS
 	int Type = ITEM_POTION + 21;

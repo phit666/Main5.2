@@ -2788,6 +2788,8 @@ void CUIRenderTextOriginal::UploadText(int sx, int sy, int Width, int Height)
 
 		// 2. Perform the bind and upload
 		glBindTexture(GL_TEXTURE_2D, b->TextureNumber);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
+
 
 		// Note: In GLES2, internalFormat and format must usually match 
 		// for GL_UNSIGNED_BYTE data.
@@ -3678,6 +3680,7 @@ void CUITextInputBox::UploadText(int sx,int sy,int Width,int Height)
 	{
 		glBindTexture(GL_TEXTURE_2D,b->TextureNumber);
 		glTexImage2D(GL_TEXTURE_2D,0,b->Components,(int)b->Width,(int)b->Height,0,GL_RGBA,GL_UNSIGNED_BYTE,b->Buffer);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
 
 		float TextureUWidth = (Width+0.01f)/b->Width;
 		float TextureVHeight = (Height+0.01f)/b->Height;
