@@ -205,7 +205,7 @@ void InitShader()
     // bind attribute BEFORE linking
     glBindAttribLocation(program, 0, "a_position");
     glBindAttribLocation(program, 1, "a_texCoord");
-   // glBindAttribLocation(program, 2, "aColor");
+    glBindAttribLocation(program, 2, "a_color");
 
     glLinkProgram(program);
 
@@ -215,8 +215,9 @@ void InitShader()
 
     if (!success)
     {
-        char log[512];
+        char log[512] = { 0 };
         glGetProgramInfoLog(program, 512, NULL, log);
+        // need to report later
     }
 
     // shaders no longer needed after linking
@@ -226,11 +227,6 @@ void InitShader()
     g_muProgram = program;
     myShader.ID = program;
 
-    //g_uTexture = glGetUniformLocation(g_muProgram, "uTexture");
-    //g_uUseTexture = glGetUniformLocation(g_muProgram, "uUseTexture");
-    //g_uDiscardBlack = glGetUniformLocation(g_muProgram, "uDiscardBlack");
-    //g_uMinLight = glGetUniformLocation(g_muProgram, "uMinLight");
-
     g_uTexEnabledLoc = glGetUniformLocation(g_muProgram, "u_hasTexture");
     g_uAlphaTestLoc = glGetUniformLocation(g_muProgram, "u_alphaTestEnabled");
     g_uFogEnabledLoc = glGetUniformLocation(g_muProgram, "u_fogEnabled");
@@ -238,7 +234,6 @@ void InitShader()
     g_uFogDensityLoc = glGetUniformLocation(g_muProgram, "u_fogDensity");
     g_uColorLoc = glGetUniformLocation(g_muProgram, "u_color");
 
-    // 2. Query the locations by the exact name used in your GLSL code
     g_aPosLoc = glGetAttribLocation(g_muProgram, "a_position");
     g_aTexLoc = glGetAttribLocation(g_muProgram, "a_texCoord");
     g_aColorLoc = glGetAttribLocation(g_muProgram, "a_color");
@@ -246,11 +241,7 @@ void InitShader()
     g_uMvLoc = glGetUniformLocation(g_muProgram, "u_mvMatrix");
 
     glUseProgram(g_muProgram);
+    GLint texSamplerLoc = glGetUniformLocation(g_muProgram, "u_texture");
+    glUniform1i(texSamplerLoc, 0); // Always use Texture Unit 0
 
-   // GLint uTexture = glGetUniformLocation(g_muProgram, "uTexture");
-    if (g_uTexture >= 0)
-        glUniform1i(g_uTexture, 0);
-
-    g_uProjection = glGetUniformLocation(g_muProgram, "uProjection");
-    g_uView = glGetUniformLocation(g_muProgram, "uView");
 }

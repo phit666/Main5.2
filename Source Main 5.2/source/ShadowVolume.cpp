@@ -302,36 +302,24 @@ void CShadowVolume::RenderAsFrame( void)
 
 void CShadowVolume::RenderShadowVolume( void)
 {
-	if (m_nNumVertices > 0)
-	{
-		glUseProgram(g_muProgram);
-		MU_ApplyMatrices();
+	// 1. Pack your vertices into your current struct if they aren't already
+	// Assuming m_pVertices is a pointer to an array of 3D floats (x, y, z)
+	// and m_nNumVertices is the total count.
 
-		// no texture
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 0);
+	// 2. Set Attributes
+	glEnableVertexAttribArray(g_aPosLoc);
+	// Points directly to your m_pVertices array in memory
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, 0, m_pVertices);
 
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(
-			0,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			0,
-			&m_pVertices[0][0]
-		);
+	// 3. Disable other attributes (Safety)
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aColorLoc);
+	// Set a default neutral white color for the shader math
+	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-		// no UV
-		glDisableVertexAttribArray(1);
-		glVertexAttrib2f(1, 0.0f, 0.0f);
+	// 4. Draw all triangles in one command
+	glDrawArrays(GL_TRIANGLES, 0, m_nNumVertices);
 
-		glDisableVertexAttribArray(2);
-		glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
-
-		glDrawArrays(GL_TRIANGLES, 0, m_nNumVertices);
-
-		glDisableVertexAttribArray(0);
-	}
 }
 
 void CShadowVolume::Shade( void)

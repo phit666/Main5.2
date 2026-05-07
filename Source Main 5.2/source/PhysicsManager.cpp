@@ -834,115 +834,69 @@ void CPhysicsCloth::Render( vec3_t *pvColor, int iLevel)
 
 void CPhysicsCloth::RenderFace(BOOL bFront, int iTexture, vec3_t* pvRenderPos)
 {
-	if (!pvRenderPos)
-		return;
+	BindTexture(iTexture);	//BITMAP_ROBE
 
-	BindTexture(iTexture);
+	std::vector<SpriteVertexFull> clothBuffer;
+	clothBuffer.reserve((m_iNumVer - 1) * (m_iNumHor - 1) * 4);
 
-	const int vertexCount = m_iNumHor * m_iNumVer;
-	const int quadCount = (m_iNumHor - 1) * (m_iNumVer - 1);
-	const int indexCount = quadCount * 6;
-
-	std::vector<MUClothVertex> vertices(vertexCount);
-	std::vector<GLushort> indices(indexCount);
-
-	for (int y = 0; y < m_iNumVer; ++y)
+	for (int j = 0; j < m_iNumVer - 1; ++j)
 	{
-		for (int x = 0; x < m_iNumHor; ++x)
+		for (int i = 0; i < m_iNumHor - 1; ++i)
 		{
-			int idx = m_iNumHor * y + x;
-			vec3_t* p = &pvRenderPos[idx];
-
-			vertices[idx].x = (*p)[0];
-			vertices[idx].y = (*p)[1];
-			vertices[idx].z = (*p)[2];
-
-			vertices[idx].u = (float)x / (float)(m_iNumHor - 1);
-			vertices[idx].v = min(0.99f, (float)y / (float)(m_iNumVer - 1));
+			SpriteVertexFull quad[4];
+			if (bFront) {
+				PackVertex(quad[0], pvRenderPos, i, j);
+				PackVertex(quad[1], pvRenderPos, i + 1, j);
+				PackVertex(quad[2], pvRenderPos, i + 1, j + 1);
+				PackVertex(quad[3], pvRenderPos, i, j + 1);
+			}
+			else {
+				PackVertex(quad[0], pvRenderPos, i, j);
+				PackVertex(quad[1], pvRenderPos, i, j + 1);
+				PackVertex(quad[2], pvRenderPos, i + 1, j + 1);
+				PackVertex(quad[3], pvRenderPos, i + 1, j);
+			}
+			for (int k = 0; k < 4; k++) clothBuffer.push_back(quad[k]);
 		}
 	}
 
-	int k = 0;
+	// Render the buffer
+	if (!clothBuffer.empty()) {
+		glEnableVertexAttribArray(g_aPosLoc);
+		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &clothBuffer[0].x);
+		glEnableVertexAttribArray(g_aTexLoc);
+		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &clothBuffer[0].u);
 
-	for (int y = 0; y < m_iNumVer - 1; ++y)
-	{
-		for (int x = 0; x < m_iNumHor - 1; ++x)
-		{
-			GLushort v0 = (GLushort)(m_iNumHor * y + x);
-			GLushort v1 = (GLushort)(m_iNumHor * y + x + 1);
-			GLushort v2 = (GLushort)(m_iNumHor * (y + 1) + x + 1);
-			GLushort v3 = (GLushort)(m_iNumHor * (y + 1) + x);
+		// Disable per-vertex color since we're using your Uniform wrapper MU_glColor
+		glDisableVertexAttribArray(g_aColorLoc);
+		glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-			if (bFront)
-			{
-				indices[k++] = v0;
-				indices[k++] = v1;
-				indices[k++] = v2;
-
-				indices[k++] = v0;
-				indices[k++] = v2;
-				indices[k++] = v3;
-			}
-			else
-			{
-				indices[k++] = v0;
-				indices[k++] = v3;
-				indices[k++] = v2;
-
-				indices[k++] = v0;
-				indices[k++] = v2;
-				indices[k++] = v1;
-			}
+		for (int q = 0; q < clothBuffer.size() / 4; q++) {
+			glDrawArrays(GL_TRIANGLE_FAN, q * 4, 4);
 		}
 	}
 
-	TextureEnable = true;
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
-
-	glUseProgram(g_muProgram);
-	MU_ApplyMatrices();
-
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
-
-	// texture must already be bound before this
-	// glActiveTexture(GL_TEXTURE0);
-	// BindTexture(textureId);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(
-		0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		sizeof(MUClothVertex),
-		&vertices[0].x
-	);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(
-		1,
-		2,
-		GL_FLOAT,
-		GL_FALSE,
-		sizeof(MUClothVertex),
-		&vertices[0].u
-	);
-
-	glDisableVertexAttribArray(2);
-	glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
-
-	glDrawElements(
-		GL_TRIANGLES,
-		indexCount,
-		GL_UNSIGNED_SHORT,
-		indices.data()
-	);
-
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(0);
 }
+
+void CPhysicsCloth::PackVertex(SpriteVertexFull& v, vec3_t* pvRenderPos, int xVertex, int yVertex)
+{
+	int iVertex = m_iNumHor * yVertex + xVertex;
+	vec3_t* pvPos = &pvRenderPos[iVertex];
+
+	// Position (XYZ)
+	v.x = (*pvPos)[0];
+	v.y = (*pvPos)[1];
+	v.z = (*pvPos)[2];
+
+	// UV Coordinates (Exactly as your legacy math)
+	v.u = (float)xVertex / (float)(m_iNumHor - 1);
+	v.v = min(0.99f, (float)yVertex / (float)(m_iNumVer - 1));
+
+	// Color: Since RenderVertex didn't set color, we use neutral white (1,1,1,1)
+	// The actual color will come from your MU_glColor uniform call.
+	v.r = 1.0f; v.g = 1.0f; v.b = 1.0f; v.a = 1.0f;
+}
+
 
 void CPhysicsCloth::RenderVertex( vec3_t *pvRenderPos, int xVertex, int yVertex)
 {

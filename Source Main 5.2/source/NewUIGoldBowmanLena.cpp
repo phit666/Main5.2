@@ -260,49 +260,52 @@ float CNewUIGoldBowmanLena::GetLayerDepth()	// 3.4f
 
 void CNewUIGoldBowmanLena::Render3D()
 {
+	// 1. Exit 2D Mode
 	EndBitmap();
 
+	// 2. PROJECTION RESET (Mini-3D Scene)
+	projectionStack.push_back(glm::mat4(1.0f)); // Equivalent to glPushMatrix + glLoadIdentity
 	glViewport(0, 0, WindowWidth, WindowHeight);
 
-	glm::mat4 proj = glm::perspective(
-		glm::radians(1.0f),
-		(float)WindowWidth / (float)WindowHeight,
-		RENDER_ITEMVIEW_NEAR,
-		RENDER_ITEMVIEW_FAR
-	);
+	float aspect = (float)WindowWidth / (float)WindowHeight;
+	// gluPerspective2(1.f, ...) -> Zoomed 3D View
+	projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
 
-	glm::mat4 view(1.0f);
+	// 3. MODELVIEW RESET
+	modelViewStack.push_back(glm::mat4(1.0f)); // Equivalent to glPushMatrix + glLoadIdentity
+	GetOpenGLMatrix(CameraMatrix); // Snapshot Identity state for mouse logic
 
-	memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
-	memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
+	// 4. HARDWARE STATES
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
 
-	MU_CopyViewToCameraMatrix(CameraMatrix);
+	// 5. SHADER SYNC
+	myShader.use();
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+	myShader.setBool(g_uFogEnabledLoc, false); // No fog for UI elements
 
-	glUseProgram(g_muProgram);
-	MU_ApplyMatrices();
-
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
-
-	if (g_uDiscardBlack >= 0)
-		glUniform1i(g_uDiscardBlack, 0);
-
-	EnableDepthTest();
-	EnableDepthMask();
-
+	// 6. RENDER ITEMS
 	int Type = ITEM_POTION + 21;
 	int Level = 0;
-
-	float x = 640.f - 120.f;
-	float y = 200.f;
-
+	float x = 640.0f - 120.0f;
+	float y = 200.0f;
 	float Width = (float)ItemAttribute[Type].Width * INVENTORY_SCALE;
 	float Height = (float)ItemAttribute[Type].Height * INVENTORY_SCALE;
 
+	// Draw the two potions
 	RenderItem3D(x, y, Width, Height, Type, Level, 0, 0, false);
-	RenderItem3D(x, y + 42, Width, Height, Type, Level, 0, 0, false);
+	RenderItem3D(x, y + 42.0f, Width, Height, Type, Level, 0, 0, false);
 
+	// 7. UPDATE MOUSE
 	UpdateMousePositionn();
 
+	// 8. RESTORE MATRICES
+	if (modelViewStack.size() > 1) modelViewStack.pop_back();
+	if (projectionStack.size() > 1) projectionStack.pop_back();
+
+	// 9. RE-ENTER 2D MODE
 	BeginBitmap();
+	// Note: BeginBitmap() must call setMat4(g_uMvpLoc, ...) internally 
+	// to restore the Ortho view to the shader.
+
 }

@@ -551,6 +551,8 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	Width = Width * WindowWidth / 640;
 	Height = Height * WindowHeight / 480;
 
+	myShader.use();
+
 	// --- PROJECTION REPLACEMENT ---
 	projectionStack.push_back(projectionStack.back());
 	glViewport(x, y, Width, Height);
@@ -575,6 +577,8 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glDepthMask(GL_TRUE);
+	// NUKLEAR
+	glDisable(GL_SCISSOR_TEST);
 
     AlphaTestEnable = false;
 	TextureEnable   = true;
@@ -584,7 +588,6 @@ void BeginOpengl(int x, int y, int Width, int Height)
 
 	// Alpha Test & Fog: These no longer use glEnable. 
 	// You must set uniform variables that your shader will read.
-	myShader.use();
 	myShader.setBool(g_uFogEnabledLoc, FogEnable);
 	myShader.setBool(g_uAlphaTestLoc, AlphaTestEnable);
 	myShader.setBool(g_uTexEnabledLoc, TextureEnable);

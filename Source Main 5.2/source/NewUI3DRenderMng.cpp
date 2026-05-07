@@ -107,58 +107,61 @@ bool SEASON3B::CNewUI3DCamera::Render()
 	if (m_list3DObjs.empty())
 		return true;
 
+	// 1. Exit 2D Mode
 	EndBitmap();
 
+	// 2. PROJECTION RESET (New 3D Context)
+	// Using m_uiWidth/Height for the sub-window/sub-scene size
+	projectionStack.push_back(glm::mat4(1.0f));
 	glViewport(0, 0, m_uiWidth, m_uiHeight);
 
-	MU_Perspective(
-		g_muProjection,
-		1.0f,
-		(float)m_uiWidth / (float)m_uiHeight,
-		RENDER_ITEMVIEW_NEAR,
-		RENDER_ITEMVIEW_FAR
-	);
+	float aspect = (float)m_uiWidth / (float)m_uiHeight;
+	// gluPerspective2(1.f, ...) -> Intense telephoto zoom
+	projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
 
-	MU_LoadIdentity(g_muView);
+	// 3. MODELVIEW RESET
+	modelViewStack.push_back(glm::mat4(1.0f));
+	GetOpenGLMatrix(CameraMatrix); // Snapshot Identity
 
-	glUseProgram(g_muProgram);
-	MU_ApplyMatrices();
+	// 4. HARDWARE STATES
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glClear(GL_DEPTH_BUFFER_BIT); // Ensure 3D objects don't clip with previous world depth
 
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
+	// 5. SHADER SYNC
+	myShader.use();
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+	myShader.setBool(g_uFogEnabledLoc, false); // No fog for UI 3D objects
 
-	if (g_uDiscardBlack >= 0)
-		glUniform1i(g_uDiscardBlack, 0);
-
-	EnableDepthTest();
-	EnableDepthMask();
-	glClear(GL_DEPTH_BUFFER_BIT);
-
-	for (type_list_3dobj::iterator li = m_list3DObjs.begin();
-		li != m_list3DObjs.end();
-		++li)
+	// 6. RENDER OBJECT LIST
+	for (auto li = m_list3DObjs.begin(); li != m_list3DObjs.end(); ++li)
 	{
 		if ((*li)->IsVisible())
+		{
+			// Inside Render3D, ensure it updates u_mvpMatrix if it moves/rotates
 			(*li)->Render3D();
+		}
 	}
 
+	// 7. UPDATE MOUSE
 	UpdateMousePositionn();
 
+	// 8. RESTORE MATRICES (glPopMatrix equivalents)
+	if (modelViewStack.size() > 1) modelViewStack.pop_back();
+	if (projectionStack.size() > 1) projectionStack.pop_back();
+
+	// 9. RE-ENTER 2D MODE
 	BeginBitmap();
+	// Ensure BeginBitmap resets the viewport to WindowWidth/Height if needed
+
 
 	while (!m_deque2DEffects.empty())
 	{
 		UI_2DEFFECT_INFO& UI2DEffectInfo = m_deque2DEffects.front();
-
 		if (UI2DEffectInfo.pCallbackFunc)
 		{
-			(*UI2DEffectInfo.pCallbackFunc)(
-				UI2DEffectInfo.pClass,
-				UI2DEffectInfo.dwParamA,
-				UI2DEffectInfo.dwParamB
-				);
+			(*UI2DEffectInfo.pCallbackFunc)(UI2DEffectInfo.pClass, UI2DEffectInfo.dwParamA, UI2DEffectInfo.dwParamB);
 		}
-
 		m_deque2DEffects.pop_front();
 	}
 

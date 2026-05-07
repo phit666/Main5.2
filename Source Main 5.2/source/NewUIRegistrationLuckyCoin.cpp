@@ -106,57 +106,48 @@ namespace SEASON3B
 		width = LUCKYCOIN_REG_WIDTH;
 		height = LUCKYCOIN_REG_HEIGHT;
 
+		// 1. Close current Bitmap pass
 		EndBitmap();
 
+		// 2. PROJECTION RESET (Mini-3D Scene)
+		projectionStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
 		glViewport(0, 0, WindowWidth, WindowHeight);
 
-		glm::mat4 proj = glm::perspective(
-			glm::radians(1.0f),
-			(float)WindowWidth / (float)WindowHeight,
-			RENDER_ITEMVIEW_NEAR,
-			RENDER_ITEMVIEW_FAR
-		);
+		float aspect = (float)WindowWidth / (float)WindowHeight;
+		// Note: 1.0f degree FOV is a massive zoom (Telephoto effect)
+		projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
 
-		glm::mat4 view(1.0f);
+		// 3. MODELVIEW RESET
+		modelViewStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
+		GetOpenGLMatrix(CameraMatrix); // Snapshot Identity
 
-		memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
-		memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
+		// 4. HARDWARE STATES
+		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
+		glClear(GL_DEPTH_BUFFER_BIT); // Clear depth so item draws over UI
 
-		MU_CopyViewToCameraMatrix(CameraMatrix);
-
-		glUseProgram(g_muProgram);
-		MU_ApplyMatrices();
-
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-
-		if (g_uDiscardBlack >= 0)
-			glUniform1i(g_uDiscardBlack, 0);
-
-		EnableDepthTest();
-		EnableDepthMask();
-
-		glClear(GL_DEPTH_BUFFER_BIT);
+		// 5. SHADER SYNC & RENDER
+		myShader.use();
+		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+		myShader.setBool(g_uFogEnabledLoc, false); // No fog for UI items
 
 		SetItemRotation(true);
-
-		RenderItem3D(
-			x,
-			y,
-			width,
-			height,
-			m_CoinItem->Type,
-			m_CoinItem->Level,
-			0,
-			0,
-			true
-		);
-
+		RenderItem3D(x, y, width, height, m_CoinItem->Type, m_CoinItem->Level, 0, 0, true);
 		SetItemRotation(false);
 
+		// 6. UPDATE MOUSE
+		// This function will use the identity CameraMatrix we just snapped
 		UpdateMousePositionn();
 
+		// 7. RESTORE MATRICES (glPopMatrix equivalents)
+		if (modelViewStack.size() > 1) modelViewStack.pop_back();
+		if (projectionStack.size() > 1) projectionStack.pop_back();
+
+		// 8. RESTART BITMAP PASS
 		BeginBitmap();
+		// Note: BeginBitmap() internally updates g_uMvpLoc back to Ortho, 
+		// so the rest of your UI will draw correctly.
+
 	}
 	
 	void CNewUIRegistrationLuckyCoin::RenderButtons()

@@ -206,7 +206,7 @@ protected:
 	void RenderFace( BOOL bFront, int iTexture, vec3_t *pvRenderPos);
 	void RenderVertex( vec3_t *pvRenderPos, int xVertex, int yVertex);
 	void RenderCollisions( void);
-	
+	void PackVertex(SpriteVertexFull& v, vec3_t* pvRenderPos, int xVertex, int yVertex);
 
 
 protected:

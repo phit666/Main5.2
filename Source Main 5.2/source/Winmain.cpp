@@ -1688,9 +1688,29 @@ int main(int argc, char* argv[])
 	SDL_CreateThread(le_start, "Libevent Thread", NULL);
 #endif
 
-	MU_LoadIdentity(g_muProjection);
-	MU_LoadIdentity(g_muView);
-	UpdateProjection();
+	//MU_LoadIdentity(g_muProjection);
+	//MU_LoadIdentity(g_muView);
+
+// 1. Activate your shader
+	myShader.use();
+
+	// 2. Set Default Uniforms (So the first draw isn't invisible)
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default White
+	myShader.setBool(g_uTexEnabledLoc, true);              // Default Textures On
+	myShader.setBool(g_uFogEnabledLoc, false);             // Default Fog Off
+	myShader.setFloat(g_uFogDensityLoc, 0.001f);
+
+	// 3. Initialize your Matrix Stacks with Identity
+	projectionStack.clear();
+	modelViewStack.clear();
+	projectionStack.push_back(glm::mat4(1.0f));
+	modelViewStack.push_back(glm::mat4(1.0f));
+
+	// 4. Set the initial hardware Viewport
+	glViewport(0, 0, WindowWidth, WindowHeight);
+
+
+	//UpdateProjection();
 
 	while (!Destroy && gSDLRunning)
 	{
@@ -1925,7 +1945,27 @@ void MU_ProcessSDLEvents()
 			case SDL_WINDOWEVENT_RESIZED:
 				WindowWidth = e.window.data1;
 				WindowHeight = e.window.data2;
-				UpdateProjection();
+
+				// 2. Update Hardware Viewport
+				// Tells OpenGL how to map its (-1 to 1) space to actual pixels
+				glViewport(0, 0, WindowWidth, WindowHeight);
+
+				// 3. Clear Matrix Stacks to avoid "ghosting"
+				projectionStack.clear();
+				modelViewStack.clear();
+				projectionStack.push_back(glm::mat4(1.0f));
+				modelViewStack.push_back(glm::mat4(1.0f));
+
+				// 4. Update the Projection Matrix (Important for Aspect Ratio)
+				float aspect = (float)WindowWidth / (float)WindowHeight;
+				// For the main 3D world (typically 45.0f to 60.0f degrees)
+				projectionStack.back() = glm::perspective(glm::radians(45.0f), aspect, CameraViewNear, CameraViewFar);
+
+				// 5. Update Shader Uniforms
+				myShader.use();
+				myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+
+				
 				break;
 
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
