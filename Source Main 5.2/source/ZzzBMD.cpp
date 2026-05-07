@@ -946,13 +946,25 @@ void BMD::ReleaseLightMaps()
 
 void BMD::BeginRender(float Alpha)
 {
-	//glPushMatrix();
+	// Save the current world/camera state by pushing a copy
+	modelViewStack.push_back(modelViewStack.back());
+
+	// If you need to use the Alpha for a global model fade, 
+	// you can set it here or inside your model's draw loop:
+	// myShader.setFloat(g_uGlobalAlphaLoc, Alpha);
 }
 
 void BMD::EndRender()
 {
-    //glPopMatrix();
+	// Restore the state to what it was before the model started drawing
+	if (modelViewStack.size() > 1) {
+		modelViewStack.pop_back();
+	}
+
+	// Re-sync the shader with the restored matrix
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
 }
+
 
 extern float WorldTime;
 extern int WaterTextureNumber;
@@ -1267,205 +1279,107 @@ void BMD::RenderMesh(int i, int RenderFlag, float Alpha, int BlendMesh, float Bl
 	}
 
 	// ver 1.0 (triangle)
-// replace original glBegin(GL_TRIANGLES) ... glEnd() block
-
-	std::vector<MU3DColorVertex> verts;
-	verts.reserve(m->NumTriangles * 3);
+// 1. Buffer for dynamic mesh data
+	std::vector<SpriteVertexFull> meshVao;
+	meshVao.reserve(m->NumTriangles * 3);
 
 	for (int j = 0; j < m->NumTriangles; j++)
 	{
 		Triangle_t* tp = &m->Triangles[j];
-
 		for (int k = 0; k < tp->Polygon; k++)
 		{
+			SpriteVertexFull v;
 			int vi = tp->VertexIndex[k];
+			int ni = tp->NormalIndex[k];
 
-			MU3DColorVertex vtx = {};
-			float cr = 1.f, cg = 1.f, cb = 1.f, ca = 1.f;
-
+			// --- RENDER LOGIC (UVs & COLOR) ---
 			switch (Render)
 			{
 			case RENDER_TEXTURE:
 			{
 				TexCoord_t* texp = &m->TexCoords[tp->TexCoordIndex[k]];
+				v.u = texp->TexCoordU + (EnableWave ? BlendMeshTexCoordU : 0.0f);
+				v.v = texp->TexCoordV + (EnableWave ? BlendMeshTexCoordV : 0.0f);
 
-				if (EnableWave)
-				{
-					vtx.u = texp->TexCoordU + BlendMeshTexCoordU;
-					vtx.v = texp->TexCoordV + BlendMeshTexCoordV;
+				if (EnableLight) {
+					float* L = LightTransform[i][ni];
+					v.r = L[0]; v.g = L[1]; v.b = L[2]; v.a = Alpha;
 				}
-				else
-				{
-					vtx.u = texp->TexCoordU;
-					vtx.v = texp->TexCoordV;
+				else {
+					v.r = 1.0f; v.g = 1.0f; v.b = 1.0f; v.a = Alpha;
 				}
-
-				if (EnableLight)
-				{
-					int ni = tp->NormalIndex[k];
-					float* Light = LightTransform[i][ni];
-
-					cr = Light[0];
-					cg = Light[1];
-					cb = Light[2];
-
-					if (Alpha < 0.99f)
-						ca = Alpha;
-				}
-				else
-				{
-					cr = BodyLight[0];
-					cg = BodyLight[1];
-					cb = BodyLight[2];
-
-					if (Alpha < 0.99f)
-						ca = Alpha;
-				}
-
 				break;
 			}
-
 			case RENDER_CHROME:
-			{
-				cr = BodyLight[0];
-				cg = BodyLight[1];
-				cb = BodyLight[2];
-
-				if (Alpha < 0.99f)
-					ca = Alpha;
-
-				int ni = tp->NormalIndex[k];
-				vtx.u = g_chrome[ni][0];
-				vtx.v = g_chrome[ni][1];
-
-				break;
-			}
-
 			case RENDER_CHROME4:
 			{
-				cr = BodyLight[0];
-				cg = BodyLight[1];
-				cb = BodyLight[2];
-
-				if (Alpha < 0.99f)
-					ca = Alpha;
-
-				int ni = tp->NormalIndex[k];
-				vtx.u = g_chrome[ni][0] + BlendMeshTexCoordU;
-				vtx.v = g_chrome[ni][1] + BlendMeshTexCoordV;
-
+				float uOff = (Render == RENDER_CHROME4) ? BlendMeshTexCoordU : 0.0f;
+				float vOff = (Render == RENDER_CHROME4) ? BlendMeshTexCoordV : 0.0f;
+				v.u = g_chrome[ni][0] + uOff;
+				v.v = g_chrome[ni][1] + vOff;
+				v.r = BodyLight[0]; v.g = BodyLight[1]; v.b = BodyLight[2]; v.a = Alpha;
 				break;
 			}
-
 			case RENDER_OIL:
 			{
-				cr = BodyLight[0];
-				cg = BodyLight[1];
-				cb = BodyLight[2];
-
-				if (Alpha < 0.99f)
-					ca = Alpha;
-
 				TexCoord_t* texp = &m->TexCoords[tp->TexCoordIndex[k]];
-				int ni = tp->VertexIndex[k];
-
-				vtx.u = g_chrome[ni][0] * texp->TexCoordU + BlendMeshTexCoordU;
-				vtx.v = g_chrome[ni][1] * texp->TexCoordV + BlendMeshTexCoordV;
-
+				// Note the index swap/multiply logic from legacy
+				v.u = g_chrome[vi][0] * texp->TexCoordU + BlendMeshTexCoordU;
+				v.v = g_chrome[vi][1] * texp->TexCoordV + BlendMeshTexCoordV;
+				v.r = BodyLight[0]; v.g = BodyLight[1]; v.b = BodyLight[2]; v.a = Alpha;
 				break;
 			}
 			}
 
+			// --- VERTEX POSITION LOGIC ---
 			if ((RenderFlag & RENDER_SHADOWMAP) == RENDER_SHADOWMAP)
 			{
 				vec3_t Position;
 				VectorSubtract(VertexTransform[i][vi], BodyOrigin, Position);
-
 				Position[0] += Position[2] * (Position[0] + 2000.f) / (Position[2] - 4000.f);
 				Position[2] = 5.f;
-
 				VectorAdd(Position, BodyOrigin, Position);
-
-				vtx.x = Position[0];
-				vtx.y = Position[1];
-				vtx.z = Position[2];
+				v.x = Position[0]; v.y = Position[1]; v.z = Position[2];
 			}
 			else if ((RenderFlag & RENDER_WAVE) == RENDER_WAVE)
 			{
-				float vPos[3];
 				float fParam = (float)((int)WorldTime + vi * 931) * 0.007f;
 				float fSin = sinf(fParam);
-
-				int ni = tp->NormalIndex[k];
 				float* Normal = NormalTransform[i][ni];
-
-				vtx.x = VertexTransform[i][vi][0] + Normal[0] * fSin * 28.0f;
-				vtx.y = VertexTransform[i][vi][1] + Normal[1] * fSin * 28.0f;
-				vtx.z = VertexTransform[i][vi][2] + Normal[2] * fSin * 28.0f;
+				v.x = VertexTransform[i][vi][0] + Normal[0] * fSin * 28.0f;
+				v.y = VertexTransform[i][vi][1] + Normal[1] * fSin * 28.0f;
+				v.z = VertexTransform[i][vi][2] + Normal[2] * fSin * 28.0f;
 			}
 			else
 			{
-				vtx.x = VertexTransform[i][vi][0];
-				vtx.y = VertexTransform[i][vi][1];
-				vtx.z = VertexTransform[i][vi][2];
+				v.x = VertexTransform[i][vi][0];
+				v.y = VertexTransform[i][vi][1];
+				v.z = VertexTransform[i][vi][2];
 			}
 
-			vtx.r = MU_FloatToColorByte(cr);
-			vtx.g = MU_FloatToColorByte(cg);
-			vtx.b = MU_FloatToColorByte(cb);
-			vtx.a = MU_FloatToColorByte(ca);
-
-			verts.push_back(vtx);
+			meshVao.push_back(v);
 		}
 	}
 
-	if (!verts.empty())
+	// 2. RENDERING
+	if (!meshVao.empty())
 	{
-		glUseProgram(g_muProgram);
-		MU_ApplyMatrices();
+		glEnableVertexAttribArray(g_aPosLoc);
+		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].x);
 
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, TextureEnable ? 1 : 0);
+		glEnableVertexAttribArray(g_aTexLoc);
+		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].u);
 
-		if (g_uDiscardBlack >= 0)
-			glUniform1i(g_uDiscardBlack, 0);
+		glEnableVertexAttribArray(g_aColorLoc);
+		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
 
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(
-			0,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof(MU3DColorVertex),
-			&verts[0].x
-		);
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
 
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(
-			1,
-			2,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof(MU3DColorVertex),
-			&verts[0].u
-		);
-
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(
-			2,
-			4,
-			GL_UNSIGNED_BYTE,
-			GL_TRUE,
-			sizeof(MU3DColorVertex),
-			&verts[0].r
-		);
-
-		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
-
-		glDisableVertexAttribArray(2);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(0);
+		// Cleanup
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aColorLoc);
 	}
+
 }
 
 void BMD::RenderMeshEffect ( int i, int iType, int iSubType, vec3_t Angle, VOID* obj )
@@ -1695,159 +1609,159 @@ void BMD::RenderBody(int Flag,float Alpha,int BlendMesh,float BlendMeshLight,flo
 
 void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,float BlendMeshLight,float BlendMeshTexCoordU,float BlendMeshTexCoordV,int MeshTexture)
 {
-    if ( i>=NumMeshs || i<0 ) return;
+	if (i >= NumMeshs || i < 0) return;
 
-    Mesh_t *m = &Meshs[i];
-	if(m->NumTriangles == 0) return;
-	float Wave = (int)WorldTime%10000 * 0.0001f;
+	Mesh_t* m = &Meshs[i];
+	if (m->NumTriangles == 0) return;
+	float Wave = (int)WorldTime % 10000 * 0.0001f;
 
 	int Texture = IndexTexture[m->Texture];
-	if(Texture == BITMAP_HIDE)
+	if (Texture == BITMAP_HIDE)
 		return;
-    else if(Texture == BITMAP_SKIN)
+	else if (Texture == BITMAP_SKIN)
 	{
-		if(HideSkin) return;
-	    Texture = BITMAP_SKIN+Skin;
+		if (HideSkin) return;
+		Texture = BITMAP_SKIN + Skin;
 	}
-	else if(Texture == BITMAP_WATER)
+	else if (Texture == BITMAP_WATER)
 	{
-	    Texture = BITMAP_WATER+WaterTextureNumber;
+		Texture = BITMAP_WATER + WaterTextureNumber;
 	}
-	if(MeshTexture != -1)
+	if (MeshTexture != -1)
 		Texture = MeshTexture;
 
 	BITMAP_t* pBitmap = Bitmaps.GetTexture(Texture);
 
 	bool EnableWave = false;
-    int streamMesh = StreamMesh;
-    if ( m->m_csTScript!=NULL )
-    {
-        if ( m->m_csTScript->getStreamMesh() )
-        {
-            streamMesh = i;
-        }
-    }
-	if((i==BlendMesh||i==streamMesh) && (BlendMeshTexCoordU!=0.f || BlendMeshTexCoordV!=0.f))
-    	EnableWave = true;
+	int streamMesh = StreamMesh;
+	if (m->m_csTScript != NULL)
+	{
+		if (m->m_csTScript->getStreamMesh())
+		{
+			streamMesh = i;
+		}
+	}
+	if ((i == BlendMesh || i == streamMesh) && (BlendMeshTexCoordU != 0.f || BlendMeshTexCoordV != 0.f))
+		EnableWave = true;
 
 	bool EnableLight = LightEnable;
-	if(i==StreamMesh)
+	if (i == StreamMesh)
 	{
 		//vec3_t Light;
 		//Vector(1.f,1.f,1.f,Light);
 		glColor3fv(BodyLight);
 		EnableLight = false;
 	}
-	else if(EnableLight)
+	else if (EnableLight)
 	{
-		for(int j=0;j<m->NumNormals;j++)
+		for (int j = 0; j < m->NumNormals; j++)
 		{
-			VectorScale(BodyLight,IntensityTransform[i][j],LightTransform[i][j]);
+			VectorScale(BodyLight, IntensityTransform[i][j], LightTransform[i][j]);
 		}
 	}
 
 	int Render = RenderFlag;
-	if((RenderFlag&RENDER_COLOR) == RENDER_COLOR)
+	if ((RenderFlag & RENDER_COLOR) == RENDER_COLOR)
 	{
-    	Render = RENDER_COLOR;
-       	if((RenderFlag&RENDER_BRIGHT) == RENDER_BRIGHT)
+		Render = RENDER_COLOR;
+		if ((RenderFlag & RENDER_BRIGHT) == RENDER_BRIGHT)
 			EnableAlphaBlend();
-		else if((RenderFlag&RENDER_DARK) == RENDER_DARK)
-     		EnableAlphaBlendMinus();
+		else if ((RenderFlag & RENDER_DARK) == RENDER_DARK)
+			EnableAlphaBlendMinus();
 		else
 			DisableAlphaBlend();
-        DisableTexture();
+		DisableTexture();
 		glColor3fv(BodyLight);
- 	}
-	else if((RenderFlag&RENDER_CHROME)==RENDER_CHROME
-		|| (RenderFlag&RENDER_METAL)==RENDER_METAL
-		|| (RenderFlag&RENDER_CHROME2)==RENDER_CHROME2 
-		|| (RenderFlag&RENDER_CHROME6)==RENDER_CHROME6
+	}
+	else if ((RenderFlag & RENDER_CHROME) == RENDER_CHROME
+		|| (RenderFlag & RENDER_METAL) == RENDER_METAL
+		|| (RenderFlag & RENDER_CHROME2) == RENDER_CHROME2
+		|| (RenderFlag & RENDER_CHROME6) == RENDER_CHROME6
 		)
 	{
-		if ( m->m_csTScript!=NULL )
-        {
-            if ( m->m_csTScript->getNoneBlendMesh() ) return;
-        }
-		if(m->NoneBlendMesh )
-			return;
-   		Render = RENDER_CHROME;
-
-        float Wave2 = (int)WorldTime%5000 * 0.00024f - 0.4f;
-
-		for(int j=0;j<m->NumNormals;j++)
+		if (m->m_csTScript != NULL)
 		{
-//			Normal_t *np = &m->Normals[j];
-            if ( j>MAX_VERTICES ) break;
-			float *Normal = NormalTransform[i][j];
+			if (m->m_csTScript->getNoneBlendMesh()) return;
+		}
+		if (m->NoneBlendMesh)
+			return;
+		Render = RENDER_CHROME;
 
-            if((RenderFlag&RENDER_CHROME2)==RENDER_CHROME2)
+		float Wave2 = (int)WorldTime % 5000 * 0.00024f - 0.4f;
+
+		for (int j = 0; j < m->NumNormals; j++)
+		{
+			//			Normal_t *np = &m->Normals[j];
+			if (j > MAX_VERTICES) break;
+			float* Normal = NormalTransform[i][j];
+
+			if ((RenderFlag & RENDER_CHROME2) == RENDER_CHROME2)
 			{
-				g_chrome[j][0] = (Normal[2]+Normal[0])*0.8f + Wave2*2.f;
-				g_chrome[j][1] = (Normal[1]+Normal[0])*1.0f + Wave2*3.f;
+				g_chrome[j][0] = (Normal[2] + Normal[0]) * 0.8f + Wave2 * 2.f;
+				g_chrome[j][1] = (Normal[1] + Normal[0]) * 1.0f + Wave2 * 3.f;
 			}
-            else if((RenderFlag&RENDER_CHROME)==RENDER_CHROME)
+			else if ((RenderFlag & RENDER_CHROME) == RENDER_CHROME)
 			{
-				g_chrome[j][0] = Normal[2]*0.5f + Wave;
-				g_chrome[j][1] = Normal[1]*0.5f + Wave*2.f;
+				g_chrome[j][0] = Normal[2] * 0.5f + Wave;
+				g_chrome[j][1] = Normal[1] * 0.5f + Wave * 2.f;
 			}
-			else if((RenderFlag&RENDER_CHROME6)==RENDER_CHROME6)
+			else if ((RenderFlag & RENDER_CHROME6) == RENDER_CHROME6)
 			{
-				g_chrome[j][0] = (Normal[2]+Normal[0])*0.8f + Wave2*2.f;
-				g_chrome[j][1] = (Normal[1]+Normal[0])*1.0f + Wave2*3.f;
-			}	
+				g_chrome[j][0] = (Normal[2] + Normal[0]) * 0.8f + Wave2 * 2.f;
+				g_chrome[j][1] = (Normal[1] + Normal[0]) * 1.0f + Wave2 * 3.f;
+			}
 			else
 			{
-				g_chrome[j][0] = Normal[2]*0.5f + 0.2f;
-				g_chrome[j][1] = Normal[1]*0.5f + 0.5f;
+				g_chrome[j][0] = Normal[2] * 0.5f + 0.2f;
+				g_chrome[j][1] = Normal[1] * 0.5f + 0.5f;
 			}
 		}
 
-		if((RenderFlag&RENDER_BRIGHT) == RENDER_BRIGHT)
-     		EnableAlphaBlend();
-		else if((RenderFlag&RENDER_DARK) == RENDER_DARK)
-     		EnableAlphaBlendMinus();
-     	else if((RenderFlag&RENDER_LIGHTMAP) == RENDER_LIGHTMAP)
-            EnableLightMap();
+		if ((RenderFlag & RENDER_BRIGHT) == RENDER_BRIGHT)
+			EnableAlphaBlend();
+		else if ((RenderFlag & RENDER_DARK) == RENDER_DARK)
+			EnableAlphaBlendMinus();
+		else if ((RenderFlag & RENDER_LIGHTMAP) == RENDER_LIGHTMAP)
+			EnableLightMap();
 		else
 			DisableAlphaBlend();
 
-        if((RenderFlag&RENDER_CHROME2)==RENDER_CHROME2 && MeshTexture==-1)
-        {
+		if ((RenderFlag & RENDER_CHROME2) == RENDER_CHROME2 && MeshTexture == -1)
+		{
 			BindTexture(BITMAP_CHROME2);
-        }
-        else if((RenderFlag&RENDER_CHROME)==RENDER_CHROME && MeshTexture==-1)
+		}
+		else if ((RenderFlag & RENDER_CHROME) == RENDER_CHROME && MeshTexture == -1)
 			BindTexture(BITMAP_CHROME);
-		else if((RenderFlag&RENDER_METAL)==RENDER_METAL && MeshTexture==-1)
+		else if ((RenderFlag & RENDER_METAL) == RENDER_METAL && MeshTexture == -1)
 			BindTexture(BITMAP_SHINY);
 		else
 			BindTexture(Texture);
-	}	
-	else if(BlendMesh<=-2 || m->Texture == BlendMesh)
+	}
+	else if (BlendMesh <= -2 || m->Texture == BlendMesh)
 	{
-    	Render = RENDER_TEXTURE;
-   		BindTexture(Texture);
-		if((RenderFlag&RENDER_DARK) == RENDER_DARK)
-     		EnableAlphaBlendMinus();
+		Render = RENDER_TEXTURE;
+		BindTexture(Texture);
+		if ((RenderFlag & RENDER_DARK) == RENDER_DARK)
+			EnableAlphaBlendMinus();
 		else
-     		EnableAlphaBlend();
-		//glColor3f(BodyLight[0]*BlendMeshLight,BodyLight[1]*BlendMeshLight,BodyLight[2]*BlendMeshLight);
+			EnableAlphaBlend();
+		glColor3f(BodyLight[0] * BlendMeshLight, BodyLight[1] * BlendMeshLight, BodyLight[2] * BlendMeshLight);
 		//glColor3f(BlendMeshLight,BlendMeshLight,BlendMeshLight);
 		EnableLight = false;
 	}
-	else if((RenderFlag&RENDER_TEXTURE) == RENDER_TEXTURE)
+	else if ((RenderFlag & RENDER_TEXTURE) == RENDER_TEXTURE)
 	{
-    	Render = RENDER_TEXTURE;
+		Render = RENDER_TEXTURE;
 		BindTexture(Texture);
-		if((RenderFlag&RENDER_BRIGHT) == RENDER_BRIGHT)
+		if ((RenderFlag & RENDER_BRIGHT) == RENDER_BRIGHT)
 		{
-     		EnableAlphaBlend();
+			EnableAlphaBlend();
 		}
-		else if((RenderFlag&RENDER_DARK) == RENDER_DARK)
+		else if ((RenderFlag & RENDER_DARK) == RENDER_DARK)
 		{
-     		EnableAlphaBlendMinus();
+			EnableAlphaBlendMinus();
 		}
-		else if(Alpha<0.99f || pBitmap->Components==4)
+		else if (Alpha < 0.99f || pBitmap->Components == 4)
 		{
 			EnableAlphaTest();
 		}
@@ -1856,159 +1770,94 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 			DisableAlphaBlend();
 		}
 	}
-	else if((RenderFlag&RENDER_BRIGHT) == RENDER_BRIGHT)
+	else if ((RenderFlag & RENDER_BRIGHT) == RENDER_BRIGHT)
 	{
-		if(pBitmap->Components==4 || m->Texture == BlendMesh)
+		if (pBitmap->Components == 4 || m->Texture == BlendMesh)
 		{
 			return;
 		}
-    	Render = RENDER_BRIGHT;
-        EnableAlphaBlend();
-        DisableTexture();
-        DisableDepthMask();
+		Render = RENDER_BRIGHT;
+		EnableAlphaBlend();
+		DisableTexture();
+		DisableDepthMask();
 	}
 	else
 	{
-    	Render = RENDER_TEXTURE;
+		Render = RENDER_TEXTURE;
 	}
 
-	std::vector<MU3DColorVertex> verts;
-	verts.reserve(m->NumTriangles * 3);
-
-	GLfloat oldColor[4];
-	MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+	// 1. Prepare a buffer for all triangles
+	std::vector<SpriteVertexFull> meshVao;
+	meshVao.reserve(m->NumTriangles * 3);
 
 	for (int j = 0; j < m->NumTriangles; j++)
 	{
-		vec3_t pos;
 		Triangle_t* tp = &m->Triangles[j];
-
 		for (int k = 0; k < tp->Polygon; k++)
 		{
+			SpriteVertexFull v;
 			int vi = tp->VertexIndex[k];
+			int ni = tp->NormalIndex[k];
 
-			MU3DColorVertex vtx = {};
+			// --- COORDINATES ---
+			vec3_t pos;
+			VectorAdd(VertexTransform[i][vi], BodyOrigin, pos);
+			v.x = pos[0]; v.y = pos[1]; v.z = pos[2];
 
-			float cr = oldColor[0];
-			float cg = oldColor[1];
-			float cb = oldColor[2];
-			float ca = oldColor[3];
-
-			switch (Render)
-			{
-			case RENDER_TEXTURE:
+			// --- RENDER MODES ---
+			if (Render == RENDER_TEXTURE)
 			{
 				TexCoord_t* texp = &m->TexCoords[tp->TexCoordIndex[k]];
-
-				if (EnableWave)
-				{
-					vtx.u = texp->TexCoordU + BlendMeshTexCoordU;
-					vtx.v = texp->TexCoordV + BlendMeshTexCoordV;
+				if (EnableWave) {
+					v.u = texp->TexCoordU + BlendMeshTexCoordU;
+					v.v = texp->TexCoordV + BlendMeshTexCoordV;
 				}
-				else
-				{
-					vtx.u = texp->TexCoordU;
-					vtx.v = texp->TexCoordV;
+				else {
+					v.u = texp->TexCoordU;
+					v.v = texp->TexCoordV;
 				}
 
-				if (EnableLight)
-				{
-					int ni = tp->NormalIndex[k];
-					float* Light = LightTransform[i][ni];
-
-					cr = Light[0];
-					cg = Light[1];
-					cb = Light[2];
-
-					if (Alpha < 0.99f)
-						ca = Alpha;
+				if (EnableLight) {
+					float* L = LightTransform[i][ni];
+					v.r = L[0]; v.g = L[1]; v.b = L[2]; v.a = Alpha;
 				}
-
-				break;
+				else {
+					v.r = 1.0f; v.g = 1.0f; v.b = 1.0f; v.a = Alpha;
+				}
 			}
-
-			case RENDER_CHROME:
+			else if (Render == RENDER_CHROME)
 			{
-				cr = BodyLight[0];
-				cg = BodyLight[1];
-				cb = BodyLight[2];
-
-				if (Alpha < 0.99f)
-					ca = Alpha;
-
-				int ni = tp->NormalIndex[k];
-				vtx.u = g_chrome[ni][0];
-				vtx.v = g_chrome[ni][1];
-
-				break;
-			}
+				v.u = g_chrome[ni][0];
+				v.v = g_chrome[ni][1];
+				v.r = BodyLight[0]; v.g = BodyLight[1]; v.b = BodyLight[2]; v.a = Alpha;
 			}
 
-			VectorAdd(VertexTransform[i][vi], BodyOrigin, pos);
-
-			vtx.x = pos[0];
-			vtx.y = pos[1];
-			vtx.z = pos[2];
-
-			vtx.r = MU_FloatToColorByte(cr);
-			vtx.g = MU_FloatToColorByte(cg);
-			vtx.b = MU_FloatToColorByte(cb);
-			vtx.a = MU_FloatToColorByte(ca);
-
-			verts.push_back(vtx);
+			meshVao.push_back(v);
 		}
 	}
 
-	if (!verts.empty())
+	// 2. Set Attributes and Draw
+	if (!meshVao.empty())
 	{
-		glUseProgram(g_muProgram);
-		MU_ApplyMatrices();
+		glEnableVertexAttribArray(g_aPosLoc);
+		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].x);
 
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
+		glEnableVertexAttribArray(g_aTexLoc);
+		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].u);
 
-		// make sure texture is already bound before this
-		// glActiveTexture(GL_TEXTURE0);
-		// BindTexture(Texture);
+		glEnableVertexAttribArray(g_aColorLoc);
+		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
 
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(
-			0,
-			3,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof(MU3DColorVertex),
-			&verts[0].x
-		);
+		// Ensure global uniform color is neutral so per-vertex color takes over
+		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(
-			1,
-			2,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof(MU3DColorVertex),
-			&verts[0].u
-		);
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
 
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(
-			2,
-			4,
-			GL_UNSIGNED_BYTE,
-			GL_TRUE,
-			sizeof(MU3DColorVertex),
-			&verts[0].r
-		);
-
-		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
-
-		glDisableVertexAttribArray(2);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(0);
+		// 3. Cleanup
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aColorLoc);
 	}
 
-	glColor4fv(oldColor);
 }
 
 // not used
@@ -2036,89 +1885,83 @@ void BMD::RenderBodyTranslate(int Flag,float Alpha,int BlendMesh,float BlendMesh
 
 void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int EndMeshNumber )
 {
-	if(NumMeshs == 0) return;
+	if (NumMeshs == 0) return;
 
-    DisableTexture();
+	DisableTexture();
 	DisableDepthMask();
 	BeginRender(1.f);
 
-    int startMesh = 0;
-    int endMesh = NumMeshs;
+	int startMesh = 0;
+	int endMesh = NumMeshs;
 
-    if ( StartMeshNumber!=-1 ) startMesh = StartMeshNumber;
-    if ( EndMeshNumber!=-1 )   endMesh = EndMeshNumber;
+	if (StartMeshNumber != -1) startMesh = StartMeshNumber;
+	if (EndMeshNumber != -1)   endMesh = EndMeshNumber;
 
-    float sx = 2000.f;
-    float sy = 4000.f;
+	float sx = 2000.f;
+	float sy = 4000.f;
 
-    if ( gMapManager.InBattleCastle() )
-    {
-        sx = 2500.f;
-        sy = 4000.f;
-    }
-
-	for(int i=startMesh;i<endMesh;i++)
+	if (gMapManager.InBattleCastle())
 	{
-		if(i != HiddenMesh)
+		sx = 2500.f;
+		sy = 4000.f;
+	}
+
+	for (int i = startMesh; i < endMesh; i++)
+	{
+		if (i != HiddenMesh)
 		{
-			Mesh_t *m = &Meshs[i];
-			if(m->NumTriangles > 0 && m->Texture != BlendMesh)
+			Mesh_t* m = &Meshs[i];
+			if (m->NumTriangles > 0 && m->Texture != BlendMesh)
 			{
 
-				std::vector<GLfloat> verts;
-				verts.reserve(m->NumTriangles * 3 * 3);
+				// 1. Prepare a buffer for the triangles (3 vertices per triangle)
+				std::vector<SpriteVertex3D> shadowVao;
+				shadowVao.reserve(m->NumTriangles * 3);
 
 				for (int j = 0; j < m->NumTriangles; j++)
 				{
 					Triangle_t* tp = &m->Triangles[j];
-
+					// Assuming Polygon is 3 for GL_TRIANGLES
 					for (int k = 0; k < tp->Polygon; k++)
 					{
 						int vi = tp->VertexIndex[k];
+						vec3_t p, Position;
 
-						vec3_t Position;
-						VectorSubtract(VertexTransform[i][vi], BodyOrigin, Position);
+						// --- Legacy Math Logic ---
+						VectorSubtract(VertexTransform[i][vi], BodyOrigin, p);
 
-						Position[0] += Position[2] * (Position[0] + sx) / (Position[2] - sy);
-						Position[2] = 5.f;
+						// The perspective "skew" math
+						p[0] += p[2] * (p[0] + sx) / (p[2] - sy);
+						p[2] = 5.0f; // Flattening the Z axis
 
-						VectorAdd(Position, BodyOrigin, Position);
+						VectorAdd(p, BodyOrigin, Position);
 
-						verts.push_back(Position[0]);
-						verts.push_back(Position[1]);
-						verts.push_back(Position[2]);
+						// Pack into the Vao
+						SpriteVertex3D v;
+						v.x = Position[0]; v.y = Position[1]; v.z = Position[2];
+						v.u = 0.0f; v.v = 0.0f; // Shadows usually don't use UVs or use a flat texture
+						shadowVao.push_back(v);
 					}
 				}
 
-				if (!verts.empty())
+				if (!shadowVao.empty())
 				{
-					glUseProgram(g_muProgram);
-					MU_ApplyMatrices();
+					// 2. Set Attributes
+					glEnableVertexAttribArray(g_aPosLoc);
+					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &shadowVao[0].x);
 
-					// no texture for this draw
-					if (g_uUseTexture >= 0)
-						glUniform1i(g_uUseTexture, 0);
+					// 3. Disable UV and Color attributes (Shadows are usually a solid color)
+					glDisableVertexAttribArray(g_aTexLoc);
+					glDisableVertexAttribArray(g_aColorLoc);
 
-					glEnableVertexAttribArray(0);
-					glVertexAttribPointer(
-						0,
-						3,
-						GL_FLOAT,
-						GL_FALSE,
-						0,
-						verts.data()
-					);
+					// 4. Set Shadow Color (Usually black or dark grey with alpha)
+					// You can set this before the function or right here:
+					// MU_glColor4f(0.0f, 0.0f, 0.0f, 0.5f); 
 
-					glDisableVertexAttribArray(1);
-					glVertexAttrib2f(1, 0.0f, 0.0f);
-
-					glDisableVertexAttribArray(2);
-					glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
-
-					glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(verts.size() / 3));
-
-					glDisableVertexAttribArray(0);
+					// 5. Draw the entire list of triangles
+					glDrawArrays(GL_TRIANGLES, 0, (GLsizei)shadowVao.size());
 				}
+
 
 			}
 		}

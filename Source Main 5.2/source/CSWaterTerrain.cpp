@@ -53,157 +53,105 @@ void CSWaterTerrain::Update ( void )
 
 void    CSWaterTerrain::Render ( void )
 {
-    if ( !gMapManager.InHellas(m_iMapIndex) ) return;
+    if (!gMapManager.InHellas(m_iMapIndex)) return;
 
-    CreateTerrain ( (Hero->PositionX)*2, (Hero->PositionY)*2 );
+    CreateTerrain((Hero->PositionX) * 2, (Hero->PositionY) * 2);
 
     float alpha;
     int   offset;
     int   i, j;
-	for ( i=0; i<MAX_WATER_GRID*MAX_WATER_GRID; i++ )
-	{
-		float *Normal = m_Normals[i];
-		g_chrome[i][0] = Normal[2]*0.5f + 0.1f;
-		g_chrome[i][1] = Normal[1]*0.5f + 0.5f;
-	}
-
-    EnableAlphaTest ();
-	BindTexture ( BITMAP_MAPTILE );
-
-
-    std::vector<MU3DVertex> verts(m_iTriangleListNum);
-
-    for (j = 0; j < m_iTriangleListNum; j++)
+    for (i = 0; i < MAX_WATER_GRID * MAX_WATER_GRID; i++)
     {
-        int offset = m_iTriangleList[j];
-
-        verts[j].x = m_Vertices[offset][0];
-        verts[j].y = m_Vertices[offset][1];
-        verts[j].z = m_Vertices[offset][2];
-
-        verts[j].u = g_chrome[offset][1];
-        verts[j].v = g_chrome[offset][0];
+        float* Normal = m_Normals[i];
+        g_chrome[i][0] = Normal[2] * 0.5f + 0.1f;
+        g_chrome[i][1] = Normal[1] * 0.5f + 0.5f;
     }
 
-
-    glUseProgram(g_muProgram);
-    MU_ApplyMatrices();
-
-    if (g_uUseTexture >= 0)
-        glUniform1i(g_uUseTexture, 1);
-
-    // texture should already be bound before this draw
-    // If not, bind it BEFORE the attributes:
-    // glActiveTexture(GL_TEXTURE0);
-    // BindTexture(textureId);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(MU3DVertex),
-        &verts[0].x
-    );
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(
-        1,
-        2,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(MU3DVertex),
-        &verts[0].u
-    );
-
+    EnableAlphaTest();
+    BindTexture(BITMAP_MAPTILE);
+    // 1. Set the uniform color via your wrapper
+    // This will internally call MU_glColor3f and disable g_aColorLoc
     glColor3f(0.2f, 0.5f, 0.65f);
 
-    glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
+    // 2. Prepare the vertex data buffer
+    // Using a std::vector to safely handle the dynamic size of m_iTriangleListNum
+    std::vector<SpriteVertex3D> vao(m_iTriangleListNum);
 
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
-
-
-    EnableAlphaBlend ();
-	BindTexture ( BITMAP_MAPTILE+1 );
-
-
-    std::vector<MU3DColorVertex> colorverts(m_iTriangleListNum);
-
-    for (j = 0; j < m_iTriangleListNum; j++)
+    for (int j = 0; j < m_iTriangleListNum; j++)
     {
         int offset = m_iTriangleList[j];
 
-        float alpha = 1.f - DotProduct(m_Normals[offset], m_vLightVector);
+        // Pack Positions (Manual copy to avoid float* error)
+        vao[j].x = m_Vertices[offset][0];
+        vao[j].y = m_Vertices[offset][1];
+        vao[j].z = m_Vertices[offset][2];
 
-        // clamp before converting
-        float r = alpha;
-        float g = alpha * 2.5f;
-        float b = alpha * 3.f;
-
-        if (r < 0.f) r = 0.f; if (r > 1.f) r = 1.f;
-        if (g < 0.f) g = 0.f; if (g > 1.f) g = 1.f;
-        if (b < 0.f) b = 0.f; if (b > 1.f) b = 1.f;
-
-        colorverts[j].x = m_Vertices[offset][0];
-        colorverts[j].y = m_Vertices[offset][1];
-        colorverts[j].z = m_Vertices[offset][2];
-
-        colorverts[j].u = g_chrome[offset][1];
-        colorverts[j].v = g_chrome[offset][0];
-
-        colorverts[j].r = (GLubyte)(r * 255.f);
-        colorverts[j].g = (GLubyte)(g * 255.f);
-        colorverts[j].b = (GLubyte)(b * 255.f);
-        colorverts[j].a = 255;
+        // Pack Chrome Mapping UVs (matching your legacy swap: [1] then [0])
+        vao[j].u = g_chrome[offset][1];
+        vao[j].v = g_chrome[offset][0];
     }
 
-    glUseProgram(g_muProgram);
-    MU_ApplyMatrices();
+    // 3. Set Attributes and Draw
+    glEnableVertexAttribArray(g_aPosLoc);
+    glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
-    if (g_uUseTexture >= 0)
-        glUniform1i(g_uUseTexture, 1);
+    glEnableVertexAttribArray(g_aTexLoc);
+    glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
-    // texture should already be bound before this draw
-    // glActiveTexture(GL_TEXTURE0);
-    // BindTexture(textureId);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(MU3DColorVertex),
-        &colorverts[0].x
-    );
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(
-        1,
-        2,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(MU3DColorVertex),
-        &colorverts[0].u
-    );
-
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(
-        2,
-        4,
-        GL_UNSIGNED_BYTE,
-        GL_TRUE,
-        sizeof(MU3DColorVertex),
-        &colorverts[0].r
-    );
-
+    // 4. One draw call for the entire list
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
 
-    glDisableVertexAttribArray(2);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
+    // 5. Cleanup
+    glDisableVertexAttribArray(g_aTexLoc);
+
+    EnableAlphaBlend();
+    BindTexture(BITMAP_MAPTILE + 1);
+
+    // 1. Prepare a buffer for the vertices
+    // We need the 'Full' struct because colors change per-vertex
+    std::vector<SpriteVertexFull> vao2(m_iTriangleListNum);
+
+    for (int j = 0; j < m_iTriangleListNum; j++)
+    {
+        int offset = m_iTriangleList[j];
+
+        // Calculate the per-vertex Alpha/Lighting
+        float alpha = 1.0f - DotProduct(m_Normals[offset], m_vLightVector);
+
+        // Pack Position
+        vao2[j].x = m_Vertices[offset][0];
+        vao2[j].y = m_Vertices[offset][1];
+        vao2[j].z = m_Vertices[offset][2];
+
+        // Pack UVs (Chrome mapping)
+        vao2[j].u = g_chrome[offset][1];
+        vao2[j].v = g_chrome[offset][0];
+
+        // Pack Color (based on your glColor3f logic)
+        vao2[j].r = alpha;
+        vao2[j].g = alpha * 2.5f;
+        vao2[j].b = alpha * 3.0f;
+        vao2[j].a = 1.0f; // glColor3f implies opaque alpha
+    }
+
+    // 2. Setup Attributes
+    glEnableVertexAttribArray(g_aPosLoc);
+    glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].x);
+
+    glEnableVertexAttribArray(g_aTexLoc);
+    glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].u);
+
+    // IMPORTANT: Enable the color attribute for per-vertex lighting
+    glEnableVertexAttribArray(g_aColorLoc);
+    glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
+
+    // 3. Draw
+    glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
+
+    // 4. Cleanup
+    glDisableVertexAttribArray(g_aTexLoc);
+    glDisableVertexAttribArray(g_aColorLoc);
+
 }
 
 void    CSWaterTerrain::CreateTerrain ( int x, int y )

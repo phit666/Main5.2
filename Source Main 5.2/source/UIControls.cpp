@@ -2749,91 +2749,63 @@ void CUIRenderTextOriginal::WriteText(int iOffset, int iWidth, int iHeight)
 
 void CUIRenderTextOriginal::UploadText(int sx, int sy, int Width, int Height)
 {
-	BITMAP_t* b = &Bitmaps[BITMAP_FONT];
-
-	float TextureU = 0.f;
-	float TextureV = 0.f;
-
-	if (sx < 0)
+	BITMAP_t *b = &Bitmaps[BITMAP_FONT];
+	float TextureU = 0.f, TextureV = 0.f;
+	if(sx < 0)
 	{
-		TextureU = (-sx + 0.01f) / b->Width;
+		TextureU = (-sx+0.01f)/b->Width;
 		Width += sx;
-		sx = 0;
+		sx = 0.f;
 	}
-	else if (sx + Width > (int)WindowWidth)
+	else if(sx+Width > (int)WindowWidth)
 	{
 		Width = WindowWidth - sx;
 	}
-
-	if (sy < 0)
+	if(sy < 0)
 	{
-		TextureV = (-sy + 0.01f) / b->Height;
+		TextureV = (-sy+0.01f)/b->Height;
 		Height += sy;
-		sy = 0;
+		sy = 0.f;
 	}
-	else if (sy + Height > (int)WindowHeight)
+	else if(sy+Height > (int)WindowHeight)
 	{
 		Height = WindowHeight - sy;
 	}
+	if(Width > 0 && Height > 0 && sx+Width > 0 && sy+Height > 0)
+	{
+		// 1. Map the number of components to a GLES2-compatible internal format
+		GLint internalFormat;
+		GLenum format;
 
-	if (Width <= 0 || Height <= 0 || sx + Width <= 0 || sy + Height <= 0)
-		return;
+		if (b->Components == 3) {
+			internalFormat = GL_RGB;
+			format = GL_RGB;
+		}
+		else {
+			internalFormat = GL_RGBA;
+			format = GL_RGBA;
+		}
 
-	glUseProgram(g_muProgram);
-	MU_ApplyMatrices();
+		// 2. Perform the bind and upload
+		glBindTexture(GL_TEXTURE_2D, b->TextureNumber);
 
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
+		// Note: In GLES2, internalFormat and format must usually match 
+		// for GL_UNSIGNED_BYTE data.
+		glTexImage2D(GL_TEXTURE_2D,
+			0,
+			internalFormat,
+			(GLsizei)b->Width,
+			(GLsizei)b->Height,
+			0,
+			format,
+			GL_UNSIGNED_BYTE,
+			b->Buffer);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glDisable(GL_DEPTH_TEST);
-	glDepthMask(GL_FALSE);
-	glDisable(GL_CULL_FACE);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, b->TextureNumber);
-
-	glTexSubImage2D(
-		GL_TEXTURE_2D,
-		0,
-		0, 0,
-		(int)b->Width,
-		(int)b->Height,
-		GL_RGBA,
-		GL_UNSIGNED_BYTE,
-		b->Buffer
-	);
-
-	CachTexture = BITMAP_FONT;
-
-	float TextureUWidth = (Width + 0.01f) / b->Width;
-	float TextureVHeight = (Height + 0.01f) / b->Height;
-
-	RenderBitmap(
-		BITMAP_FONT,
-		(float)sx,
-		(float)sy,
-		(float)Width,
-		(float)Height,
-		TextureU,
-		TextureV,
-		TextureUWidth,
-		TextureVHeight,
-		false,
-		false
-	);
-
-	// restore for later 3D/2D draws
-	glUseProgram(g_muProgram);
-
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
-
-	glDepthMask(GL_TRUE);
-
-	//CachTexture = -999999;
+		float TextureUWidth = (Width+0.01f)/b->Width;
+		float TextureVHeight = (Height+0.01f)/b->Height;
+		RenderBitmap(BITMAP_FONT, (float)sx, (float)sy, (float)Width, (float)Height,
+			TextureU, TextureV, TextureUWidth, TextureVHeight, false, false);
+	}
 }
 
 void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_char* pszText, 

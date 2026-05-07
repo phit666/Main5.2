@@ -634,205 +634,133 @@ void AnimationFlag()
 
 void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 {
-    int n=4;
-    float su = (float)x/6.f;
-    float sv = (float)y/9.f;
+	int n = 4;
+	float su = (float)x / 6.f;
+	float sv = (float)y / 9.f;
 	float TexCoord[4][2];
 	TexCoord[0][0] = su;
 	TexCoord[0][1] = sv;
 	TexCoord[1][0] = su;
-	TexCoord[1][1] = sv+1.f/9.f;
-	TexCoord[2][0] = su+1.f/6.f;
-	TexCoord[2][1] = sv+1.f/9.f;
-	TexCoord[3][0] = su+1.f/6.f;
+	TexCoord[1][1] = sv + 1.f / 9.f;
+	TexCoord[2][0] = su + 1.f / 6.f;
+	TexCoord[2][1] = sv + 1.f / 9.f;
+	TexCoord[3][0] = su + 1.f / 6.f;
 	TexCoord[3][1] = sv;
 
-    float minz = 65536.f; //louis
-	physics_face *f = &flag_face[y*(FLAG_WIDTH-1)+x];
+	float minz = 65536.f; //louis
+	physics_face* f = &flag_face[y * (FLAG_WIDTH - 1) + x];
 
-	for(int i=0;i<n;i++)
+	for (int i = 0; i < n; i++)
 	{
 		int vlist = f->vlist[i];
-     	physics_vertex *v = &flag_vertex[vlist];
-		v->light = (-v->normal[0]+v->normal[1])*0.5f+0.5f;
+		physics_vertex* v = &flag_vertex[vlist];
+		v->light = (-v->normal[0] + v->normal[1]) * 0.5f + 0.5f;
 	}
 
-	// Tex2 pass
 	BindTexture(Tex2);
 
+	// 1. Pack the data into the full vertex struct (XYZ, UV, RGBA)
+	SpriteVertexFull vao[4]; // Assuming n is 4 for a Quad
+
+	for (int i = 0; i < n; i++)
 	{
-		std::vector<MU3DColorVertex> verts;
-		verts.reserve(n);
+		int vlist = f->vlist[i];
+		physics_vertex* v = &flag_vertex[vlist];
 
-		GLfloat oldColor[4];
-		MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+		// UVs
+		vao[i].u = TexCoord[i][0];
+		vao[i].v = TexCoord[i][1];
 
-		for (int i = 0; i < n; i++)
-		{
-			int vlist = f->vlist[i];
-			physics_vertex* v = &flag_vertex[vlist];
+		// Per-vertex Lighting (Light * vertex brightness)
+		vao[i].r = Light[0] * v->light;
+		vao[i].g = Light[1] * v->light;
+		vao[i].b = Light[2] * v->light;
+		vao[i].a = 1.0f;
 
-			vec3_t p, Position;
-			Vector(v->p[0] + 9.f, v->p[1] - 12.f, v->p[2] - 35.f, p);
-			Models[o->Type].TransformPosition(o->BoneTransform[19], p, Position, true);
+		// Position Math
+		vec3_t p, Position;
+		Vector(v->p[0] + 9.f, v->p[1] - 12.f, v->p[2] - 35.f, p);
 
-			MU3DColorVertex vx = {};
+		// Transform by Bone 19
+		Models[o->Type].TransformPosition(o->BoneTransform[19], p, Position, true);
 
-			vx.x = Position[0];
-			vx.y = Position[1];
-			vx.z = Position[2];
-
-			vx.u = TexCoord[i][0];
-			vx.v = TexCoord[i][1];
-
-			vx.r = MU_FloatToColorByte(Light[0] * v->light);
-			vx.g = MU_FloatToColorByte(Light[1] * v->light);
-			vx.b = MU_FloatToColorByte(Light[2] * v->light);
-			vx.a = MU_FloatToColorByte(oldColor[3]); // glColor3f preserves alpha
-
-			verts.push_back(vx);
-		}
-
-		if (!verts.empty())
-		{
-			glUseProgram(g_muProgram);
-			MU_ApplyMatrices();
-
-			if (g_uUseTexture >= 0)
-				glUniform1i(g_uUseTexture, 1);
-
-			// texture must already be bound before this block
-			// glActiveTexture(GL_TEXTURE0);
-			// BindTexture(textureId);
-
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(
-				0,
-				3,
-				GL_FLOAT,
-				GL_FALSE,
-				sizeof(MU3DColorVertex),
-				&verts[0].x
-			);
-
-			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(
-				1,
-				2,
-				GL_FLOAT,
-				GL_FALSE,
-				sizeof(MU3DColorVertex),
-				&verts[0].u
-			);
-
-			glEnableVertexAttribArray(2);
-			glVertexAttribPointer(
-				2,
-				4,
-				GL_UNSIGNED_BYTE,
-				GL_TRUE,
-				sizeof(MU3DColorVertex),
-				&verts[0].r
-			);
-
-			glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)verts.size());
-
-			glDisableVertexAttribArray(2);
-			glDisableVertexAttribArray(1);
-			glDisableVertexAttribArray(0);
-		}
-
-		glColor4fv(oldColor);
+		vao[i].x = Position[0];
+		vao[i].y = Position[1];
+		vao[i].z = Position[2];
 	}
 
+	// 2. Set Attributes
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
-	// Tex1 pass
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+
+	glEnableVertexAttribArray(g_aColorLoc);
+	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, n);
+
+	// 4. Cleanup
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aColorLoc);
+
+
 	BindTexture(Tex1);
 
+
+	// 1. Pack the data into the SECOND vertex struct (XYZ, UV, RGBA)
+	SpriteVertexFull vao2[4]; // Array of 4 for the quad
+	int count2 = 0;
+
+	// Reverse loop logic preserved from legacy code
+	for (int i = n - 1; i >= 0; i--)
 	{
-		std::vector<MU3DColorVertex> verts;
-		verts.reserve(n);
+		int vlist = f->vlist[i];
+		physics_vertex* v = &flag_vertex[vlist];
 
-		GLfloat oldColor[4];
-		MU_glGetColor4(GL_CURRENT_COLOR, oldColor);
+		// UVs
+		vao2[count2].u = TexCoord[i][0];
+		vao2[count2].v = TexCoord[i][1];
 
-		for (int i = n - 1; i >= 0; i--)
-		{
-			int vlist = f->vlist[i];
-			physics_vertex* v = &flag_vertex[vlist];
+		// Per-vertex Lighting (Light * vertex brightness)
+		vao2[count2].r = Light[0] * v->light;
+		vao2[count2].g = Light[1] * v->light;
+		vao2[count2].b = Light[2] * v->light;
+		vao2[count2].a = 1.0f;
 
-			vec3_t p, Position;
-			Vector(v->p[0] + 9.f, v->p[1] - 12.f, v->p[2] - 35.f, p);
-			Models[o->Type].TransformPosition(o->BoneTransform[19], p, Position, true);
+		// Position Math
+		vec3_t p, Position;
+		Vector(v->p[0] + 9.f, v->p[1] - 12.f, v->p[2] - 35.f, p);
 
-			MU3DColorVertex vx = {};
+		// Transform by Bone 19
+		Models[o->Type].TransformPosition(o->BoneTransform[19], p, Position, true);
 
-			vx.x = Position[0];
-			vx.y = Position[1];
-			vx.z = Position[2];
-
-			vx.u = TexCoord[i][0];
-			vx.v = TexCoord[i][1];
-
-			vx.r = MU_FloatToColorByte(Light[0] * v->light);
-			vx.g = MU_FloatToColorByte(Light[1] * v->light);
-			vx.b = MU_FloatToColorByte(Light[2] * v->light);
-			vx.a = MU_FloatToColorByte(oldColor[3]); // glColor3f preserves alpha
-
-			verts.push_back(vx);
-		}
-
-		if (!verts.empty())
-		{
-			glUseProgram(g_muProgram);
-			MU_ApplyMatrices();
-
-			if (g_uUseTexture >= 0)
-				glUniform1i(g_uUseTexture, 1);
-
-			// texture must already be bound before this draw
-			// glActiveTexture(GL_TEXTURE0);
-			// BindTexture(textureId);
-
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(
-				0,
-				3,
-				GL_FLOAT,
-				GL_FALSE,
-				sizeof(MU3DColorVertex),
-				&verts[0].x
-			);
-
-			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(
-				1,
-				2,
-				GL_FLOAT,
-				GL_FALSE,
-				sizeof(MU3DColorVertex),
-				&verts[0].u
-			);
-
-			glEnableVertexAttribArray(2);
-			glVertexAttribPointer(
-				2,
-				4,
-				GL_UNSIGNED_BYTE,
-				GL_TRUE,
-				sizeof(MU3DColorVertex),
-				&verts[0].r
-			);
-
-			glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)verts.size());
-
-			glDisableVertexAttribArray(2);
-			glDisableVertexAttribArray(1);
-			glDisableVertexAttribArray(0);
-		}
-
-		glColor4fv(oldColor);
+		vao2[count2].x = Position[0];
+		vao2[count2].y = Position[1];
+		vao2[count2].z = Position[2];
+		count2++;
 	}
+
+	// 2. Set Attributes using vao2
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].x);
+
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].u);
+
+	glEnableVertexAttribArray(g_aColorLoc);
+	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, count2);
+
+	// 4. Cleanup
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aColorLoc);
+
+
 }
 
 void RenderFlag(OBJECT *o,vec3_t Light,int Tex1,int Tex2)

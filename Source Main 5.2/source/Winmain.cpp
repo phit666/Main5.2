@@ -1703,8 +1703,8 @@ int main(int argc, char* argv[])
 
 		glViewport(0, 0, WindowWidth, WindowHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUseProgram(g_muProgram);
-		MU_ApplyMatrices();
+		//glUseProgram(g_muProgram);
+		//MU_ApplyMatrices();
 
 		/*struct TestVertex
 		{

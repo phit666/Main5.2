@@ -524,7 +524,6 @@ void RenderInfomation3D()
 	{
 		Success = true;
 	}
-
 	if (ErrorMessage == MESSAGE_PERSONALSHOP_WARNING)
 	{
 		Success = true;
@@ -532,91 +531,60 @@ void RenderInfomation3D()
 
 	if (Success)
 	{
+
+		// 1. PROJECTION RESET
+		projectionStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
 		glViewport(0, 0, WindowWidth, WindowHeight);
 
-		glm::mat4 proj = glm::perspective(
-			glm::radians(CameraFOV),
-			(float)WindowWidth / (float)WindowHeight,
-			CameraViewNear,
-			CameraViewFar
-		);
+		float aspect = (float)WindowWidth / (float)WindowHeight;
+		// gluPerspective2(1.f, ...) -> Note: 1.0f degree is a massive zoom
+		projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, CameraViewNear, CameraViewFar);
 
-		glm::mat4 view(1.0f);
+		// 2. MODELVIEW RESET
+		modelViewStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
 
-		memcpy(g_muProjection.m, glm::value_ptr(proj), sizeof(float) * 16);
-		memcpy(g_muView.m, glm::value_ptr(view), sizeof(float) * 16);
+		// 3. SNAPSHOT & STATES
+		GetOpenGLMatrix(CameraMatrix); // Snapshot the Identity matrix
+		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
 
-		MU_CopyViewToCameraMatrix(CameraMatrix);
+		// 4. SHADER SYNC (Crucial for GLES2)
+		myShader.use();
+		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+		myShader.setBool(g_uFogEnabledLoc, false); // UI items usually don't have fog
 
-		glUseProgram(g_muProgram);
-		MU_ApplyMatrices();
+		// 5. COORDINATE LOGIC
+		float Width = 40.0f;
+		float Height = 60.0f;
+		float x = (640.0f - 150.0f) / 2.0f;
+		float y = 60.0f + 55.0f; // Simplified based on your logic
 
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-
-		if (g_uDiscardBlack >= 0)
-			glUniform1i(g_uDiscardBlack, 0);
-
-		EnableDepthTest();
-		EnableDepthMask();
-
-		float Width, Height;
-
-		float x = (640 - 150) / 2;
-
-		float y;
-
-		if (ErrorMessage == MESSAGE_TRADE_CHECK)
-			y = 60 + 55;
-		else
-			y = 60 + 55;
-
-		Width = 40.f;
-		Height = 60.f;
-
-		int iRenderType = ErrorMessage;
-
-		if (AskYesOrNo == 5)
-			iRenderType = MESSAGE_USE_STATE;
+		// 6. RENDER LOGIC
+		int iRenderType = (AskYesOrNo == 5) ? MESSAGE_USE_STATE : ErrorMessage;
 
 		switch (iRenderType)
 		{
 		case MESSAGE_USE_STATE:
 		case MESSAGE_USE_STATE2:
 		case MESSAGE_PERSONALSHOP_WARNING:
-
-			RenderItem3D(
-				x,
-				y,
-				Width,
-				Height,
-				TargetItem.Type,
-				TargetItem.Level,
-				TargetItem.Option1,
-				TargetItem.ExtOption,
-				true
-			);
+			RenderItem3D(x, y, Width, Height, TargetItem.Type, TargetItem.Level, TargetItem.Option1, TargetItem.ExtOption, true);
 			break;
-
 		default:
-
-			RenderItem3D(
-				x,
-				y,
-				Width,
-				Height,
-				PickItem.Type,
-				PickItem.Level,
-				PickItem.Option1,
-				PickItem.ExtOption,
-				true
-			);
+			RenderItem3D(x, y, Width, Height, PickItem.Type, PickItem.Level, PickItem.Option1, PickItem.ExtOption, true);
 			break;
 		}
 
+		// 7. RESTORE MATRICES (glPopMatrix equivalent)
+		if (modelViewStack.size() > 1) modelViewStack.pop_back();
+		if (projectionStack.size() > 1) projectionStack.pop_back();
+
+		// 8. UPDATE MOUSE & SHADER SYNC
+		// Restore the Ortho matrix to the shader so the rest of the UI draws correctly
+		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+
+		// This function now uses the updated modelViewStack.back()
 		UpdateMousePositionn();
 
-		BeginBitmap();
 	}
 }
 
