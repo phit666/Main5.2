@@ -298,48 +298,100 @@ void CSprite::Update(double dDeltaTick)
 
 void CSprite::Render()
 {
-	if (!m_bShow) return;
+	if (!m_bShow)
+		return;
 
-	// 1. Prepare vertex data (4 vertices for the quad)
-	SpriteVertex vertices[4];
-	for (int i = 0; i < 4; ++i) {
-		vertices[i].x = m_aScrCoord[i].fX * m_fScaleX;
-		vertices[i].y = m_aScrCoord[i].fY * m_fScaleY;
-
-		if (m_nTexID > -1) {
-			vertices[i].u = m_aTexCoord[i].fTU;
-			vertices[i].v = m_aTexCoord[i].fTV;
+	if (-1 < m_nTexID)
+	{
+		if (!TextureEnable)
+		{
+			TextureEnable = true;
+			::glEnable(GL_TEXTURE_2D);
 		}
-		else {
-			vertices[i].u = 0.0f; vertices[i].v = 0.0f;
-		}
-	}
 
-	// 2. Set the Color (glUniform4f replaces glColor4ub)
-	// Convert 0-255 to 0.0-1.0
-	glUniform4f(g_uColorLoc, m_byRed / 255.0f, m_byGreen / 255.0f, m_byBlue / 255.0f, m_byAlpha / 255.0f);
-
-	// 3. Handle Texture
-	if (m_nTexID > -1) {
 		BindTexture(m_nTexID);
-		glUniform1i(g_uTexEnabledLoc, 1); // Tell shader to use texture
+
+		// 1. Pack the data from your class arrays into the struct
+		SpriteVertex vao[4]; // Assuming POS_MAX is 4
+		int count = 0;
+
+		for (int i = LT; i < POS_MAX; ++i)
+		{
+			// Apply your scaling logic
+			vao[count].x = m_aScrCoord[i].fX * m_fScaleX;
+			vao[count].y = m_aScrCoord[i].fY * m_fScaleY;
+
+			// UVs
+			vao[count].u = m_aTexCoord[i].fTU;
+			vao[count].v = m_aTexCoord[i].fTV;
+			count++;
+		}
+
+		// 2. Set the Color Uniform (converting bytes to floats)
+		myShader.setVec4(g_uColorLoc,
+			m_byRed / 255.0f,
+			m_byGreen / 255.0f,
+			m_byBlue / 255.0f,
+			m_byAlpha / 255.0f);
+
+		// 3. Set Attributes
+		// Position
+		glEnableVertexAttribArray(g_aPosLoc);
+		glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
+
+		// Texture
+		glEnableVertexAttribArray(g_aTexLoc);
+		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
+
+		// Ensure per-vertex color is disabled (we are using the uniform above)
+		glDisableVertexAttribArray(g_aColorLoc);
+
+		// 4. Draw
+		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
+
+		// 5. Cleanup
+		glDisableVertexAttribArray(g_aTexLoc);
+
 	}
-	else {
-		glUniform1i(g_uTexEnabledLoc, 0); // Tell shader to use flat color
+	else
+	{
+		if (TextureEnable)
+		{
+			TextureEnable = false;
+			::glDisable(GL_TEXTURE_2D);
+		}
+
+		// 1. Pack the positions into a simple array
+		float vao[POS_MAX - LT][2];
+		int count = 0;
+
+		for (int i = LT; i < POS_MAX; ++i)
+		{
+			vao[count][0] = m_aScrCoord[i].fX * m_fScaleX;
+			vao[count][1] = m_aScrCoord[i].fY * m_fScaleY;
+			count++;
+		}
+
+		// 2. Set the Color Uniform
+		myShader.setVec4(g_uColorLoc,
+			m_byRed / 255.0f,
+			m_byGreen / 255.0f,
+			m_byBlue / 255.0f,
+			m_byAlpha / 255.0f);
+
+		// 3. Set Attributes
+		// Position is required
+		glEnableVertexAttribArray(g_aPosLoc);
+		glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, vao);
+
+		// IMPORTANT: Disable UV and Color attributes
+		// Since u_hasTexture is false, the shader won't use UVs, 
+		// and we want it to use the u_color uniform instead of a_color.
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aColorLoc);
+
+		// 4. Draw
+		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
+
 	}
-
-	// 4. Pass Vertex Data to Attributes
-	// Position attribute (x, y)
-	glEnableVertexAttribArray(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vertices[0].x);
-
-	// Texture Coordinate attribute (u, v)
-	glEnableVertexAttribArray(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vertices[0].u);
-
-	// 5. Draw!
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	glDisableVertexAttribArray(g_aPosLoc);
-	glDisableVertexAttribArray(g_aTexLoc);
 }

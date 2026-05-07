@@ -117,46 +117,45 @@ void MoveBlurs()
 
 void RenderBlurs()
 {
-    int Type;
-    //DisableCullFace();
-	for(int i=0;i<MAX_BLURS;i++)
+	int Type;
+	//DisableCullFace();
+	for (int i = 0; i < MAX_BLURS; i++)
 	{
-		BLUR *b = &Blur[i];
-		if(b->Live)
+		BLUR* b = &Blur[i];
+		if (b->Live)
 		{
-            Type = b->Type;
+			Type = b->Type;
 
-			int nTexture = BITMAP_BLUR+Type;
-			if(Type == 3)
+			int nTexture = BITMAP_BLUR + Type;
+			if (Type == 3)
 			{
 				nTexture = BITMAP_BLUR2;
 			}
-			else if(Type == 4)
+			else if (Type == 4)
 			{
 				nTexture = BITMAP_BLUR;
 			}
-			else if(Type == 5)
+			else if (Type == 5)
 			{
-				nTexture = BITMAP_BLUR+3;
+				nTexture = BITMAP_BLUR + 3;
 			}
-			if(b->Owner->Level == 0 && (Type<=3 || ( Type >= 5 && Type <= 10) ))
+			if (b->Owner->Level == 0 && (Type <= 3 || (Type >= 5 && Type <= 10)))
 			{
-              	EnableAlphaBlend();
+				EnableAlphaBlend();
 			}
 			else
 			{
-              	EnableAlphaBlendMinus();
+				EnableAlphaBlendMinus();
 			}
 
-            if( Type>2 ) Type = Type - 3;
-			if(b->Number >= 2)
+			if (Type > 2) Type = Type - 3;
+			if (b->Number >= 2)
 			{
 				BindTexture(nTexture);
-
-				// 1. Prepare a buffer for all vertices
-				// Each quad has 4 vertices, and we have (b->Number - 1) quads
-				std::vector<SpriteVertexFull> vao;
-				vao.reserve((b->Number - 1) * 4);
+				// 1. Prepare a buffer for the entire trail
+				// Each quad has 4 vertices. Total vertices = (b->Number - 1) * 4
+				std::vector<SpriteVertexFull> trailBuffer;
+				trailBuffer.reserve((b->Number - 1) * 4);
 
 				for (int j = 0; j < b->Number - 1; j++)
 				{
@@ -164,46 +163,38 @@ void RenderBlurs()
 					float texU1 = (float)j / (float)b->Number;
 					float texU2 = (float)(j + 1) / (float)b->Number;
 
-					if (b->Owner->Level == 0) {
-						light1 = (float)(b->Number - j) / (float)b->Number;
-						light2 = (float)(b->Number - (j + 1)) / (float)b->Number;
-					}
-					else {
-						light1 = 1.0f;
-						light2 = 1.0f;
-					}
+					// Calculate light for the start of the segment
+					light1 = (b->Owner->Level == 0) ? (float)(b->Number - j) / (float)b->Number : 1.0f;
+					// Calculate light for the end of the segment
+					light2 = (b->Owner->Level == 0) ? (float)(b->Number - (j + 1)) / (float)b->Number : 1.0f;
 
-					// Vertex 1 (p1[j])
-					vao.push_back({ b->p1[j][0], b->p1[j][1], b->p1[j][2], texU1, 1.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
-					// Vertex 2 (p2[j])
-					vao.push_back({ b->p2[j][0], b->p2[j][1], b->p2[j][2], texU1, 0.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
-					// Vertex 3 (p2[j+1])
-					vao.push_back({ b->p2[j + 1][0], b->p2[j + 1][1], b->p2[j + 1][2], texU2, 0.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
-					// Vertex 4 (p1[j+1])
-					vao.push_back({ b->p1[j + 1][0], b->p1[j + 1][1], b->p1[j + 1][2], texU2, 1.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
+					// Vertex 0: p1[j]
+					trailBuffer.push_back({ b->p1[j][0], b->p1[j][1], b->p1[j][2], texU1, 1.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
+					// Vertex 1: p2[j]
+					trailBuffer.push_back({ b->p2[j][0], b->p2[j][1], b->p2[j][2], texU1, 0.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
+					// Vertex 2: p2[j+1]
+					trailBuffer.push_back({ b->p2[j + 1][0], b->p2[j + 1][1], b->p2[j + 1][2], texU2, 0.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
+					// Vertex 3: p1[j+1]
+					trailBuffer.push_back({ b->p1[j + 1][0], b->p1[j + 1][1], b->p1[j + 1][2], texU2, 1.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
 				}
 
-				// 2. Setup Shader and Uniforms
-				myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-				//myShader.setBool(g_uTexEnabledLoc, true);
-
-				// 3. Set Attributes
+				// 2. Set Attributes (Position, Tex, Color)
 				glEnableVertexAttribArray(g_aPosLoc);
-				glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+				glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].x);
 
 				glEnableVertexAttribArray(g_aTexLoc);
-				glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+				glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].u);
 
 				glEnableVertexAttribArray(g_aColorLoc);
-				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].r);
 
-				// 4. Draw all quads at once
-				// Since we used GL_TRIANGLE_FAN for 4 vertices per quad, we draw them in batches of 4
+				// 3. Draw each quad
+				// GLES2 doesn't have GL_QUADS, so we draw each 4-vertex block as a FAN
 				for (int i = 0; i < (b->Number - 1); i++) {
 					glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
 				}
 
-				// 5. Cleanup
+				// 4. Cleanup
 				glDisableVertexAttribArray(g_aTexLoc);
 				glDisableVertexAttribArray(g_aColorLoc);
 
@@ -325,19 +316,19 @@ void MoveObjectBlurs()
 
 void RenderObjectBlurs()
 {
-    int Type;
-	for(int i=0;i<MAX_OBJECTBLURS;i++)
+	int Type;
+	for (int i = 0; i < MAX_OBJECTBLURS; i++)
 	{
-		OBJECT_BLUR *b = &ObjectBlur[i];
-		if(b->Live)
+		OBJECT_BLUR* b = &ObjectBlur[i];
+		if (b->Live)
 		{
-            Type = b->Type;
-			int nTexture = BITMAP_BLUR+Type;
-			if(Type == 3)
+			Type = b->Type;
+			int nTexture = BITMAP_BLUR + Type;
+			if (Type == 3)
 			{
 				nTexture = BITMAP_BLUR2;
 			}
-			else if(Type == 4)
+			else if (Type == 4)
 			{
 				nTexture = BITMAP_BLUR;
 			}
@@ -346,21 +337,14 @@ void RenderObjectBlurs()
 				nTexture = BITMAP_LAVA;
 			}
 
-            EnableAlphaBlend();
+			EnableAlphaBlend();
 
-            if( Type>2 ) Type = Type - 3;
-			if(b->Number >= 2)
+			if (Type > 2) Type = Type - 3;
+			if (b->Number >= 2)
 			{
 				BindTexture(nTexture);
-
-				// Use your Full Vertex struct (9 floats: XYZ, UV, RGBA)
-				std::vector<SpriteVertexFull> vao;
-				// Pre-allocate space for performance (Max 4 vertices per segment)
-				vao.reserve((b->Number - 1) * 4);
-
 				for (int j = 0; j < b->Number - 1; j++)
 				{
-					// 1. Distance Check (Skip quads that are stretched too far)
 					float Data = 300.f;
 					if (b->SubType == 113 || b->SubType == 114)
 					{
@@ -369,32 +353,35 @@ void RenderObjectBlurs()
 							continue;
 					}
 
-					// 2. Calculate Lighting and UVs
+					// 1. Pack the quad data into your full vertex struct
+					SpriteVertexFull vao[4];
+
 					float light1 = (float)(b->Number - j) / (float)b->Number;
 					float light2 = (float)(b->Number - (j + 1)) / (float)b->Number;
 					float texU1 = (float)j / (float)b->Number;
 					float texU2 = (float)(j + 1) / (float)b->Number;
 
-					// 3. Pack 4 vertices for this quad
 					// Vertex 0: p1[j]
-					vao.push_back({ b->p1[j][0], b->p1[j][1], b->p1[j][2], texU1, 1.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
+					vao[0].x = b->p1[j][0]; vao[0].y = b->p1[j][1]; vao[0].z = b->p1[j][2];
+					vao[0].u = texU1;       vao[0].v = 1.0f;
+					vao[0].r = b->Light[0] * light1; vao[0].g = b->Light[1] * light1; vao[0].b = b->Light[2] * light1; vao[0].a = 1.0f;
+
 					// Vertex 1: p2[j]
-					vao.push_back({ b->p2[j][0], b->p2[j][1], b->p2[j][2], texU1, 0.0f, b->Light[0] * light1, b->Light[1] * light1, b->Light[2] * light1, 1.0f });
+					vao[1].x = b->p2[j][0]; vao[1].y = b->p2[j][1]; vao[1].z = b->p2[j][2];
+					vao[1].u = texU1;       vao[1].v = 0.0f;
+					vao[1].r = b->Light[0] * light1; vao[1].g = b->Light[1] * light1; vao[1].b = b->Light[2] * light1; vao[1].a = 1.0f;
+
 					// Vertex 2: p2[j+1]
-					vao.push_back({ b->p2[j + 1][0], b->p2[j + 1][1], b->p2[j + 1][2], texU2, 0.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
+					vao[2].x = b->p2[j + 1][0]; vao[2].y = b->p2[j + 1][1]; vao[2].z = b->p2[j + 1][2];
+					vao[2].u = texU2;         vao[2].v = 0.0f;
+					vao[2].r = b->Light[0] * light2; vao[2].g = b->Light[1] * light2; vao[2].b = b->Light[2] * light2; vao[2].a = 1.0f;
+
 					// Vertex 3: p1[j+1]
-					vao.push_back({ b->p1[j + 1][0], b->p1[j + 1][1], b->p1[j + 1][2], texU2, 1.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
-				}
+					vao[3].x = b->p1[j + 1][0]; vao[3].y = b->p1[j + 1][1]; vao[3].z = b->p1[j + 1][2];
+					vao[3].u = texU2;         vao[3].v = 1.0f;
+					vao[3].r = b->Light[0] * light2; vao[3].g = b->Light[1] * light2; vao[3].b = b->Light[2] * light2; vao[3].a = 1.0f;
 
-				if (!vao.empty())
-				{
-					// 4. Set Shader State
-					myShader.use();
-					myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-					myShader.setBool(g_uTexEnabledLoc, true);
-					myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Reset global tint to white
-
-					// 5. Attributes
+					// 2. Set Attributes
 					glEnableVertexAttribArray(g_aPosLoc);
 					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
@@ -404,16 +391,13 @@ void RenderObjectBlurs()
 					glEnableVertexAttribArray(g_aColorLoc);
 					glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
-					// 6. Draw the quads in batches of 4
-					for (int i = 0; i < vao.size() / 4; i++) {
-						glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
-					}
+					// 3. Draw
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-					// 7. Cleanup
+					// 4. Cleanup
 					glDisableVertexAttribArray(g_aTexLoc);
 					glDisableVertexAttribArray(g_aColorLoc);
 				}
-
 			}
 		}
 	}

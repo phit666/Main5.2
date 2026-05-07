@@ -21,85 +21,86 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 	BindTexture(Type);
 
 	vec3_t Light[4];
-	Vector(1.f,1.f,1.f,Light[0]);
-	Vector(1.f,1.f,1.f,Light[1]);
-	Vector(LightTop,LightTop,LightTop,Light[2]);
-	Vector(LightTop,LightTop,LightTop,Light[3]);
+	Vector(1.f, 1.f, 1.f, Light[0]);
+	Vector(1.f, 1.f, 1.f, Light[1]);
+	Vector(LightTop, LightTop, LightTop, Light[2]);
+	Vector(LightTop, LightTop, LightTop, Light[3]);
 
-	float Num    = 12.f;
-	for(float x=0.f;x<Num;x+=1.f)
+	float Num = 12.f;
+	for (float x = 0.f; x < Num; x += 1.f)
 	{
-     	float UV[4][2];
-		TEXCOORD(UV[0],(x    )*(1.f/Num),1.f);
-		TEXCOORD(UV[1],(x+1.f)*(1.f/Num),1.f);
-		TEXCOORD(UV[2],(x+1.f)*(1.f/Num),0.f);
-		TEXCOORD(UV[3],(x    )*(1.f/Num),0.f);
+		float UV[4][2];
+		TEXCOORD(UV[0], (x) * (1.f / Num), 1.f);
+		TEXCOORD(UV[1], (x + 1.f) * (1.f / Num), 1.f);
+		TEXCOORD(UV[2], (x + 1.f) * (1.f / Num), 0.f);
+		TEXCOORD(UV[3], (x) * (1.f / Num), 0.f);
 
 		vec3_t Angle;
 		float Matrix1[3][4];
 		float Matrix2[3][4];
 		Angle[0] = 0.f;
 		Angle[1] = 0.f;
-		Angle[2] = (x    )*30.f+Rotation;
-		AngleIMatrix(Angle,Matrix1);
-		Angle[2] = (x+1.f)*30.f+Rotation;
-		AngleIMatrix(Angle,Matrix2);
-		
-     	vec3_t p,Position[4];
-		Vector(0.f,ScaleBottom,0.f,p);
-		VectorRotate(p,Matrix1,Position[0]);
-		VectorAdd(ObjectPosition,Position[0],Position[0]);
-		Vector(0.f,ScaleBottom,0.f,p);
-		VectorRotate(p,Matrix2,Position[1]);
-		VectorAdd(ObjectPosition,Position[1],Position[1]);
-		Vector(0.f,ScaleTop,Height,p);
-		VectorRotate(p,Matrix2,Position[2]);
-		VectorAdd(ObjectPosition,Position[2],Position[2]);
-		Vector(0.f,ScaleTop,Height,p);
-		VectorRotate(p,Matrix1,Position[3]);
-		VectorAdd(ObjectPosition,Position[3],Position[3]);
+		Angle[2] = (x) * 30.f + Rotation;
+		AngleIMatrix(Angle, Matrix1);
+		Angle[2] = (x + 1.f) * 30.f + Rotation;
+		AngleIMatrix(Angle, Matrix2);
 
-		// Use your Full Vertex struct (9 floats: XYZ, UV, RGBA)
+		vec3_t p, Position[4];
+		Vector(0.f, ScaleBottom, 0.f, p);
+		VectorRotate(p, Matrix1, Position[0]);
+		VectorAdd(ObjectPosition, Position[0], Position[0]);
+		Vector(0.f, ScaleBottom, 0.f, p);
+		VectorRotate(p, Matrix2, Position[1]);
+		VectorAdd(ObjectPosition, Position[1], Position[1]);
+		Vector(0.f, ScaleTop, Height, p);
+		VectorRotate(p, Matrix2, Position[2]);
+		VectorAdd(ObjectPosition, Position[2], Position[2]);
+		Vector(0.f, ScaleTop, Height, p);
+		VectorRotate(p, Matrix1, Position[3]);
+		VectorAdd(ObjectPosition, Position[3], Position[3]);
+
+		// 1. Pack the data into the full vertex struct (9 floats: XYZ, UV, RGBA)
 		SpriteVertexFull vao[4];
 
 		for (int i = 0; i < 4; i++)
 		{
-			// 1. Position (XYZ)
+			// Position (XYZ)
 			vao[i].x = Position[i][0];
 			vao[i].y = Position[i][1];
 			vao[i].z = Position[i][2];
 
-			// 2. Texture UV with the Vertical Offset (TextureV)
+			// Texture UV with the scrolling offset
 			vao[i].u = UV[i][0];
 			vao[i].v = UV[i][1] + TextureV;
 
-			// 3. Per-Vertex Color (RGB) + Full Alpha (1.0)
+			// Per-Vertex Color (Light[i]) + Opaque Alpha
 			vao[i].r = Light[i][0];
 			vao[i].g = Light[i][1];
 			vao[i].b = Light[i][2];
 			vao[i].a = 1.0f;
 		}
 
-		// 4. Set Shader State
-		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default global white
-
-		// 5. Attributes
+		// 2. Set Attributes
+		// Position
 		glEnableVertexAttribArray(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
+		// Texture UV
 		glEnableVertexAttribArray(g_aTexLoc);
 		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
+		// Color / Light
 		glEnableVertexAttribArray(g_aColorLoc);
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
-		// 6. Draw (GL_TRIANGLE_FAN is the direct GLES2 replacement for a single QUAD)
+		// 3. Draw
+		// GL_TRIANGLE_FAN is the direct GLES2 replacement for GL_QUADS
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-		// 7. Cleanup optional attributes
+		// 4. Cleanup optional attributes
 		glDisableVertexAttribArray(g_aTexLoc);
 		glDisableVertexAttribArray(g_aColorLoc);
+
 	}
 }
 /*

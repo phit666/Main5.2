@@ -508,7 +508,8 @@ void CSWaterTerrain::RenderWaterBitmapTile(
         VectorCopy(PrimaryTerrainLight[TerrainIndex4], Light[3]);
     }
 
-    // 1. Pack the data into the Full Vertex struct (9 floats per vertex)
+    // 1. Pack the data into the full vertex struct (XYZ, UV, RGBA)
+    // SpriteVertexFull contains: float x,y,z, u,v, r,g,b,a
     SpriteVertexFull vao[4];
 
     for (int i = 0; i < 4; i++) {
@@ -517,16 +518,16 @@ void CSWaterTerrain::RenderWaterBitmapTile(
         vao[i].y = TerrainVertex[i][1];
         vao[i].z = TerrainVertex[i][2];
 
-        // UVs
+        // Texture UVs
         vao[i].u = c[i][0];
         vao[i].v = c[i][1];
 
-        // Color (RGBA)
+        // Per-Vertex Color (RGBA)
         if (LightEnable) {
             vao[i].r = Light[i][0];
             vao[i].g = Light[i][1];
             vao[i].b = Light[i][2];
-            vao[i].a = Alpha; // Alpha is applied even if it's 1.0f
+            vao[i].a = Alpha; // Alpha applies to the vertex color
         }
         else {
             // Default to white if lighting is off
@@ -534,28 +535,24 @@ void CSWaterTerrain::RenderWaterBitmapTile(
         }
     }
 
-    // 2. Set Uniforms
-    myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-    myShader.setMat4(g_uMvLoc, modelViewStack.back()); // Needed for Fog distance
-    //myShader.setBool(g_uTexEnabledLoc, true);
-
-    // 3. Set Attributes
-    // Position
+    // 2. Attributes Setup
+    // Position (using global g_aPosLoc)
     glEnableVertexAttribArray(g_aPosLoc);
     glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
-    // UV
+    // Texture (using global g_aTexLoc)
     glEnableVertexAttribArray(g_aTexLoc);
     glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
-    // Color (Light)
+    // Color/Light (using global g_aColorLoc)
     glEnableVertexAttribArray(g_aColorLoc);
     glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
-    // 4. Draw
+    // 3. Draw
+    // GL_TRIANGLE_FAN is the direct GLES2 replacement for a single QUAD
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    // 5. Cleanup optional attributes
+    // 4. Cleanup optional attributes so they don't leak into the next draw call
     glDisableVertexAttribArray(g_aTexLoc);
     glDisableVertexAttribArray(g_aColorLoc);
 
