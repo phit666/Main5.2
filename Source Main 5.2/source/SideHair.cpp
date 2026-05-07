@@ -102,78 +102,90 @@ void CSideHair::Render( vec3_t ppVertexTransformed[MAX_MESH][MAX_VERTICES], vec3
 
 void CSideHair::RenderLine( vec3_t v1, vec3_t v2, vec3_t c1, vec3_t c2)
 {
-	vec3_t p1,p2,d;
+	vec3_t p1, p2, d;
 
-	glColor3f( 1.f, 1.f, 1.f);
-    VectorSubtract(v2,v1,d);
+	glColor3f(1.f, 1.f, 1.f);
+	VectorSubtract(v2, v1, d);
 	float fLength = VectorLength(d);
 	float fTextureMove = 0.0f;
-	fTextureMove = ( 50.0f - fLength) * 0.5f / 50.0f;
+	fTextureMove = (50.0f - fLength) * 0.5f / 50.0f;
 
-	VectorCopy(v1,p1);
-	VectorCopy(v2,p2);
-    VectorSubtract(p2,p1,d);
-	VectorScale(d,0.1f,d);
-	VectorSubtract(p1,d,p1);
-	VectorAdd(p2,d,p2);
+	VectorCopy(v1, p1);
+	VectorCopy(v2, p2);
+	VectorSubtract(p2, p1, d);
+	VectorScale(d, 0.1f, d);
+	VectorSubtract(p1, d, p1);
+	VectorAdd(p2, d, p2);
 
-    float fTextureV = (float)(rand()%100)*0.01f;
-    glColor3f(1.f,1.f,1.f);
-	BindTexture(BITMAP_ROBE+4);
+	float fTextureV = (float)(rand() % 100) * 0.01f;
+	glColor3f(1.f, 1.f, 1.f);
+	BindTexture(BITMAP_ROBE + 4);
 	EnableAlphaBlendMinus();
 	//EnableAlphaTest();
 	//g_OpenglLib.DisableTexture();
-    //g_OpenglLib.Disable(GL_CULL_FACE);
+	//g_OpenglLib.Disable(GL_CULL_FACE);
 	/*glBegin(GL_QUADS);
 	glTexCoord2f(0.f,0.f+fTextureMove);glVertex3f(p1[0]-Scale,p1[1],p1[2]);
-    glTexCoord2f(0.f,1.f-fTextureMove);glVertex3f(p2[0]-Scale,p2[1],p2[2]);
-    glTexCoord2f(1.f,1.f-fTextureMove);glVertex3f(p2[0]+Scale,p2[1],p2[2]);
-    glTexCoord2f(1.f,0.f+fTextureMove);glVertex3f(p1[0]+Scale,p1[1],p1[2]);
+	glTexCoord2f(0.f,1.f-fTextureMove);glVertex3f(p2[0]-Scale,p2[1],p2[2]);
+	glTexCoord2f(1.f,1.f-fTextureMove);glVertex3f(p2[0]+Scale,p2[1],p2[2]);
+	glTexCoord2f(1.f,0.f+fTextureMove);glVertex3f(p1[0]+Scale,p1[1],p1[2]);
 	glEnd();
 	glBegin(GL_QUADS);
-    glTexCoord2f(0.f,0.f+fTextureMove);glVertex3f(p1[0],p1[1]-Scale,p1[2]);
-    glTexCoord2f(0.f,1.f-fTextureMove);glVertex3f(p2[0],p2[1]-Scale,p2[2]);
-    glTexCoord2f(1.f,1.f-fTextureMove);glVertex3f(p2[0],p2[1]+Scale,p2[2]);
-    glTexCoord2f(1.f,0.f+fTextureMove);glVertex3f(p1[0],p1[1]+Scale,p1[2]);
+	glTexCoord2f(0.f,0.f+fTextureMove);glVertex3f(p1[0],p1[1]-Scale,p1[2]);
+	glTexCoord2f(0.f,1.f-fTextureMove);glVertex3f(p2[0],p2[1]-Scale,p2[2]);
+	glTexCoord2f(1.f,1.f-fTextureMove);glVertex3f(p2[0],p2[1]+Scale,p2[2]);
+	glTexCoord2f(1.f,0.f+fTextureMove);glVertex3f(p1[0],p1[1]+Scale,p1[2]);
 	glEnd();
 	glBegin(GL_QUADS);
-    glTexCoord2f(0.f,0.f+fTextureMove);glVertex3f(p1[0],p1[1],p1[2]-Scale);
-    glTexCoord2f(0.f,1.f-fTextureMove);glVertex3f(p2[0],p2[1],p2[2]-Scale);
-    glTexCoord2f(1.f,1.f-fTextureMove);glVertex3f(p2[0],p2[1],p2[2]+Scale);
-    glTexCoord2f(1.f,0.f+fTextureMove);glVertex3f(p1[0],p1[1],p1[2]+Scale);
+	glTexCoord2f(0.f,0.f+fTextureMove);glVertex3f(p1[0],p1[1],p1[2]-Scale);
+	glTexCoord2f(0.f,1.f-fTextureMove);glVertex3f(p2[0],p2[1],p2[2]-Scale);
+	glTexCoord2f(1.f,1.f-fTextureMove);glVertex3f(p2[0],p2[1],p2[2]+Scale);
+	glTexCoord2f(1.f,0.f+fTextureMove);glVertex3f(p1[0],p1[1],p1[2]+Scale);
 	glEnd();*/
 	vec3_t vOrtho;
-	CrossProduct( m_vLight, d, vOrtho);
-	VectorNormalize( vOrtho);
-	VectorScale( vOrtho, 10.f, vOrtho);
+	CrossProduct(m_vLight, d, vOrtho);
+	VectorNormalize(vOrtho);
+	VectorScale(vOrtho, 10.f, vOrtho);
 
-	MU3DVertex quad[4];
+	// 1. Pack data into the 3D vertex struct
+	SpriteVertex3D vao[4];
 
-	quad[0].x = p1[0] - vOrtho[0];
-	quad[0].y = p1[1] - vOrtho[1];
-	quad[0].z = p1[2] - vOrtho[2];
-	quad[0].u = 0.f;
-	quad[0].v = 0.f + fTextureMove + fTextureV;
+	// Pre-calculate common texture Y offsets
+	float v0 = 0.0f + fTextureMove + fTextureV;
+	float v1 = 1.0f - fTextureMove + fTextureV;
 
-	quad[1].x = p2[0] - vOrtho[0];
-	quad[1].y = p2[1] - vOrtho[1];
-	quad[1].z = p2[2] - vOrtho[2];
-	quad[1].u = 0.f;
-	quad[1].v = 1.f - fTextureMove + fTextureV;
+	// Vertex 0
+	vao[0].x = p1[0] - vOrtho[0]; vao[0].y = p1[1] - vOrtho[1]; vao[0].z = p1[2] - vOrtho[2];
+	vao[0].u = 0.0f; vao[0].v = v0;
 
-	quad[2].x = p2[0] + vOrtho[0];
-	quad[2].y = p2[1] + vOrtho[1];
-	quad[2].z = p2[2] + vOrtho[2];
-	quad[2].u = 1.f;
-	quad[2].v = 1.f - fTextureMove + fTextureV;
+	// Vertex 1
+	vao[1].x = p2[0] - vOrtho[0]; vao[1].y = p2[1] - vOrtho[1]; vao[1].z = p2[2] - vOrtho[2];
+	vao[1].u = 0.0f; vao[1].v = v1;
 
-	quad[3].x = p1[0] + vOrtho[0];
-	quad[3].y = p1[1] + vOrtho[1];
-	quad[3].z = p1[2] + vOrtho[2];
-	quad[3].u = 1.f;
-	quad[3].v = 0.f + fTextureMove + fTextureV;
+	// Vertex 2
+	vao[2].x = p2[0] + vOrtho[0]; vao[2].y = p2[1] + vOrtho[1]; vao[2].z = p2[2] + vOrtho[2];
+	vao[2].u = 1.0f; vao[2].v = v1;
 
-	MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
-	
+	// Vertex 3
+	vao[3].x = p1[0] + vOrtho[0]; vao[3].y = p1[1] + vOrtho[1]; vao[3].z = p1[2] + vOrtho[2];
+	vao[3].u = 1.0f; vao[3].v = v0;
+
+	// 2. Set Attributes
+	glEnableVertexAttribArray(g_aPosLoc);
+	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+
+	glEnableVertexAttribArray(g_aTexLoc);
+	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+
+	// Ensure constant color is set (usually white for these effects)
+	glDisableVertexAttribArray(g_aColorLoc);
+	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	// 3. Draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// 4. Cleanup
+	glDisableVertexAttribArray(g_aTexLoc);
+
 	//g_OpenglLib.Enable(GL_CULL_FACE);
 }

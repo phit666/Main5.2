@@ -7035,55 +7035,56 @@ void MoveJoints()
 
 void RenderJoints( BYTE bRenderOneMore )
 {
-	for ( int i=0; i<MAX_JOINTS; i++ )
+
+	for (int i = 0; i < MAX_JOINTS; i++)
 	{
 		JOINT* o = &Joints[i];
-		if(o->Type == BITMAP_JOINT_ENERGY && o->SubType == 54 && o->Target->CurrentAction != MONSTER01_ATTACK1)
+		if (o->Type == BITMAP_JOINT_ENERGY && o->SubType == 54 && o->Target->CurrentAction != MONSTER01_ATTACK1)
 			continue;
-		if ( o->Live && o->NumTails>0 && o->RenderFace!=0 )
+		if (o->Live && o->NumTails > 0 && o->RenderFace != 0)
 		{
-            if ( bRenderOneMore==1 && o->byOnlyOneRender==2 ) continue;
-            else if ( bRenderOneMore==2 && o->byOnlyOneRender==1 ) continue;
-			
-            switch ( o->RenderType )
-            {
-            case RENDER_TYPE_ALPHA_BLEND:
+			if (bRenderOneMore == 1 && o->byOnlyOneRender == 2) continue;
+			else if (bRenderOneMore == 2 && o->byOnlyOneRender == 1) continue;
+
+			switch (o->RenderType)
+			{
+			case RENDER_TYPE_ALPHA_BLEND:
 				EnableAlphaBlend();
-                break;
-				
-            case RENDER_TYPE_ALPHA_TEST:
-				EnableAlphaTest ();
-                break;
-				
-            case RENDER_TYPE_ALPHA_BLEND_MINUS:
+				break;
+
+			case RENDER_TYPE_ALPHA_TEST:
+				EnableAlphaTest();
+				break;
+
+			case RENDER_TYPE_ALPHA_BLEND_MINUS:
 				EnableAlphaBlendMinus();
-                break;
-				
-            case RENDER_TYPE_ALPHA_BLEND_OTHER:
+				break;
+
+			case RENDER_TYPE_ALPHA_BLEND_OTHER:
 				EnableAlphaBlend2();
-                break;
-            }
-			
-			if(o->Type == BITMAP_JOINT_HEALING && o->SubType == 8)
-			{
-				DisableDepthTest ();				
+				break;
 			}
-			
-            if ( o->Type == MODEL_SPEARSKILL)
+
+			if (o->Type == BITMAP_JOINT_HEALING && o->SubType == 8)
 			{
-                float fAlpha;
-				switch ( o->SubType)
+				DisableDepthTest();
+			}
+
+			if (o->Type == MODEL_SPEARSKILL)
+			{
+				float fAlpha;
+				switch (o->SubType)
 				{
 				case 0:
 				case 1:
 				case 2:
-                case 4:
+				case 4:
 				case 9:
 				case 10:
-					fAlpha = ( float)min( o->LifeTime, 20) * 0.05f;
-					glColor3f( fAlpha*o->Light[0], fAlpha*o->Light[1], fAlpha*o->Light[2]);
+					fAlpha = (float)min(o->LifeTime, 20) * 0.05f;
+					glColor3f(fAlpha * o->Light[0], fAlpha * o->Light[1], fAlpha * o->Light[2]);
 					break;
-                case 3:
+				case 3:
 				case 5:
 				case 6:
 				case 7:
@@ -7091,82 +7092,82 @@ void RenderJoints( BYTE bRenderOneMore )
 				case 16:
 				case 14:
 				case 17:
-					glColor3f( o->Light[0], o->Light[1], o->Light[2]);
+					glColor3f(o->Light[0], o->Light[1], o->Light[2]);
 					break;
 				case 15:
-					glColor3f( o->Light[0], o->Light[1], o->Light[2]);
+					glColor3f(o->Light[0], o->Light[1], o->Light[2]);
 					EnableAlphaBlendMinus();
 					break;
 				}
 			}
-            else if ( o->Type==BITMAP_FLARE_BLUE && o->SubType==20 )
-            {
-				EnableAlphaBlend2 ();
-				glColor3fv ( o->Light );
-            }
-			else if ( o->Type==BITMAP_SMOKE && o->SubType==0 )
+			else if (o->Type == BITMAP_FLARE_BLUE && o->SubType == 20)
 			{
-                float fAlpha = ( float)min( o->LifeTime, 20) * 0.1f;
-				glColor3f( fAlpha*o->Light[0], fAlpha*o->Light[1], fAlpha*o->Light[2]);
+				EnableAlphaBlend2();
+				glColor3fv(o->Light);
+			}
+			else if (o->Type == BITMAP_SMOKE && o->SubType == 0)
+			{
+				float fAlpha = (float)min(o->LifeTime, 20) * 0.1f;
+				glColor3f(fAlpha * o->Light[0], fAlpha * o->Light[1], fAlpha * o->Light[2]);
 			}
 			else if (o->Type == BITMAP_JOINT_SPARK)
 			{
-				if(o->SubType == 5)
+				if (o->SubType == 5)
 					BindTexture(o->TexType);
 			}
-            else
+			else
 			{
-				glColor3fv ( o->Light );
+				glColor3fv(o->Light);
 			}
-			
-            BindTexture ( o->TexType );
-			
-			for( int j=0; j<o->NumTails; j++ )
+
+			BindTexture(o->TexType);
+
+			for (int j = 0; j < o->NumTails; j++)
 			{
-				if( o->Type == BITMAP_SMOKE && o->SubType == 0 && j < 1 ) 
+				if (o->Type == BITMAP_SMOKE && o->SubType == 0 && j < 1)
 				{
 					continue;
 				}
-                else if( o->Type == BITMAP_JOINT_HEALING && ( o->SubType == 9 || o->SubType == 10 ) && j == o->NumTails-1 )
+				else if (o->Type == BITMAP_JOINT_HEALING && (o->SubType == 9 || o->SubType == 10) && j == o->NumTails - 1)
 				{
 					continue;
 				}
-				
-				float Light1,Light2;
-				if ( o->bTileMapping )
+
+				float Light1, Light2;
+				if (o->bTileMapping)
 				{
-					Light1 = (o->NumTails-(j  ))/16.f;
-					Light2 = (o->NumTails-(j+1))/16.f;
+					Light1 = (o->NumTails - (j)) / 16.f;
+					Light2 = (o->NumTails - (j + 1)) / 16.f;
 				}
-				else if(o->m_byReverseUV == 3)
+				else if (o->m_byReverseUV == 3)
 				{
-					Light1 = 1.f - (j  )/(float)(o->MaxTails-1);
-					Light2 = 1.f - (j+1)/(float)(o->MaxTails-1);
+					Light1 = 1.f - (j) / (float)(o->MaxTails - 1);
+					Light2 = 1.f - (j + 1) / (float)(o->MaxTails - 1);
 				}
 				else
 				{
-					Light1 = (o->NumTails-(j  ))/(float)(o->MaxTails-1);
-					Light2 = (o->NumTails-(j+1))/(float)(o->MaxTails-1);
+					Light1 = (o->NumTails - (j)) / (float)(o->MaxTails - 1);
+					Light2 = (o->NumTails - (j + 1)) / (float)(o->MaxTails - 1);
 				}
-				
-				float Scroll = (float)((int)WorldTime%1000)*0.001f; 
-                if ( o->Type==BITMAP_JOINT_THUNDER || o->Type==BITMAP_JOINT_THUNDER+1 )
+
+				float Scroll = (float)((int)WorldTime % 1000) * 0.001f;
+				if (o->Type == BITMAP_JOINT_THUNDER || o->Type == BITMAP_JOINT_THUNDER + 1)
 				{
 					Light1 *= 2.f;
 					Light2 *= 2.f;
 					Light1 -= Scroll;
 					Light2 -= Scroll;
 				}
-                if ( o->Type==BITMAP_FLARE_FORCE && o->SubType>=0 && o->SubType<=4 
+				if (o->Type == BITMAP_FLARE_FORCE && o->SubType >= 0 && o->SubType <= 4
 					|| (o->SubType >= 11 && o->SubType <= 13)	//^ 펜릴 스킬 관련
 					)
-                {
-					Light1 = (o->NumTails-(j  ))/(float)((o->MaxTails-1)/2);
-					Light2 = (o->NumTails-(j+1))/(float)((o->MaxTails-1)/2);
+				{
+					Light1 = (o->NumTails - (j)) / (float)((o->MaxTails - 1) / 2);
+					Light2 = (o->NumTails - (j + 1)) / (float)((o->MaxTails - 1) / 2);
 					Light1 -= Scroll;
 					Light2 -= Scroll;
-                }
-				if ( o->bTileMapping )
+				}
+				if (o->bTileMapping)
 				{
 					Scroll *= 2.f;
 					Light1 *= 2.f;
@@ -7174,301 +7175,340 @@ void RenderJoints( BYTE bRenderOneMore )
 					Light1 -= Scroll;
 					Light2 -= Scroll;
 				}
-                if( o->Type==BITMAP_JOINT_FORCE && o->SubType==0 )
-                {
-                    float Luminosity = ((float)((o->MaxTails-j)/(float)(o->MaxTails))*2);
-                    Luminosity *= o->Light[0];
-                    glColor3f(Luminosity,Luminosity,Luminosity);
+				if (o->Type == BITMAP_JOINT_FORCE && o->SubType == 0)
+				{
+					float Luminosity = ((float)((o->MaxTails - j) / (float)(o->MaxTails)) * 2);
+					Luminosity *= o->Light[0];
+					glColor3f(Luminosity, Luminosity, Luminosity);
 
-					MU3DVertex quad[4];
+					// 1. Pack the quad data into your 3D vertex struct
+					SpriteVertex3D vao[4];
 
-					quad[0].x = o->Tails[j][0][0];
-					quad[0].y = o->Tails[j][0][1];
-					quad[0].z = o->Tails[j][0][2];
-					quad[0].u = Light1;
-					quad[0].v = 0.f;
+					// Vertex 0: Tails[j][0]
+					vao[0].x = o->Tails[j][0][0]; vao[0].y = o->Tails[j][0][1]; vao[0].z = o->Tails[j][0][2];
+					vao[0].u = Light1;            vao[0].v = 0.0f;
 
-					quad[1].x = o->Tails[j][1][0];
-					quad[1].y = o->Tails[j][1][1];
-					quad[1].z = o->Tails[j][1][2];
-					quad[1].u = Light1;
-					quad[1].v = 1.f;
+					// Vertex 1: Tails[j][1]
+					vao[1].x = o->Tails[j][1][0]; vao[1].y = o->Tails[j][1][1]; vao[1].z = o->Tails[j][1][2];
+					vao[1].u = Light1;            vao[1].v = 1.0f;
 
-					quad[2].x = o->Tails[j + 1][1][0];
-					quad[2].y = o->Tails[j + 1][1][1];
-					quad[2].z = o->Tails[j + 1][1][2];
-					quad[2].u = Light2;
-					quad[2].v = 1.f;
+					// Vertex 2: Tails[j+1][1]
+					vao[2].x = o->Tails[j + 1][1][0]; vao[2].y = o->Tails[j + 1][1][1]; vao[2].z = o->Tails[j + 1][1][2];
+					vao[2].u = Light2;              vao[2].v = 1.0f;
 
-					quad[3].x = o->Tails[j + 1][0][0];
-					quad[3].y = o->Tails[j + 1][0][1];
-					quad[3].z = o->Tails[j + 1][0][2];
-					quad[3].u = Light2;
-					quad[3].v = 0.f;
+					// Vertex 3: Tails[j+1][0]
+					vao[3].x = o->Tails[j + 1][0][0]; vao[3].y = o->Tails[j + 1][0][1]; vao[3].z = o->Tails[j + 1][0][2];
+					vao[3].u = Light2;              vao[3].v = 0.0f;
 
-					MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
-                }
-                else
-                {
-                    if ( o->Type == MODEL_SPEARSKILL && ( o->SubType==0 || o->SubType==4 
+					// 2. Set Attributes
+					glEnableVertexAttribArray(g_aPosLoc);
+					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+
+					glEnableVertexAttribArray(g_aTexLoc);
+					glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+
+					// Ensure the color is set to white (or whatever your current global color is)
+					glDisableVertexAttribArray(g_aColorLoc);
+					// If you want the tail to be tinted, use your setVec4(g_uColorLoc, ...) before this
+					glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
+					// 3. Draw
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+					// 4. Cleanup
+					glDisableVertexAttribArray(g_aTexLoc);
+
+				}
+				else
+				{
+					if (o->Type == MODEL_SPEARSKILL && (o->SubType == 0 || o->SubType == 4
 						|| o->SubType == 9
-						) )
-                    {
-                        float scale = 0.7f;
-                        vec3_t Light;
-                        if ( o->Target!=NULL )
-                        {
-                            float fJointHeight;
-							
-							if(o->SubType == 9)
-								fJointHeight = (o->Tails[j][0][2]-(o->Target->Position[2]+180))*0.01f;
+						))
+					{
+						float scale = 0.7f;
+						vec3_t Light;
+						if (o->Target != NULL)
+						{
+							float fJointHeight;
+
+							if (o->SubType == 9)
+								fJointHeight = (o->Tails[j][0][2] - (o->Target->Position[2] + 180)) * 0.01f;
 							else
-								fJointHeight = (o->Tails[j][0][2]-(o->Target->Position[2]+50))*0.01f;
-							
-                            if ( fJointHeight>0 )
-                            {
-                                Vector (o->Light[0]-fJointHeight,o->Light[1]-fJointHeight,o->Light[2]-fJointHeight, Light );
-                                glColor3fv( Light );
-                            }
-                            else
-                            {
-                                VectorCopy ( o->Light, Light );
-                                glColor3fv(o->Light);//1.f,1.f,1.f);
-                            }
-                        }
-                        else
-                        {
-                            glColor3f(1.f,1.f,1.f);
-                        }
-						
-                        if ( j==(o->NumTails/2) )
-                        {
-                            vec3_t  Position;
-							
-                            Vector ( 0.f, 0.f, 0.f, Position );
-                            for ( int k=0; k<4; ++k )
-                            {
-                                VectorAdd ( o->Tails[j][k], Position, Position );
-                            }
-                            VectorScale ( Position, 0.25f, Position );
-							
-							CreateSprite( BITMAP_FLARE_BLUE, Position, scale, Light, NULL );
-                        }
-                    }
-                    else if ( o->Type == BITMAP_JOINT_HEALING && ( o->SubType == 9 || o->SubType == 10 ) )
-                    {
-                        if ( o->Target!=NULL )
-                        {
-                            float  scale = 0.7f;
-                            vec3_t Light;
-                            float  fJointHeight = (j)*0.01f;
-                            VectorScale ( o->Light, 0.9978f, o->Light );
-                            Vector (o->Light[0]-fJointHeight,o->Light[1]-fJointHeight,o->Light[2]-fJointHeight, Light );
-                            glColor3fv( Light );
-							
-                            vec3_t  Position;
-							
-                            Vector ( 0.f, 0.f, 0.f, Position );
-                            for ( int k=0; k<4; ++k )
-                            {
-                                VectorAdd ( o->Tails[j][k], Position, Position );
-                            }
-                            VectorScale ( Position, 0.25f, Position );
-							
-                            if ( o->SubType==9 ) scale = 0.5f;
-                            CreateSprite( BITMAP_FLARE_BLUE, Position, scale, Light, NULL );
-                        }
-                    }
-                    else if( o->Type==BITMAP_JOINT_THUNDER+1 && o->SubType==0 )
-                    {
-                        int tail = (int)(o->Light[2]);
-                        if( tail==j )
-                        {
-                            float l = o->Light[2] - j;
-                            glColor3f(l, l, l);
+								fJointHeight = (o->Tails[j][0][2] - (o->Target->Position[2] + 50)) * 0.01f;
+
+							if (fJointHeight > 0)
+							{
+								Vector(o->Light[0] - fJointHeight, o->Light[1] - fJointHeight, o->Light[2] - fJointHeight, Light);
+								glColor3fv(Light);
+							}
+							else
+							{
+								VectorCopy(o->Light, Light);
+								glColor3fv(o->Light);//1.f,1.f,1.f);
+							}
 						}
-                        else if( tail<j )
-                        {
-                            glColor3f(0.f,0.f,0.f);
+						else
+						{
+							glColor3f(1.f, 1.f, 1.f);
 						}
-                        else
-                        {
-                            glColor3f(0.7f,0.7f,0.7f);
-                        }
-                    }
-                    else if ( o->Type==BITMAP_FLARE+1 && o->SubType==6 )
-                    {
-                        if ( j==0 )
-                        {
-                            vec3_t  Position;
-                            Vector ( 0.f, 0.f, 0.f, Position );
-                            for ( int k=0; k<4; ++k )
-                            {
-                                VectorAdd ( o->Tails[j][k], Position, Position );
-                            }
-                            VectorScale ( Position, 0.25f, Position );
-							
-                            CreateSprite( BITMAP_FLARE_BLUE, Position, 0.5f, o->Light, NULL, (float)(rand()%360), 3 );
-                            CreateSprite( BITMAP_SHINY+1, Position, 1.5f, o->Light, NULL, (float)(rand()%360), 3 );
-                        }
-                    }
-                    else if ( o->Type==BITMAP_FLARE+1 && o->SubType==8 )
-                    {
-                        if ( j==0 )
-                        {
-                            vec3_t  Position;
-                            Vector ( 0.f, 0.f, 0.f, Position );
-                            for ( int k=0; k<4; ++k )
-                            {
-                                VectorAdd ( o->Tails[j][k], Position, Position );
-                            }
-                            VectorScale ( Position, 0.25f, Position );
-							
-                            CreateSprite( BITMAP_FLARE_BLUE, Position, 0.3f, o->Light, NULL, (float)(rand()%360), 3 );
-                            CreateSprite( BITMAP_SHINY+1, Position, 1.f, o->Light, NULL, (float)(rand()%360), 3 );
-                        }
-                    }
-                    else if ( o->Type==BITMAP_FLARE_FORCE && ( o->SubType>=0 && o->SubType<=4 ) 
+
+						if (j == (o->NumTails / 2))
+						{
+							vec3_t  Position;
+
+							Vector(0.f, 0.f, 0.f, Position);
+							for (int k = 0; k < 4; ++k)
+							{
+								VectorAdd(o->Tails[j][k], Position, Position);
+							}
+							VectorScale(Position, 0.25f, Position);
+
+							CreateSprite(BITMAP_FLARE_BLUE, Position, scale, Light, NULL);
+						}
+					}
+					else if (o->Type == BITMAP_JOINT_HEALING && (o->SubType == 9 || o->SubType == 10))
+					{
+						if (o->Target != NULL)
+						{
+							float  scale = 0.7f;
+							vec3_t Light;
+							float  fJointHeight = (j) * 0.01f;
+							VectorScale(o->Light, 0.9978f, o->Light);
+							Vector(o->Light[0] - fJointHeight, o->Light[1] - fJointHeight, o->Light[2] - fJointHeight, Light);
+							glColor3fv(Light);
+
+							vec3_t  Position;
+
+							Vector(0.f, 0.f, 0.f, Position);
+							for (int k = 0; k < 4; ++k)
+							{
+								VectorAdd(o->Tails[j][k], Position, Position);
+							}
+							VectorScale(Position, 0.25f, Position);
+
+							if (o->SubType == 9) scale = 0.5f;
+							CreateSprite(BITMAP_FLARE_BLUE, Position, scale, Light, NULL);
+						}
+					}
+					else if (o->Type == BITMAP_JOINT_THUNDER + 1 && o->SubType == 0)
+					{
+						int tail = (int)(o->Light[2]);
+						if (tail == j)
+						{
+							float l = o->Light[2] - j;
+							glColor3f(l, l, l);
+						}
+						else if (tail < j)
+						{
+							glColor3f(0.f, 0.f, 0.f);
+						}
+						else
+						{
+							glColor3f(0.7f, 0.7f, 0.7f);
+						}
+					}
+					else if (o->Type == BITMAP_FLARE + 1 && o->SubType == 6)
+					{
+						if (j == 0)
+						{
+							vec3_t  Position;
+							Vector(0.f, 0.f, 0.f, Position);
+							for (int k = 0; k < 4; ++k)
+							{
+								VectorAdd(o->Tails[j][k], Position, Position);
+							}
+							VectorScale(Position, 0.25f, Position);
+
+							CreateSprite(BITMAP_FLARE_BLUE, Position, 0.5f, o->Light, NULL, (float)(rand() % 360), 3);
+							CreateSprite(BITMAP_SHINY + 1, Position, 1.5f, o->Light, NULL, (float)(rand() % 360), 3);
+						}
+					}
+					else if (o->Type == BITMAP_FLARE + 1 && o->SubType == 8)
+					{
+						if (j == 0)
+						{
+							vec3_t  Position;
+							Vector(0.f, 0.f, 0.f, Position);
+							for (int k = 0; k < 4; ++k)
+							{
+								VectorAdd(o->Tails[j][k], Position, Position);
+							}
+							VectorScale(Position, 0.25f, Position);
+
+							CreateSprite(BITMAP_FLARE_BLUE, Position, 0.3f, o->Light, NULL, (float)(rand() % 360), 3);
+							CreateSprite(BITMAP_SHINY + 1, Position, 1.f, o->Light, NULL, (float)(rand() % 360), 3);
+						}
+					}
+					else if (o->Type == BITMAP_FLARE_FORCE && (o->SubType >= 0 && o->SubType <= 4)
 						|| (o->SubType >= 11 && o->SubType <= 13)
 						)
-                    {
-                        float Luminosity = ((float)((o->NumTails-1-j)/(float)(o->MaxTails))*2);
-						
-                        glColor3f ( o->Light[0]*Luminosity, o->Light[1]*Luminosity, o->Light[2]*Luminosity );
-                    }
-                    else if ( o->Type==BITMAP_JOINT_FORCE && o->SubType==1 )
-                    {
-                        float Luminosity = (1.f-(o->NumTails-j)/(float)(o->NumTails))*2.f;
-						
-                        glColor3f ( o->Light[0]*Luminosity, o->Light[1]*Luminosity, o->Light[2]*Luminosity );
-                    }
+					{
+						float Luminosity = ((float)((o->NumTails - 1 - j) / (float)(o->MaxTails)) * 2);
+
+						glColor3f(o->Light[0] * Luminosity, o->Light[1] * Luminosity, o->Light[2] * Luminosity);
+					}
+					else if (o->Type == BITMAP_JOINT_FORCE && o->SubType == 1)
+					{
+						float Luminosity = (1.f - (o->NumTails - j) / (float)(o->NumTails)) * 2.f;
+
+						glColor3f(o->Light[0] * Luminosity, o->Light[1] * Luminosity, o->Light[2] * Luminosity);
+					}
 #ifdef GUILD_WAR_EVENT
-					if(o->Type == BITMAP_FLARE && o->SubType == 22)
+					if (o->Type == BITMAP_FLARE && o->SubType == 22)
 					{
 						vec3_t t_bias;
 						VectorSubtract(o->Target->Position, o->StartPosition, t_bias);
 						glMatrixMode(GL_MODELVIEW);
 						glPushMatrix();
 						glTranslatef(t_bias[0], t_bias[1], t_bias[2]);
-						
-                        glBegin(GL_QUADS);
-						glTexCoord2f( Light1, 1.f); glVertex3fv(o->Tails[j  ][2]);
-						glTexCoord2f( Light1, 0.f); glVertex3fv(o->Tails[j  ][3]);
-						glTexCoord2f( Light2, 0.f); glVertex3fv(o->Tails[j+1][3]);
-						glTexCoord2f( Light2, 1.f); glVertex3fv(o->Tails[j+1][2]);
-						glTexCoord2f( Light1, 0.f); glVertex3fv(o->Tails[j  ][0]);
-						glTexCoord2f( Light1, 1.f); glVertex3fv(o->Tails[j  ][1]);
-						glTexCoord2f( Light2, 1.f); glVertex3fv(o->Tails[j+1][1]);
-						glTexCoord2f( Light2, 0.f); glVertex3fv(o->Tails[j+1][0]);
+
+						glBegin(GL_QUADS);
+						glTexCoord2f(Light1, 1.f); glVertex3fv(o->Tails[j][2]);
+						glTexCoord2f(Light1, 0.f); glVertex3fv(o->Tails[j][3]);
+						glTexCoord2f(Light2, 0.f); glVertex3fv(o->Tails[j + 1][3]);
+						glTexCoord2f(Light2, 1.f); glVertex3fv(o->Tails[j + 1][2]);
+						glTexCoord2f(Light1, 0.f); glVertex3fv(o->Tails[j][0]);
+						glTexCoord2f(Light1, 1.f); glVertex3fv(o->Tails[j][1]);
+						glTexCoord2f(Light2, 1.f); glVertex3fv(o->Tails[j + 1][1]);
+						glTexCoord2f(Light2, 0.f); glVertex3fv(o->Tails[j + 1][0]);
 						glEnd();
-						
+
 						glPopMatrix();
 						continue;
 					}
 #endif //GUILD_WAR_EVENT
 
-                    float V1 = 0.f;
-                    float V2 = 1.f;
-                    float L1 = Light1;
-                    float L2 = Light2;
-                    if ( o->m_byReverseUV==1 )
-                    {
-                        V1 = 1.f;
-                        V2 = 0.f;
-                    }
-                    else if ( o->m_byReverseUV==2 )
-                    {
-                        L1 = 1.f-L1;
-                        L2 = 1.f-L2;
-                    }
-					
-                    if ( (o->RenderFace&RENDER_FACE_ONE)==RENDER_FACE_ONE )
-                    {
-						MU3DVertex quad[4];
+					float V1 = 0.f;
+					float V2 = 1.f;
+					float L1 = Light1;
+					float L2 = Light2;
+					if (o->m_byReverseUV == 1)
+					{
+						V1 = 1.f;
+						V2 = 0.f;
+					}
+					else if (o->m_byReverseUV == 2)
+					{
+						L1 = 1.f - L1;
+						L2 = 1.f - L2;
+					}
 
-						quad[0].x = o->Tails[j][2][0];
-						quad[0].y = o->Tails[j][2][1];
-						quad[0].z = o->Tails[j][2][2];
-						quad[0].u = L1;
-						quad[0].v = V2;
+					if ((o->RenderFace & RENDER_FACE_ONE) == RENDER_FACE_ONE)
+					{
+						// 1. Pack the data into the 3D vertex struct
+						SpriteVertex3D vao[4];
 
-						quad[1].x = o->Tails[j][3][0];
-						quad[1].y = o->Tails[j][3][1];
-						quad[1].z = o->Tails[j][3][2];
-						quad[1].u = L1;
-						quad[1].v = V1;
+						// Vertex 0: Tails[j][2]
+						vao[0].x = o->Tails[j][2][0];
+						vao[0].y = o->Tails[j][2][1];
+						vao[0].z = o->Tails[j][2][2];
+						vao[0].u = L1; vao[0].v = V2;
 
-						quad[2].x = o->Tails[j + 1][3][0];
-						quad[2].y = o->Tails[j + 1][3][1];
-						quad[2].z = o->Tails[j + 1][3][2];
-						quad[2].u = L2;
-						quad[2].v = V1;
+						// Vertex 1: Tails[j][3]
+						vao[1].x = o->Tails[j][3][0];
+						vao[1].y = o->Tails[j][3][1];
+						vao[1].z = o->Tails[j][3][2];
+						vao[1].u = L1; vao[1].v = V1;
 
-						quad[3].x = o->Tails[j + 1][2][0];
-						quad[3].y = o->Tails[j + 1][2][1];
-						quad[3].z = o->Tails[j + 1][2][2];
-						quad[3].u = L2;
-						quad[3].v = V2;
+						// Vertex 2: Tails[j+1][3]
+						vao[2].x = o->Tails[j + 1][3][0];
+						vao[2].y = o->Tails[j + 1][3][1];
+						vao[2].z = o->Tails[j + 1][3][2];
+						vao[2].u = L2; vao[2].v = V1;
 
-						MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
-                    }
-					
-                    if ( (o->RenderFace&RENDER_FACE_TWO)==RENDER_FACE_TWO )
-                    {
-                        if(o->Type==BITMAP_JOINT_THUNDER || o->Type==BITMAP_JOINT_THUNDER+1)
-                        {
-                            L1 += Scroll*2.f;
-                            L2 += Scroll*2.f;
-                        }
+						// Vertex 3: Tails[j+1][2]
+						vao[3].x = o->Tails[j + 1][2][0];
+						vao[3].y = o->Tails[j + 1][2][1];
+						vao[3].z = o->Tails[j + 1][2][2];
+						vao[3].u = L2; vao[3].v = V2;
 
-						MU3DVertex quad[4];
+						// ... then use glVertexAttribPointer as before ...
 
-						quad[0].x = o->Tails[j][0][0];
-						quad[0].y = o->Tails[j][0][1];
-						quad[0].z = o->Tails[j][0][2];
-						quad[0].u = L1;
-						quad[0].v = V1;
 
-						quad[1].x = o->Tails[j][1][0];
-						quad[1].y = o->Tails[j][1][1];
-						quad[1].z = o->Tails[j][1][2];
-						quad[1].u = L1;
-						quad[1].v = V2;
+						// 2. Set Attributes
+						glEnableVertexAttribArray(g_aPosLoc);
+						glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
-						quad[2].x = o->Tails[j + 1][1][0];
-						quad[2].y = o->Tails[j + 1][1][1];
-						quad[2].z = o->Tails[j + 1][1][2];
-						quad[2].u = L2;
-						quad[2].v = V2;
+						glEnableVertexAttribArray(g_aTexLoc);
+						glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
-						quad[3].x = o->Tails[j + 1][0][0];
-						quad[3].y = o->Tails[j + 1][0][1];
-						quad[3].z = o->Tails[j + 1][0][2];
-						quad[3].u = L2;
-						quad[3].v = V1;
+						// Ensure constant color is set (uses the Luminosity color you just set)
+						glDisableVertexAttribArray(g_aColorLoc);
 
-						MU_DrawBoundQuad3D(quad, 255, 255, 255, 255);
+						// 3. Draw
+						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-                    }
-                }
+						// 4. Cleanup
+						glDisableVertexAttribArray(g_aTexLoc);
+
+					}
+
+					if ((o->RenderFace & RENDER_FACE_TWO) == RENDER_FACE_TWO)
+					{
+						if (o->Type == BITMAP_JOINT_THUNDER || o->Type == BITMAP_JOINT_THUNDER + 1)
+						{
+							L1 += Scroll * 2.f;
+							L2 += Scroll * 2.f;
+						}
+
+
+						// 1. Prepare vertex data (Array of 4 for a single Quad)
+						SpriteVertex3D vao[4];
+
+						// Vertex 0: Tails[j][0]
+						vao[0].x = o->Tails[j][0][0]; vao[0].y = o->Tails[j][0][1]; vao[0].z = o->Tails[j][0][2];
+						vao[0].u = L1; vao[0].v = V1;
+
+						// Vertex 1: Tails[j][1]
+						vao[1].x = o->Tails[j][1][0]; vao[1].y = o->Tails[j][1][1]; vao[1].z = o->Tails[j][1][2];
+						vao[1].u = L1; vao[1].v = V2;
+
+						// Vertex 2: Tails[j+1][1]
+						vao[2].x = o->Tails[j + 1][1][0]; vao[2].y = o->Tails[j + 1][1][1]; vao[2].z = o->Tails[j + 1][1][2];
+						vao[2].u = L2; vao[2].v = V2;
+
+						// Vertex 3: Tails[j+1][0]
+						vao[3].x = o->Tails[j + 1][0][0]; vao[3].y = o->Tails[j + 1][0][1]; vao[3].z = o->Tails[j + 1][0][2];
+						vao[3].u = L2; vao[3].v = V1;
+
+						// 2. Set Attributes
+						glEnableVertexAttribArray(g_aPosLoc);
+						glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+
+						glEnableVertexAttribArray(g_aTexLoc);
+						glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+
+						// Constant color was set by myShader.setVec4(g_uColorLoc, Luminosity...) earlier
+						glDisableVertexAttribArray(g_aColorLoc);
+
+						// 3. Draw
+						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+						// 4. Cleanup
+						glDisableVertexAttribArray(g_aTexLoc);
+
+
+					}
+				}
 			}
-			
-			if(o->Type == BITMAP_JOINT_HEALING && o->SubType == 8)
+
+			if (o->Type == BITMAP_JOINT_HEALING && o->SubType == 8)
 			{
-				EnableDepthTest ();				
+				EnableDepthTest();
 			}
-			if(o->Type == BITMAP_JOINT_THUNDER+1 && o->SubType == 6)
+			if (o->Type == BITMAP_JOINT_THUNDER + 1 && o->SubType == 6)
 			{
 				vec3_t Light;
 				EnableAlphaBlend();
 				o->Velocity /= 1.1f;
 				Vector(o->Velocity, o->Velocity, o->Velocity, Light);
-				RenderTerrainAlphaBitmap(BITMAP_MAGIC+1,o->TargetPosition[0],o->TargetPosition[1],2.f,2.f,Light);
+				RenderTerrainAlphaBitmap(BITMAP_MAGIC + 1, o->TargetPosition[0], o->TargetPosition[1], 2.f, 2.f, Light);
 				DisableAlphaBlend();
 			}
 
 		}
 	}
+
 }
 
 void GetMagicScrew( int iParam, vec3_t vResult, float fSpeedRate)

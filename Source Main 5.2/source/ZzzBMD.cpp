@@ -2126,7 +2126,7 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 	EndRender();
 	EnableDepthMask();
 }
-
+//xx
 void BMD::RenderObjectBoundingBox()
 {
 	DisableTexture();
@@ -2224,7 +2224,7 @@ void BMD::RenderObjectBoundingBox()
 	//glPopMatrix();
 	DisableAlphaBlend();
 }
-
+//xx
 void BMD::RenderBone(float (*BoneMatrix)[3][4])
 {
 	DisableTexture();

@@ -35,8 +35,7 @@ inline void MU_glColor4f(float r, float g, float b, float a)
     g_CurrentColor[2] = b;
     g_CurrentColor[3] = a;
 
-    glDisableVertexAttribArray(2);
-    glVertexAttrib4f(2, r, g, b, a);
+    myShader.setVec4(g_uColorLoc, r, g, b, a);
 }
 
 inline void MU_glColor3f(float r, float g, float b)
@@ -61,14 +60,7 @@ inline void MU_glColor4ub(GLubyte r, GLubyte g, GLubyte b, GLubyte a)
     g_CurrentColor[2] = b / 255.0f;
     g_CurrentColor[3] = a / 255.0f;
 
-    glDisableVertexAttribArray(2);
-    glVertexAttrib4f(
-        2,
-        r / 255.0f,
-        g / 255.0f,
-        b / 255.0f,
-        a / 255.0f
-    );
+    myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }
 
 inline void MU_glColor3ub(GLubyte r, GLubyte g, GLubyte b)
@@ -78,28 +70,17 @@ inline void MU_glColor3ub(GLubyte r, GLubyte g, GLubyte b)
     g_CurrentColor[2] = b / 255.0f;
     g_CurrentColor[3] = 1.0f;
 
-    glDisableVertexAttribArray(2);
-    glVertexAttrib4f(
-        2,
-        r / 255.0f,
-        g / 255.0f,
-        b / 255.0f,
-        1.0f
-    );
+    myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 }
 
 inline void MU_glEnable_TEXTURE_2D()
 {
-    glUseProgram(g_muProgram);
-    if (g_uUseTexture >= 0)
-        glUniform1i(g_uUseTexture, 1);
+    myShader.setBool(g_uTexEnabledLoc, true);
 }
 
 inline void MU_glDisable_TEXTURE_2D()
 {
-    glUseProgram(g_muProgram);
-    if (g_uUseTexture >= 0)
-        glUniform1i(g_uUseTexture, 0);
+    myShader.setBool(g_uTexEnabledLoc, false);
 }
 
 inline void MU_glGetColor4(int flag, vec4_t vec)
