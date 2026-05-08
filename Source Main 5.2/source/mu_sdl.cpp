@@ -441,13 +441,13 @@ bool MU_InitSDL(int width, int height)
 
     InitShader();
 
-    OutputDebugStringA("[SDL-DEBUG] nk_sdl_init");
+    //OutputDebugStringA("[SDL-DEBUG] nk_sdl_init");
 
-    g_nk_ctx = nk_sdl_init(gSDLWindow);
+    //g_nk_ctx = nk_sdl_init(gSDLWindow);
 
-    struct nk_font_atlas* atlas;
-    nk_sdl_font_stash_begin(&atlas);
-    nk_sdl_font_stash_end();
+    //struct nk_font_atlas* atlas;
+    //nk_sdl_font_stash_begin(&atlas);
+    //nk_sdl_font_stash_end();
 
     OutputDebugStringA("[SDL-DEBUG] MU_InitNetworkEvent");
 
@@ -475,7 +475,7 @@ void MU_ShutdownSDL()
         gSDLWindow = nullptr;
     }
 
-    nk_sdl_shutdown();
+    //nk_sdl_shutdown();
     SDL_Quit();
     MU_ShutdownNetworkEvent();
 

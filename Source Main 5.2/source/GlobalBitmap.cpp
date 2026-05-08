@@ -747,25 +747,32 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 
 		glGenTextures(1, &(pNewBitmap->TextureNumber));
 		glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
-		myShader.setFloat(g_uTexEnabledLoc, 1.0);
 
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			MU_GL_RGB_INTERNAL,
-			Width,
-			Height,
-			0,
-			GL_RGB,
-			GL_UNSIGNED_BYTE,
-			pNewBitmap->Buffer
-		);
+		// 1. Determine if we can safely use REPEAT
+		// GLES2 only allows REPEAT for Power-of-Two (POT) textures
+		bool isPOT = ((Width & (Width - 1)) == 0) && ((Height & (Height - 1)) == 0);
+
+		GLuint wrap = uiWrapMode;
+
+		if (wrap == 0x2900) { // Legacy GL_CLAMP
+			wrap = GL_CLAMP_TO_EDGE;
+		}
+
+		// Safety check for GLES2: If it's NOT power-of-two, 
+		// we MUST use CLAMP_TO_EDGE even if the engine requested REPEAT.
+		if (!isPOT) {
+			wrap = GL_CLAMP_TO_EDGE;
+		}
+
+		// internalFormat and format must match in GLES2 for RGB data
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, pNewBitmap->Buffer);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, uiFilter);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, uiFilter);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, uiWrapMode);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, uiWrapMode);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 	}
 
 	jpeg_finish_decompress(&cinfo);
@@ -889,12 +896,13 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 
 	glGenTextures(1, &(pNewBitmap->TextureNumber));
 	glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
-	myShader.setFloat(g_uTexEnabledLoc, 1.0);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	glTexImage2D(
 		GL_TEXTURE_2D,
 		0,
-		MU_GL_RGBA_INTERNAL,
+		GL_RGBA,
 		Width,
 		Height,
 		0,
@@ -903,12 +911,28 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 		pNewBitmap->Buffer
 	);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, uiFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, uiFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, uiWrapMode);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, uiWrapMode);
+	// FIX 4: Wrap Mode Logic
+	// If the TGA is for UI or a loading screen (NPOT), you MUST use CLAMP_TO_EDGE.
+	GLuint wrap = uiWrapMode;
+	if (wrap == 0x2900) wrap = GL_CLAMP_TO_EDGE; // Handle legacy GL_CLAMP
+
+	// GLES2 NPOT Safety: Check if dimensions are power-of-two
+	bool isPOT = ((Width & (Width - 1)) == 0) && ((Height & (Height - 1)) == 0);
+	if (!isPOT) {
+		wrap = GL_CLAMP_TO_EDGE;
+		// Also, NPOT textures CANNOT have mipmaps. Ensure uiFilter is linear/nearest.
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, uiFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, uiFilter);
+	}
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
 
 	return true;
 }

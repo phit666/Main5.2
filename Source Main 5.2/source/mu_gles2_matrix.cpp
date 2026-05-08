@@ -78,12 +78,23 @@ void MU_ApplyMatrices()
 {
     glUseProgram(g_muProgram);
 
-    if (g_uProjection >= 0)
-        glUniformMatrix4fv(g_uProjection, 1, GL_FALSE, g_muProjection.m);
+    // 1. Sync View (ModelView) Matrix
+    // This is used by the shader for Fog (v_dist) calculation
+    if (g_uMvLoc >= 0)
+    {
+        glUniformMatrix4fv(g_uMvLoc, 1, GL_FALSE, glm::value_ptr(modelViewStack.back()));
+    }
 
-    if (g_uView >= 0)
-        glUniformMatrix4fv(g_uView, 1, GL_FALSE, g_muView.m);
+    // 2. Sync Combined MVP Matrix (Projection * ModelView)
+    // This is the "boss" matrix that handles where things appear on screen
+    if (g_uMvpLoc >= 0)
+    {
+        // IMPORTANT: In GLM, order is Projection * ModelView
+        glm::mat4 mvp = projectionStack.back() * modelViewStack.back();
+        glUniformMatrix4fv(g_uMvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+    }
 }
+
 
 void UpdateProjection()
 {
@@ -193,7 +204,6 @@ void main()
         finalColor = v_color * u_color;
     }
 
-    // Alpha Test
     if (u_alphaTestEnabled > 0.5 &&
         finalColor.a <= u_alphaThreshold)
     {
@@ -202,14 +212,29 @@ void main()
 
     if (u_fogEnabled > 0.5)
     {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // red = fog branch active
+        float fogFactor = 1.0;
+
+        if (u_fogDensity > 0.000001)
+        {
+            fogFactor = exp(-u_fogDensity * v_dist);
+        }
+        else
+        {
+            float fogRange = max(u_fogEnd - u_fogStart, 0.0001);
+            fogFactor = (u_fogEnd - v_dist) / fogRange;
+        }
+
+        fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+        gl_FragColor = vec4(
+            mix(u_fogColor.rgb, finalColor.rgb, fogFactor),
+            finalColor.a
+        );
     }
     else
     {
         gl_FragColor = finalColor;
     }
-
-
 }
 
 )";

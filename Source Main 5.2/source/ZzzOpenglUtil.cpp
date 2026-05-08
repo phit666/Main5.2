@@ -50,7 +50,18 @@ int          MouseWheel;
 DWORD		 MouseRButtonPress = 0;
 
 //bool    showShoppingMall = false;
-
+void testprogram() {
+	char t[100] = { 0 };
+	GLint currentProgram = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+	float f1, f2; // Buffer for a vec4 color
+	glGetUniformfv(currentProgram, g_uFogEnabledLoc, &f1);
+	glGetUniformfv(g_muProgram, g_uFogEnabledLoc, &f2);
+	sprintf(t, "[SDL-DEBUG] Current Program = %d (%f), myProgram = %d (%f)",
+		currentProgram, f1,
+		g_muProgram, f2);
+	OutputDebugStringA(t);
+}
 
 void OpenExploper(char* Name, char* para)
 {
@@ -299,7 +310,7 @@ void BindTexture(int tex) {
 		GLuint texID = (tex >= 0) ? Bitmaps[tex].TextureNumber : (GLuint)(-1 * tex);
 		glBindTexture(GL_TEXTURE_2D, texID);
 	}
-	myShader.setFloat(g_uTexEnabledLoc, 1.0);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 }
 
 // GLES2 does not support glBegin/glEnd. TextureStream must be handled 
@@ -310,7 +321,7 @@ void BindTextureStream(int tex) {
 		// You must manually flush your vertex buffer here
 		// FlushBuffer(); 
 		glBindTexture(GL_TEXTURE_2D, Bitmaps[tex].TextureNumber);
-		myShader.setFloat(g_uTexEnabledLoc, 1.0);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 
 	}
 }
@@ -369,7 +380,7 @@ void DisableTexture(bool AlphaTest)
 	// 2. Alpha Test Logic (Shader Uniform)
 	// We update the local boolean and the shader uniform
 	AlphaTestEnable = AlphaTest;
-	myShader.setFloat(g_uAlphaTestLoc, AlphaTest ? 1.0 : 0.0);
+	myShader.setFloat(g_uAlphaTestLoc, AlphaTest ? 1.0f : 0.0f);
 
 	// 3. Texture Logic (Shader Uniform)
 	// We tell the shader to stop sampling by setting u_hasTexture to false
@@ -398,29 +409,55 @@ void SetShaderFog(bool enable) {
 }
 
 void DisableAlphaBlend() {
+
 	if (AlphaBlendType != 0) {
 		AlphaBlendType = 0;
 		glDisable(GL_BLEND);
 	}
 	EnableCullFace();
 	EnableDepthMask();
-	SetShaderAlphaTest(false);
-	SetShaderTexture(true);
-	SetShaderFog(true);
+
+	if (AlphaTestEnable)
+	{
+		AlphaTestEnable = false;
+		SetShaderAlphaTest(false);
+	}
+
+	if (!TextureEnable)
+	{
+		TextureEnable = true;
+		SetShaderTexture(true);
+	}
+
+	if(FogEnable)
+		SetShaderFog(true);
 }
 
 void EnableAlphaTest(bool DepthMask) {
-	if (AlphaBlendType != 2) {
+
+	if (AlphaBlendType != 2)
+	{
 		AlphaBlendType = 2;
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	DisableCullFace();
-	if (DepthMask) EnableDepthMask();
 
-	SetShaderAlphaTest(true);
-	SetShaderTexture(true);
-	SetShaderFog(true);
+	if (DepthMask)
+		EnableDepthMask();
+
+	if (!AlphaTestEnable)
+	{
+		AlphaTestEnable = true;
+		SetShaderAlphaTest(true);
+	}
+	if (!TextureEnable)
+	{
+		TextureEnable = true;
+		SetShaderTexture(true);
+	}
+	if (FogEnable)
+		SetShaderFog(true);
 }
 
 void EnableAlphaBlend() { // Additive
@@ -429,11 +466,22 @@ void EnableAlphaBlend() { // Additive
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE);
 	}
+
 	DisableCullFace();
 	DisableDepthMask();
-	SetShaderAlphaTest(false);
-	SetShaderTexture(true);
-	SetShaderFog(false);
+
+	if (AlphaTestEnable)
+	{
+		AlphaTestEnable = false;
+		SetShaderAlphaTest(false);
+	}
+	if (!TextureEnable)
+	{
+		TextureEnable = true;
+		SetShaderTexture(true);
+	}
+	if (FogEnable)
+		SetShaderFog(false);
 }
 
 void EnableAlphaBlendMinus() // Type 4
@@ -447,10 +495,18 @@ void EnableAlphaBlendMinus() // Type 4
 	DisableCullFace();
 	DisableDepthMask();
 
-	// Shader Uniform Toggles
-	myShader.setFloat(g_uAlphaTestLoc, 0.0);
-	myShader.setFloat(g_uTexEnabledLoc, 1.0);
-	myShader.setFloat(g_uFogEnabledLoc, FogEnable ? 1.0 : 0.0);
+	if (AlphaTestEnable)
+	{
+		AlphaTestEnable = false;
+		SetShaderAlphaTest(false);
+	}
+	if (!TextureEnable)
+	{
+		TextureEnable = true;
+		SetShaderTexture(true);
+	}
+	if (FogEnable)
+		SetShaderFog(false);
 }
 
 void EnableAlphaBlend2() // Type 5
@@ -464,9 +520,18 @@ void EnableAlphaBlend2() // Type 5
 	DisableCullFace();
 	DisableDepthMask();
 
-	myShader.setFloat(g_uAlphaTestLoc, 0.0);
-	myShader.setFloat(g_uTexEnabledLoc, 1.0);
-	myShader.setFloat(g_uFogEnabledLoc, FogEnable ? 1.0 : 0.0);
+	if (AlphaTestEnable)
+	{
+		AlphaTestEnable = false;
+		SetShaderAlphaTest(false);
+	}
+	if (!TextureEnable)
+	{
+		TextureEnable = true;
+		SetShaderTexture(true);
+	}
+	if (FogEnable)
+		SetShaderFog(true);
 }
 
 void EnableAlphaBlend3() // Type 6 (Standard Transparency)
@@ -480,9 +545,19 @@ void EnableAlphaBlend3() // Type 6 (Standard Transparency)
 	DisableCullFace();
 	DisableDepthMask();
 
-	myShader.setFloat(g_uAlphaTestLoc, 0.0);
-	myShader.setFloat(g_uTexEnabledLoc, 1.0);
-	myShader.setFloat(g_uFogEnabledLoc, FogEnable ? 1.0 : 0.0);
+	if (AlphaTestEnable)
+	{
+		AlphaTestEnable = false;
+		SetShaderAlphaTest(false);
+	}
+	if (!TextureEnable)
+	{
+		TextureEnable = true;
+		SetShaderTexture(true);
+	}
+	if (FogEnable)
+		SetShaderFog(true);
+
 }
 
 void EnableAlphaBlend4() // Type 7
@@ -493,12 +568,22 @@ void EnableAlphaBlend4() // Type 7
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 	}
+
 	DisableCullFace();
 	DisableDepthMask();
 
-	myShader.setFloat(g_uAlphaTestLoc, 0.0);
-	myShader.setFloat(g_uTexEnabledLoc, 1.0);
-	myShader.setFloat(g_uFogEnabledLoc, FogEnable ? 1.0 : 0.0);
+	if (AlphaTestEnable)
+	{
+		AlphaTestEnable = false;
+		SetShaderAlphaTest(false);
+	}
+	if (!TextureEnable)
+	{
+		TextureEnable = true;
+		SetShaderTexture(true);
+	}
+	if (FogEnable)
+		SetShaderFog(true);
 }
 
 
@@ -508,11 +593,23 @@ void EnableLightMap() { // Multiplicative
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 	}
+
 	EnableCullFace();
 	EnableDepthMask();
-	SetShaderAlphaTest(false);
-	SetShaderTexture(true);
-	SetShaderFog(true);
+
+	if (AlphaTestEnable)
+	{
+		AlphaTestEnable = false;
+		SetShaderAlphaTest(false);
+	}
+	if (!TextureEnable)
+	{
+		TextureEnable = true;
+		SetShaderTexture(true);
+	}
+	if (FogEnable)
+		SetShaderFog(true);
+
 }
 
 void glViewport2(int x, int y, int Width, int Height)
@@ -542,8 +639,6 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	Width = Width * WindowWidth / 640;
 	Height = Height * WindowHeight / 480;
 
-	myShader.use();
-
 	// --- PROJECTION UPDATE ---
 	projectionStack.push_back(projectionStack.back());
 	glViewport(x, y, Width, Height);
@@ -565,7 +660,8 @@ void BeginOpengl(int x, int y, int Width, int Height)
 
 	// --- CRITICAL MATRIX SYNC ---
 	// Sync combined MVP (Projection * ModelView)
-	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+	MU_ApplyMatrices();
+
 	// Sync MV matrix (for distance-based Fog calculations in the shader)
 	myShader.setMat4(g_uMvLoc, modelViewStack.back());
 
@@ -579,6 +675,9 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	// --- TOGGLE SYNC (Using Floats for Reliability) ---
 	AlphaTestEnable = false;
 	TextureEnable = true;
+	DepthTestEnable = true;
+	CullFaceEnable = true;
+	DepthMaskEnable = true;
 
 	// Use setFloat or your updated setBool (sending 1.0f or 0.0f) 
 	// to avoid the GLES2 "Ghost Boolean" bug
@@ -589,14 +688,12 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	// --- FOG SYNC ---
 	if (FogEnable)
 	{
-		// Set u_fogEnabled to 1.0 (True)
 		myShader.setFloat(g_uFogEnabledLoc, 1.0f);
 		myShader.setFloat(g_uFogDensityLoc, FogDensity);
 		myShader.setVec4(g_uFogColorLoc, FogColor[0], FogColor[1], FogColor[2], FogColor[3]);
 	}
 	else
 	{
-		// Set u_fogEnabled to 0.0 (False)
 		myShader.setFloat(g_uFogEnabledLoc, 0.0f);
 		myShader.setFloat(g_uFogDensityLoc, 0.0f);
 	}
@@ -605,11 +702,6 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	GetOpenGLMatrix(CameraMatrix); // Snapshot for legacy mouse logic
 	glAlphaFunc(0, 0.25f);           // Set threshold for Alpha Testing
 
-	//char t[100] = { 0 };
-	//float tval;
-	//glGetUniformfv(g_muProgram, g_uFogColorLoc, &tval);
-	//sprintf(t, "[SDL-DEBUG-0] Fog:%f (%u)", tval, g_uFogColorLoc);
-	//OutputDebugStringA(t);
 }
 
 
@@ -617,12 +709,6 @@ void EndOpengl()
 {
 	if (modelViewStack.size() > 1) modelViewStack.pop_back();
 	if (projectionStack.size() > 1) projectionStack.pop_back();
-
-	float tval;
-	char t[100] = { 0 };
-	//glGetUniformfv(g_muProgram, g_uFogColorLoc, &tval);
-	//sprintf(t, "[SDL-DEBUG-1] Fog:%f (%u)", tval, g_uFogColorLoc);
-	//OutputDebugStringA(t);
 }
 
 void UpdateMousePositionn()
@@ -957,6 +1043,8 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 	glDisableVertexAttribArray(g_aColorLoc);
 	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
+	MU_ApplyMatrices();
+
 	// 3. Draw
 	// GL_TRIANGLE_FAN draws 0-1-2 and then 0-2-3, forming the quad.
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -966,6 +1054,7 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 
 }
 
+/*
 void BeginSprite_OLD()
 {
 	g_savedViewForSprite = g_muView;
@@ -980,8 +1069,9 @@ void BeginSprite_OLD()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glDepthMask(GL_FALSE);
 	glDisable(GL_CULL_FACE);
-}
+}*/
 
+/*
 void EndSprite_OLD()
 {
 	g_muView = g_savedViewForSprite;
@@ -991,6 +1081,7 @@ void EndSprite_OLD()
 
 	glDepthMask(GL_TRUE);
 }
+*/
 
 void BeginSprite()
 {
@@ -1090,7 +1181,7 @@ void RenderSprite(int Texture, vec3_t Position, float Width, float Height, vec3_
 	// Disable per-vertex color attribute (we are using the uniform u_color instead)
 	glDisableVertexAttribArray(g_aColorLoc);
 	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default to white
-
+	MU_ApplyMatrices();
 	// 4. Draw
 	// GL_TRIANGLE_FAN is the GLES2 replacement for GL_QUADS
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -1151,7 +1242,7 @@ void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, flo
 	// Color (4 floats - pulls from the Light[i] data we packed)
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
-
+	MU_ApplyMatrices();
 	// 3. Draw
 	// Using GL_TRIANGLE_FAN as the quad replacement
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -1257,16 +1348,6 @@ void EndBitmap() {
 	if (projectionStack.size() > 1) projectionStack.pop_back();
 
 	glEnable(GL_DEPTH_TEST);
-
-	char t[100] = { 0 };
-	GLint currentProgram = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
-
-	sprintf(t, "[SDL-DEBUG] Current Program = %d, myProgram = %d",
-		currentProgram,
-		g_muProgram);
-
-	OutputDebugStringA(t);
 }
 
 void RenderColor(float x, float y, float Width, float Height, float Alpha, int Flag)
@@ -1301,7 +1382,7 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 	// Disable UV and Color attributes as they aren't needed here
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aColorLoc);
-
+	MU_ApplyMatrices();
 	// 4. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -1365,7 +1446,7 @@ void RenderColorBitmap(int Texture, float x, float y, float Width, float Height,
 
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
-
+	MU_ApplyMatrices();
 	// 4. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1430,6 +1511,10 @@ void RenderBitmap(int Texture, float x, float y, float Width, float Height,
 
 	// Ensure per-vertex color attribute is OFF (we're using the uniform instead)
 	glDisableVertexAttribArray(g_aColorLoc);
+
+
+
+	MU_ApplyMatrices();
 
 	// 4. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -1496,7 +1581,7 @@ void RenderBitmapRotate(int Texture, float x, float y, float Width, float Height
 
 	// Ensure per-vertex color is disabled (uses u_color uniform set by previous helpers)
 	glDisableVertexAttribArray(g_aColorLoc);
-
+	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1568,7 +1653,7 @@ void RenderBitRotate(int Texture, float x, float y, float Width, float Height, f
 	// Ensure the constant color is white (unless set otherwise by a previous helper)
 	glDisableVertexAttribArray(g_aColorLoc);
 	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-
+	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1646,7 +1731,7 @@ void RenderPointRotate(int Texture, float ix, float iy, float iWidth, float iHei
 
 	// Ensure per-vertex color is disabled (uses u_color uniform)
 	glDisableVertexAttribArray(g_aColorLoc);
-
+	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1808,7 +1893,7 @@ void RenderBitmapUV(int Texture, float x, float y, float Width, float Height, fl
 
 	// Ensure per-vertex color is disabled (uses u_color uniform)
 	glDisableVertexAttribArray(g_aColorLoc);
-
+	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 

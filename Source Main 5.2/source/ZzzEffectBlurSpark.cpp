@@ -187,7 +187,7 @@ void RenderBlurs()
 
 				glEnableVertexAttribArray(g_aColorLoc);
 				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].r);
-
+				MU_ApplyMatrices();
 				// 3. Draw each quad
 				// GLES2 doesn't have GL_QUADS, so we draw each 4-vertex block as a FAN
 				for (int i = 0; i < (b->Number - 1); i++) {
@@ -390,7 +390,7 @@ void RenderObjectBlurs()
 
 					glEnableVertexAttribArray(g_aColorLoc);
 					glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
-
+					MU_ApplyMatrices();
 					// 3. Draw
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -698,7 +698,7 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
-
+	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, n);
 
@@ -752,7 +752,7 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
-
+	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, count2);
 

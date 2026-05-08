@@ -1374,7 +1374,7 @@ void BMD::RenderMesh(int i, int RenderFlag, float Alpha, int BlendMesh, float Bl
 
 		glEnableVertexAttribArray(g_aColorLoc);
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
-
+		MU_ApplyMatrices();
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
 
 		// Cleanup
@@ -1852,7 +1852,7 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 
 		// Ensure global uniform color is neutral so per-vertex color takes over
 		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-
+		MU_ApplyMatrices();
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
 
 		// 3. Cleanup
@@ -1959,7 +1959,7 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 					// 4. Set Shadow Color (Usually black or dark grey with alpha)
 					// You can set this before the function or right here:
 					// MU_glColor4f(0.0f, 0.0f, 0.0f, 0.5f); 
-
+					MU_ApplyMatrices();
 					// 5. Draw the entire list of triangles
 					glDrawArrays(GL_TRIANGLES, 0, (GLsizei)shadowVao.size());
 				}

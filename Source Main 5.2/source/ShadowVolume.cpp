@@ -316,7 +316,7 @@ void CShadowVolume::RenderShadowVolume( void)
 	glDisableVertexAttribArray(g_aColorLoc);
 	// Set a default neutral white color for the shader math
 	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-
+	MU_ApplyMatrices();
 	// 4. Draw all triangles in one command
 	glDrawArrays(GL_TRIANGLES, 0, m_nNumVertices);
 

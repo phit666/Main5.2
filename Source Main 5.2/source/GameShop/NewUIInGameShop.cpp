@@ -311,63 +311,114 @@ void CNewUIInGameShop::SetRateScale(int _ItemType)
 	}
 }
 
+#define GL_MODELVIEW  0x1700
+#define GL_PROJECTION 0x1701
+
+// Global variable to track the current mode
+GLenum g_currentMatrixMode = GL_MODELVIEW;
+
+void MU_glMatrixMode(GLenum mode) {
+	g_currentMatrixMode = mode;
+}
+
+void MU_glLoadIdentity() {
+	if (g_currentMatrixMode == GL_PROJECTION) {
+		projectionStack.back() = glm::mat4(1.0f);
+	}
+	else {
+		modelViewStack.back() = glm::mat4(1.0f);
+	}
+	// Sync the shader
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+}
+
+void MU_glPushMatrixEX() {
+	if (g_currentMatrixMode == GL_PROJECTION) {
+		projectionStack.push_back(projectionStack.back());
+	}
+	else {
+		modelViewStack.push_back(modelViewStack.back());
+	}
+}
+
+void MU_glPopMatrixEX() {
+	if (g_currentMatrixMode == GL_PROJECTION) {
+		if (projectionStack.size() > 1) projectionStack.pop_back();
+	}
+	else {
+		if (modelViewStack.size() > 1) modelViewStack.pop_back();
+	}
+	// Sync the shader
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+}
+
+#define glLoadIdentity MU_glLoadIdentity
+#define glMatrixMode MU_glMatrixMode
+#define glPushMatrixEX MU_glPushMatrixEX
+#define glPopMatrixEX MU_glPopMatrixEX
+
+
 void CNewUIInGameShop::RenderDisplayItems()
 {
-    EndBitmap();
+	// 1. Close 2D Pass
+	EndBitmap();
 
-    glViewport(0, 0, WindowWidth, WindowHeight);
+	// 2. Setup 3D Projection
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrixEX();
+	glLoadIdentity();
+	glViewport(0, 0, WindowWidth, WindowHeight);
 
-    MU_Perspective(
-            g_muProjection,
-            1.0f,
-            (float)WindowWidth / (float)WindowHeight,
-            RENDER_ITEMVIEW_NEAR,
-            RENDER_ITEMVIEW_FAR
-    );
+	float aspect = (float)WindowWidth / (float)WindowHeight;
+	// Update the stack top with our 1.0f FOV perspective
+	projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
 
-    MU_LoadIdentity(g_muView);
+	// 3. Setup ModelView
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrixEX();
+	glLoadIdentity();
 
-    glUseProgram(g_muProgram);
-    MU_ApplyMatrices();
+	// 4. SHADER STATE RESET (Crucial for UI 3D items)
+	myShader.use();
+	// Disable fog so items don't look gray
+	myShader.setFloat(g_uFogEnabledLoc, 0.0f);
+	// Sync the initial Identity/Perspective matrix
+	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+	myShader.setMat4(g_uMvLoc, modelViewStack.back());
 
-    if (g_uUseTexture >= 0)
-        glUniform1i(g_uUseTexture, 1);
+	// 5. Hardware States
+	GetOpenGLMatrix(CameraMatrix); // Snapshot for mouse logic
+	EnableDepthTest();
+	EnableDepthMask();
+	glClear(GL_DEPTH_BUFFER_BIT); // Clear Z-buffer so items draw over UI background
 
-    if (g_uDiscardBlack >= 0)
-        glUniform1i(g_uDiscardBlack, 0);
+	// 6. Render the Items
+	for (int i = 0; i < g_InGameShopSystem->GetSizePackageAsDisplayPackage(); i++)
+	{
+		int iPosX = IGS_ITEMRENDER_POS_X_STANDAD + (IMAGE_IGS_VIEWDETAIL_BTN_DISTANCE_X * (i % IGS_NUM_ITEMS_WIDTH));
+		int iPosY = IGS_ITEMRENDER_POS_Y_STANDAD + (IMAGE_IGS_VIEWDETAIL_BTN_DISTANCE_Y * (i / IGS_NUM_ITEMS_HEIGHT));
 
-    EnableDepthTest();
-    EnableDepthMask();
+		// RenderItem3D will push its own matrices and call MU_ApplyMatrices/setMat4 internally
+		RenderItem3D(iPosX, iPosY, IGS_ITEMRENDER_POS_WIDTH, IGS_ITEMRENDER_POS_HEIGHT,
+			g_InGameShopSystem->GetPackageItemCode(i), 0, 0, 0, true);
+	}
 
-    glClear(GL_DEPTH_BUFFER_BIT);
+	// 7. Input Sync
+	UpdateMousePositionn();
 
-    for (int i = 0; i < g_InGameShopSystem->GetSizePackageAsDisplayPackage(); i++)
-    {
-        int iPosX =
-                IGS_ITEMRENDER_POS_X_STANDAD +
-                (IMAGE_IGS_VIEWDETAIL_BTN_DISTANCE_X * (i % IGS_NUM_ITEMS_WIDTH));
+	// 8. Restore Stacks
+	// These wrappers (MU_glPopMatrix) will automatically re-sync the shader to the previous matrix
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrixEX();
 
-        int iPosY =
-                IGS_ITEMRENDER_POS_Y_STANDAD +
-                (IMAGE_IGS_VIEWDETAIL_BTN_DISTANCE_Y * (i / IGS_NUM_ITEMS_HEIGHT));
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrixEX();
 
-        RenderItem3D(
-                iPosX,
-                iPosY,
-                IGS_ITEMRENDER_POS_WIDTH,
-                IGS_ITEMRENDER_POS_HEIGHT,
-                g_InGameShopSystem->GetPackageItemCode(i),
-                0,
-                0,
-                0,
-                true
-        );
-    }
-
-    UpdateMousePositionn();
-
-    BeginBitmap();
+	// 9. Re-open 2D Pass
+	BeginBitmap();
 }
+
+
 	
 bool CNewUIInGameShop::BtnProcess()
 {	

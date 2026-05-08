@@ -1097,9 +1097,9 @@ BOOL OpenInitFile()
 	m_Resolution = 0;
 	m_nColorDepth = 0;
 
-	HKEY hKey;
-	DWORD dwDisp;
-	DWORD dwSize;
+	//HKEY hKey;
+	//DWORD dwDisp;
+	//DWORD dwSize;
 
 #ifdef MU_USE_SDL
 	g_bUseWindowMode = TRUE;
@@ -1701,7 +1701,7 @@ int main(int argc, char* argv[])
 	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default White
 	myShader.setFloat(g_uTexEnabledLoc, 1.0f);              // Default Textures On
 	myShader.setFloat(g_uFogEnabledLoc, 0.0f);             // Default Fog Off
-	myShader.setFloat(g_uFogDensityLoc, 0.001f);
+	myShader.setFloat(g_uFogDensityLoc, 0.0f);
 
 	// 3. Initialize your Matrix Stacks with Identity
 	projectionStack.clear();
@@ -1717,9 +1717,9 @@ int main(int argc, char* argv[])
 
 	while (!Destroy && gSDLRunning)
 	{
-		nk_input_begin(g_nk_ctx);
+		//nk_input_begin(g_nk_ctx);
 		MU_ProcessSDLEvents();
-		nk_input_end(g_nk_ctx);
+		//nk_input_end(g_nk_ctx);
 
 		if (g_eventBase)
 			event_base_loop(g_eventBase, EVLOOP_NONBLOCK);
@@ -1931,7 +1931,7 @@ void MU_ProcessSDLEvents()
 
 	while (SDL_PollEvent(&e))
 	{
-		nk_sdl_handle_event(&e);
+		//nk_sdl_handle_event(&e);
 
 		switch (e.type)
 		{
@@ -1954,6 +1954,12 @@ void MU_ProcessSDLEvents()
 				// Tells OpenGL how to map its (-1 to 1) space to actual pixels
 				glViewport(0, 0, WindowWidth, WindowHeight);
 
+				myShader.use();
+				myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default White
+				myShader.setFloat(g_uTexEnabledLoc, 1.0f);              // Default Textures On
+				myShader.setFloat(g_uFogEnabledLoc, 0.0f);             // Default Fog Off
+				myShader.setFloat(g_uFogDensityLoc, 0.0f);
+
 				// 3. Clear Matrix Stacks to avoid "ghosting"
 				projectionStack.clear();
 				modelViewStack.clear();
@@ -1966,7 +1972,6 @@ void MU_ProcessSDLEvents()
 				projectionStack.back() = glm::perspective(glm::radians(45.0f), aspect, CameraViewNear, CameraViewFar);
 
 				// 5. Update Shader Uniforms
-				myShader.use();
 				myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
 			}
 				

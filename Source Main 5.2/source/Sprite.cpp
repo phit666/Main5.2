@@ -345,7 +345,7 @@ void CSprite::Render()
 
 		// Ensure per-vertex color is disabled (we are using the uniform above)
 		glDisableVertexAttribArray(g_aColorLoc);
-
+		MU_ApplyMatrices();
 		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
 
@@ -389,7 +389,7 @@ void CSprite::Render()
 		// and we want it to use the u_color uniform instead of a_color.
 		glDisableVertexAttribArray(g_aTexLoc);
 		glDisableVertexAttribArray(g_aColorLoc);
-
+		MU_ApplyMatrices();
 		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
 

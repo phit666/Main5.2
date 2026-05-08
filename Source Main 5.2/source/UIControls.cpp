@@ -1749,9 +1749,7 @@ BOOL CUIChatPalListBox::RenderDataLine(int iLineNumber)
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		//glEnable(GL_TEXTURE_2D);
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
 		g_pRenderText->SetTextColor(0, 0, 0, 255);
 	}
 	else
@@ -1929,9 +1927,7 @@ BOOL CUIWindowListBox::RenderDataLine(int iLineNumber)
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		//glEnable(GL_TEXTURE_2D);
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
 		g_pRenderText->SetTextColor(0, 0, 0, 255);
 	}
 	else
@@ -2148,9 +2144,7 @@ BOOL CUILetterListBox::RenderDataLine(int iLineNumber)
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		//glEnable(GL_TEXTURE_2D);
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
 		g_pRenderText->SetTextColor(0, 0, 0, 255);
 	}
 	else
@@ -2484,9 +2478,7 @@ BOOL CUISocketListBox::RenderDataLine(int iLineNumber)
 		RenderColor(m_iPos_x, GetRenderLinePos_y(iLineNumber) - 3, m_iWidth - m_fScrollBarWidth + 1, 13);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		//glEnable(GL_TEXTURE_2D);
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
 		g_pRenderText->SetTextColor(0, 0, 0, 255);
 	}
 	else
@@ -3492,6 +3484,8 @@ static nk_color ARGBToNK(DWORD c)
 
 void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 {
+	return;
+
 #ifdef MU_USE_SDL
 	if (!ctx || !m_bShow)
 		return;
@@ -4880,9 +4874,7 @@ BOOL CUIGuildNoticeListBox::RenderDataLine(int iLineNumber)
 		g_pRenderText->SetTextColor(230, 220, 200, 255);
 	}
 	//glEnable(GL_TEXTURE_2D);
-	glUseProgram(g_muProgram);
-	if (g_uUseTexture >= 0)
-		glUniform1i(g_uUseTexture, 1);
+	myShader.setFloat(g_uTexEnabledLoc, 1.0);
 
 	g_pRenderText->SetBgColor(0);
 

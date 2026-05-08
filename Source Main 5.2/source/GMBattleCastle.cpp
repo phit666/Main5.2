@@ -558,7 +558,7 @@ namespace battleCastle
 
     void EndFog()
     {
-        myShader.setFloat(g_uFogEnabledLoc, 0.0);
+        myShader.setFloat(g_uFogEnabledLoc, 0.0f);
     }
 
     void    RenderBaseSmoke ( void )

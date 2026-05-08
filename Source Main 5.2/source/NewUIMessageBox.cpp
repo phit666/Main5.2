@@ -130,10 +130,7 @@ void SEASON3B::CNewUIMessageBoxBase::RenderMsgBackColor(bool _bRender)
 		// 메인프레임에서 높이값을 51을 잡고있음
 		RenderColor(_fPosX, _fPosY, _fWidth, _fHeight-50.0f);
 		//glEnable(GL_TEXTURE_2D);
-		glUseProgram(g_muProgram);
-		if (g_uUseTexture >= 0)
-			glUniform1i(g_uUseTexture, 1);
-
+		myShader.setFloat(g_uTexEnabledLoc, 1.0);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		DisableAlphaBlend();
 		EnableAlphaTest();

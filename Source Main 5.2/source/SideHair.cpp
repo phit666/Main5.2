@@ -188,7 +188,7 @@ void CSideHair::RenderLine( vec3_t v1, vec3_t v2, vec3_t c1, vec3_t c2)
 
 	glEnableVertexAttribArray(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
-
+	MU_ApplyMatrices();
 	// 3. Draw (Using the persistent shader state from BeginOpengl)
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
