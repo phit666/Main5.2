@@ -4,6 +4,8 @@
 #include "mu_gles2_matrix.h"
 
 extern bool TextureEnable;
+GLenum g_currentMatrixMode = GL_MODELVIEW;
+
 
 bool MU_ShouldDiscardBlack(int texID)
 {

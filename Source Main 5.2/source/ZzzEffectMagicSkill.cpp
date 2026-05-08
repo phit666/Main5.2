@@ -92,7 +92,10 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 		// Color / Light
 		glEnableVertexAttribArray(g_aColorLoc);
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 		MU_ApplyMatrices();
+		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 		// 3. Draw
 		// GL_TRIANGLE_FAN is the direct GLES2 replacement for GL_QUADS
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);

@@ -1330,6 +1330,7 @@ bool NewRenderLogInScene(HDC hDC)
 
 	Height = 480;
     Width = GetScreenWidth();
+
 	glClearColor(0.f,0.f,0.f,1.f);
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1480,10 +1481,10 @@ void LoadingScene(HDC hDC)
 
 	::EndBitmap();
 	::EndOpengl();
-	::glFlush();
+	//::glFlush();
 
 #ifdef MU_USE_SDL
-	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);
@@ -2424,7 +2425,7 @@ void MainScene(HDC hDC)
 	{
 		glFlush();
 #ifdef MU_USE_SDL
-		//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+		nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 		SDL_GL_SwapWindow(gSDLWindow);
 #else
 		::SwapBuffers(hDC);

@@ -1363,9 +1363,18 @@ void BMD::RenderMesh(int i, int RenderFlag, float Alpha, int BlendMesh, float Bl
 		}
 	}
 
+
+
 	// 2. RENDERING
 	if (!meshVao.empty())
 	{
+		//myShader.setFloat(g_uTexEnabledLoc, 1.0f);
+		//myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
+// --- QUICK TEST RESET ---
+
+
+
 		glEnableVertexAttribArray(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].x);
 
@@ -1374,7 +1383,10 @@ void BMD::RenderMesh(int i, int RenderFlag, float Alpha, int BlendMesh, float Bl
 
 		glEnableVertexAttribArray(g_aColorLoc);
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
+
 		MU_ApplyMatrices();
+		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+		
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
 
 		// Cleanup
@@ -1851,8 +1863,10 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
 
 		// Ensure global uniform color is neutral so per-vertex color takes over
-		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+		//myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 		MU_ApplyMatrices();
+		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
 
 		// 3. Cleanup
@@ -1955,6 +1969,7 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 					// 3. Disable UV and Color attributes (Shadows are usually a solid color)
 					glDisableVertexAttribArray(g_aTexLoc);
 					glDisableVertexAttribArray(g_aColorLoc);
+					myShader.setFloat(g_uTexEnabledLoc, 0.0);
 
 					// 4. Set Shadow Color (Usually black or dark grey with alpha)
 					// You can set this before the function or right here:

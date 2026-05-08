@@ -3484,8 +3484,6 @@ static nk_color ARGBToNK(DWORD c)
 
 void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 {
-	return;
-
 #ifdef MU_USE_SDL
 	if (!ctx || !m_bShow)
 		return;

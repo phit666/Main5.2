@@ -307,13 +307,11 @@ void CSprite::Render()
 	float cb = m_byBlue / 255.0f;
 	float ca = m_byAlpha / 255.0f;
 
-
 	if (-1 < m_nTexID)
 	{
 		if (!TextureEnable)
 		{
 			TextureEnable = true;
-			myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 		}
 
 		BindTexture(m_nTexID);
@@ -376,7 +374,6 @@ void CSprite::Render()
 			vao[count][1] = m_aScrCoord[i].fY * m_fScaleY;
 			count++;
 		}
-
 
 		// 3. Set Attributes
 		// Position is required

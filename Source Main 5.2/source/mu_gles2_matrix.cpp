@@ -212,14 +212,15 @@ void main()
     {
         float fogFactor = 1.0;
 
-        if (u_fogDensity > 0.000001)
+        if (u_fogDensity > 0.0)
         {
-            fogFactor = exp(-u_fogDensity * v_dist);
+            fogFactor = 1.0 / exp(v_dist * u_fogDensity);
         }
         else
         {
-            float fogRange = max(u_fogEnd - u_fogStart, 0.0001);
-            fogFactor = (u_fogEnd - v_dist) / fogRange;
+            fogFactor =
+                (u_fogEnd - v_dist) /
+                (u_fogEnd - u_fogStart);
         }
 
         fogFactor = clamp(fogFactor, 0.0, 1.0);
@@ -291,4 +292,17 @@ void main()
     GLint texSamplerLoc = glGetUniformLocation(g_muProgram, "u_texture");
     glUniform1i(texSamplerLoc, 0); // Always use Texture Unit 0
 
+}
+
+void testprogram() {
+    char t[100] = { 0 };
+    //GLint currentProgram = 0;
+    //glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+    float f1, f2; // Buffer for a vec4 color
+    glGetUniformfv(g_muProgram, g_uAlphaTestLoc, &f1);
+    glGetUniformfv(g_muProgram, g_uAlphaThresholdLoc, &f2);
+    sprintf(t, "[SDL-DEBUG2] Current Program = %d (alphatest:%f), myProgram = %d (threshold:%f)",
+        g_muProgram, f1,
+        g_muProgram, f2);
+    OutputDebugStringA(t);
 }

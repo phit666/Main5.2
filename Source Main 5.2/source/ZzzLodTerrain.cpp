@@ -1260,7 +1260,10 @@ void RenderFace(int Texture,int mx,int my)
 	// Color (Terrain Light)
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 	MU_ApplyMatrices();
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1315,7 +1318,10 @@ void RenderFace_After(int Texture, int mx, int my)
 	// Color (Terrain Light)
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 	MU_ApplyMatrices();
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1376,7 +1382,10 @@ void RenderFaceAlpha(int Texture,int mx,int my)
 	// Color (RGBA - now including Terrain Alpha)
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 	MU_ApplyMatrices();
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1429,7 +1438,10 @@ void RenderFaceBlend(int Texture,int mx,int my)
 	// Color (Mapping Alpha used as RGB Light)
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 	MU_ApplyMatrices();
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1639,7 +1651,10 @@ void RenderTerrainFace(float xf,float yf,int xi,int yi,float lodf)
 
 				glEnableVertexAttribArray(g_aColorLoc);
 				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 				MU_ApplyMatrices();
+				myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 				// 3. Draw using GL_TRIANGLE_FAN (direct replacement for GL_QUADS)
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1820,7 +1835,10 @@ void RenderTerrainBitmapTile(float xf, float yf, float lodf, int lodi,
 	// Color/Light (this is the per-vertex lighting)
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 	MU_ApplyMatrices();
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 

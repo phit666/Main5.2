@@ -111,23 +111,44 @@ inline void MU_glAlphaFunc(GLenum func, float threshold)
     myShader.setFloat(g_uAlphaThresholdLoc, threshold);
 }
 
-inline void MU_glPushMatrix()
-{
-    // Push a copy of the current top matrix
-    modelViewStack.push_back(modelViewStack.back());
+#define GL_MODELVIEW  0x1700
+#define GL_PROJECTION 0x1701
+
+extern GLenum g_currentMatrixMode;
+
+inline void MU_glMatrixMode(GLenum mode) {
+    g_currentMatrixMode = mode;
 }
 
-inline void MU_glPopMatrix()
-{
-    if (modelViewStack.size() > 1)
-    {
-        modelViewStack.pop_back();
+inline void MU_glLoadIdentity() {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        projectionStack.back() = glm::mat4(1.0f);
     }
-
-    // CRITICAL: Immediately tell the shader the matrix changed.
-    // This replicates the automatic hardware behavior of legacy OpenGL.
+    else {
+        modelViewStack.back() = glm::mat4(1.0f);
+    }
+    // Sync the shader
     myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-    myShader.setMat4(g_uMvLoc, modelViewStack.back()); // For Fog
+}
+
+inline void MU_glPushMatrix() {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        projectionStack.push_back(projectionStack.back());
+    }
+    else {
+        modelViewStack.push_back(modelViewStack.back());
+    }
+}
+
+inline void MU_glPopMatrix() {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        if (projectionStack.size() > 1) projectionStack.pop_back();
+    }
+    else {
+        if (modelViewStack.size() > 1) modelViewStack.pop_back();
+    }
+    // Sync the shader
+    myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
 }
 
 // --- GLES2 Legacy Compatibility Definitions ---
@@ -187,6 +208,44 @@ inline void MU_glDisable(GLenum cap) {
 //#define glDisable MU_glDisable
 
 
+// Rotation Wrapper
+inline void MU_glRotatef(float angle, float x, float y, float z) {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        projectionStack.back() = glm::rotate(projectionStack.back(), glm::radians(angle), glm::vec3(x, y, z));
+    }
+    else {
+        modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(angle), glm::vec3(x, y, z));
+    }
+    // Update the GPU immediately
+    MU_ApplyMatrices();
+}
+
+// Translation Wrapper
+inline void MU_glTranslatef(float x, float y, float z) {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        projectionStack.back() = glm::translate(projectionStack.back(), glm::vec3(x, y, z));
+    }
+    else {
+        modelViewStack.back() = glm::translate(modelViewStack.back(), glm::vec3(x, y, z));
+    }
+    // Update the GPU immediately
+    MU_ApplyMatrices();
+}
+
+// Scaling Wrapper
+inline void MU_glScalef(float x, float y, float z) {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        projectionStack.back() = glm::scale(projectionStack.back(), glm::vec3(x, y, z));
+    }
+    else {
+        modelViewStack.back() = glm::scale(modelViewStack.back(), glm::vec3(x, y, z));
+    }
+    // Update the GPU immediately
+    MU_ApplyMatrices();
+}
+
+
+
 // The "Do Nothing" Wrappers
 inline void MU_glTexEnvf(GLenum target, GLenum pname, GLfloat param) {}
 inline void MU_glTexEnvi(GLenum target, GLenum pname, GLint param) {}
@@ -209,6 +268,11 @@ inline void MU_glTexEnvfv(GLenum target, GLenum pname, const GLfloat* params) {}
 #define glAlphaFunc  MU_glAlphaFunc 
 #define glPushMatrix MU_glPushMatrix
 #define glPopMatrix  MU_glPopMatrix
+#define glLoadIdentity MU_glLoadIdentity
+#define glMatrixMode MU_glMatrixMode
+#define glRotatef    MU_glRotatef
+#define glTranslatef MU_glTranslatef
+#define glScalef     MU_glScalef
 
 #endif
 

@@ -1717,46 +1717,15 @@ int main(int argc, char* argv[])
 
 	while (!Destroy && gSDLRunning)
 	{
-		//nk_input_begin(g_nk_ctx);
+		nk_input_begin(g_nk_ctx);
 		MU_ProcessSDLEvents();
-		//nk_input_end(g_nk_ctx);
+		nk_input_end(g_nk_ctx);
 
 		if (g_eventBase)
 			event_base_loop(g_eventBase, EVLOOP_NONBLOCK);
 
 		glViewport(0, 0, WindowWidth, WindowHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glUseProgram(g_muProgram);
-		//MU_ApplyMatrices();
-
-		/*struct TestVertex
-		{
-			float x, y, z;
-			float r, g, b, a;
-		};
-
-		TestVertex tri[3] =
-		{
-			{ -0.5f, -0.5f, -2.0f, 1, 0, 0, 1 },
-			{  0.5f, -0.5f, -2.0f, 0, 1, 0, 1 },
-			{  0.0f,  0.5f, -2.0f, 0, 0, 1, 1 },
-		};
-
-		//glUseProgram(g_muProgram);
-		//MU_ApplyMatrices();
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TestVertex), &tri[0].x);
-
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(TestVertex), &tri[0].r);
-
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-
-		SDL_GL_SwapWindow(gSDLWindow);
-		continue;*/
-
 
 #if (defined WINDOWMODE)
 		if (g_bUseWindowMode == TRUE)
@@ -1931,7 +1900,7 @@ void MU_ProcessSDLEvents()
 
 	while (SDL_PollEvent(&e))
 	{
-		//nk_sdl_handle_event(&e);
+		nk_sdl_handle_event(&e);
 
 		switch (e.type)
 		{

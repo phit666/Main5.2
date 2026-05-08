@@ -154,22 +154,18 @@ class Shader {
 public:
     GLuint ID; // Your linked Program ID
 
-    void use() {  }
+    void use() { glUseProgram(ID); }
 
     void setBool(GLuint iID, bool value) const {
-        glUseProgram(ID);
         glUniform1i(iID, (int)value);
     }
     void setFloat(GLuint iID, float value) const {
-        glUseProgram(ID);
         glUniform1f(iID, value);
     }
     void setVec4(GLuint iID, float x, float y, float z, float w) const {
-        glUseProgram(ID);
         glUniform4f(iID, x, y, z, w);
     }
     void setMat4(GLuint iID, const glm::mat4& mat) const {
-        glUseProgram(ID);
         glUniformMatrix4fv(iID, 1, GL_FALSE, glm::value_ptr(mat));
     }
 };
@@ -211,5 +207,7 @@ extern GLint g_uFogStartLoc, g_uFogEndLoc;
 extern Shader myShader;
 extern std::vector<glm::mat4> projectionStack;
 extern std::vector<glm::mat4> modelViewStack;
+
+void testprogram();
 
 

@@ -49,19 +49,7 @@ bool         MouseMButtonPush;
 int          MouseWheel;
 DWORD		 MouseRButtonPress = 0;
 
-//bool    showShoppingMall = false;
-void testprogram() {
-	char t[100] = { 0 };
-	GLint currentProgram = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
-	float f1, f2; // Buffer for a vec4 color
-	glGetUniformfv(currentProgram, g_uFogEnabledLoc, &f1);
-	glGetUniformfv(g_muProgram, g_uFogEnabledLoc, &f2);
-	sprintf(t, "[SDL-DEBUG] Current Program = %d (%f), myProgram = %d (%f)",
-		currentProgram, f1,
-		g_muProgram, f2);
-	OutputDebugStringA(t);
-}
+
 
 void OpenExploper(char* Name, char* para)
 {
@@ -444,6 +432,7 @@ void EnableAlphaTest(bool DepthMask) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
+
 	DisableCullFace();
 
 	if (DepthMask)
@@ -634,79 +623,78 @@ float ConvertY(float y)
 	return y * (float)WindowHeight / 480.f;
 }
 
+
 void BeginOpengl(int x, int y, int Width, int Height)
 {
-	// Scaling logic
+	// 1. Resolution Scaling
 	x = x * WindowWidth / 640;
 	y = y * WindowHeight / 480;
 	Width = Width * WindowWidth / 640;
 	Height = Height * WindowHeight / 480;
 
-	// --- PROJECTION UPDATE ---
-	projectionStack.push_back(projectionStack.back());
+	// --- PROJECTION ---
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
 	glViewport(x, y, Width, Height);
 
 	float aspect = (float)Width / (float)Height;
-	// Set perspective with far plane slightly extended for legacy compatibility
 	projectionStack.back() = glm::perspective(glm::radians(CameraFOV), aspect, CameraViewNear, CameraViewFar * 1.4f);
 
-	// --- MODELVIEW UPDATE ---
-	modelViewStack.push_back(glm::mat4(1.0f)); // Equivalent to glLoadIdentity
+	// --- MODELVIEW ---
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
 
-	// Build the View Matrix (Applying rotations and translations)
-	modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[1]), glm::vec3(0, 1, 0));
-	if (!CameraTopViewEnable)
-		modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[0]), glm::vec3(1, 0, 0));
+	// Camera Transformations
+	glRotatef(CameraAngle[1], 0.f, 1.f, 0.f);
+	if (CameraTopViewEnable == false)
+		glRotatef(CameraAngle[0], 1.f, 0.f, 0.f);
+	glRotatef(CameraAngle[2], 0.f, 0.f, 1.f);
+	glTranslatef(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]);
 
-	modelViewStack.back() = glm::rotate(modelViewStack.back(), glm::radians(CameraAngle[2]), glm::vec3(0, 0, 1));
-	modelViewStack.back() = glm::translate(modelViewStack.back(), glm::vec3(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]));
-
-	// --- CRITICAL MATRIX SYNC ---
-	// Sync combined MVP (Projection * ModelView)
-	MU_ApplyMatrices();
-
-	// Sync MV matrix (for distance-based Fog calculations in the shader)
-	myShader.setMat4(g_uMvLoc, modelViewStack.back());
-
-	// --- RENDER STATES ---
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
-	glDisable(GL_SCISSOR_TEST); // Ensure Nuklear's scissor doesn't leak
-
-	// --- TOGGLE SYNC (Using Floats for Reliability) ---
+	// --- UPDATE GLOBAL VARIABLES (Your important state trackers) ---
 	AlphaTestEnable = false;
 	TextureEnable = true;
 	DepthTestEnable = true;
 	CullFaceEnable = true;
 	DepthMaskEnable = true;
 
-	// Use setFloat or your updated setBool (sending 1.0f or 0.0f) 
-	// to avoid the GLES2 "Ghost Boolean" bug
+	// --- SYNC SHADER TO GLOBALS ---
+	myShader.use();
 	myShader.setFloat(g_uAlphaTestLoc, AlphaTestEnable ? 1.0f : 0.0f);
 	myShader.setFloat(g_uTexEnabledLoc, TextureEnable ? 1.0f : 0.0f);
-	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Reset global tint
 
-	// --- FOG SYNC ---
+	// --- HARDWARE STATES ---
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
+	glAlphaFunc(0, 0.25f);  // Wrapper for threshold
+
+	// Ensure blending is on
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// --- FOG ---
 	if (FogEnable)
 	{
 		myShader.setFloat(g_uFogEnabledLoc, 1.0f);
-		myShader.setFloat(g_uFogDensityLoc, FogDensity);
 		myShader.setVec4(g_uFogColorLoc, FogColor[0], FogColor[1], FogColor[2], FogColor[3]);
+		myShader.setFloat(g_uFogDensityLoc, 0.0f); // 0.0 triggers Linear Math in our shader
+		myShader.setFloat(g_uFogStartLoc, 2000.f);
+		myShader.setFloat(g_uFogEndLoc, 2700.f);
 	}
 	else
 	{
-		myShader.setFloat(g_uFogEnabledLoc, 0.0f);
-		myShader.setFloat(g_uFogDensityLoc, 0.0f);
+		//myShader.setFloat(g_uFogEnabledLoc, 0.0f);
 	}
 
-	// --- LEGACY SYNC ---
-	GetOpenGLMatrix(CameraMatrix); // Snapshot for legacy mouse logic
-	glAlphaFunc(0, 0.25f);           // Set threshold for Alpha Testing
-
+	// --- FINAL SYNC ---
+	MU_ApplyMatrices();            // Sends MVP and MV to GPU
+	GetOpenGLMatrix(CameraMatrix); // Fills CameraMatrix for legacy CPU math
 }
-
 
 void EndOpengl()
 {
@@ -905,102 +893,6 @@ inline void TEXCOORD(float* c, float u, float v)
 	c[0] = u;
 	c[1] = v;
 }
-//xx
-void RenderBox(float Matrix[3][4])
-{
-	vec3_t BoundingBoxMin;
-	vec3_t BoundingBoxMax;
-	Vector(-10.f, -30.f, -10.f, BoundingBoxMin);
-	Vector(10.f, 0.f, 10.f, BoundingBoxMax);
-
-	vec3_t BoundingVertices[8];
-	Vector(BoundingBoxMax[0], BoundingBoxMax[1], BoundingBoxMax[2], BoundingVertices[0]);
-	Vector(BoundingBoxMax[0], BoundingBoxMax[1], BoundingBoxMin[2], BoundingVertices[1]);
-	Vector(BoundingBoxMax[0], BoundingBoxMin[1], BoundingBoxMax[2], BoundingVertices[2]);
-	Vector(BoundingBoxMax[0], BoundingBoxMin[1], BoundingBoxMin[2], BoundingVertices[3]);
-	Vector(BoundingBoxMin[0], BoundingBoxMax[1], BoundingBoxMax[2], BoundingVertices[4]);
-	Vector(BoundingBoxMin[0], BoundingBoxMax[1], BoundingBoxMin[2], BoundingVertices[5]);
-	Vector(BoundingBoxMin[0], BoundingBoxMin[1], BoundingBoxMax[2], BoundingVertices[6]);
-	Vector(BoundingBoxMin[0], BoundingBoxMin[1], BoundingBoxMin[2], BoundingVertices[7]);
-
-	vec3_t TransformVertices[8];
-	for (int j = 0; j < 8; j++)
-	{
-		VectorTransform(BoundingVertices[j], Matrix, TransformVertices[j]);
-	}
-
-	// face 1
-	{
-		MU3DVertex quad[4];
-
-		quad[0] = { TransformVertices[7][0], TransformVertices[7][1], TransformVertices[7][2], 1.f, 1.f };
-		quad[1] = { TransformVertices[6][0], TransformVertices[6][1], TransformVertices[6][2], 1.f, 0.f };
-		quad[2] = { TransformVertices[4][0], TransformVertices[4][1], TransformVertices[4][2], 0.f, 0.f };
-		quad[3] = { TransformVertices[5][0], TransformVertices[5][1], TransformVertices[5][2], 0.f, 1.f };
-
-		MU_DrawBoundQuad3D(quad, 51, 51, 51, 255);
-	}
-
-	// face 2
-	{
-		MU3DVertex quad[4];
-
-		quad[0] = { TransformVertices[0][0], TransformVertices[0][1], TransformVertices[0][2], 0.f, 1.f };
-		quad[1] = { TransformVertices[2][0], TransformVertices[2][1], TransformVertices[2][2], 1.f, 1.f };
-		quad[2] = { TransformVertices[3][0], TransformVertices[3][1], TransformVertices[3][2], 1.f, 0.f };
-		quad[3] = { TransformVertices[1][0], TransformVertices[1][1], TransformVertices[1][2], 0.f, 0.f };
-
-		MU_DrawBoundQuad3D(quad, 51, 51, 51, 255);
-	}
-
-	// face 3
-	{
-		MU3DVertex quad[4];
-
-		quad[0] = { TransformVertices[7][0], TransformVertices[7][1], TransformVertices[7][2], 1.f, 1.f };
-		quad[1] = { TransformVertices[3][0], TransformVertices[3][1], TransformVertices[3][2], 1.f, 0.f };
-		quad[2] = { TransformVertices[2][0], TransformVertices[2][1], TransformVertices[2][2], 0.f, 0.f };
-		quad[3] = { TransformVertices[6][0], TransformVertices[6][1], TransformVertices[6][2], 0.f, 1.f };
-
-		MU_DrawBoundQuad3D(quad, 153, 153, 153, 255);
-	}
-
-	// face 4
-	{
-		MU3DVertex quad[4];
-
-		quad[0] = { TransformVertices[0][0], TransformVertices[0][1], TransformVertices[0][2], 0.f, 1.f };
-		quad[1] = { TransformVertices[1][0], TransformVertices[1][1], TransformVertices[1][2], 1.f, 1.f };
-		quad[2] = { TransformVertices[5][0], TransformVertices[5][1], TransformVertices[5][2], 1.f, 0.f };
-		quad[3] = { TransformVertices[4][0], TransformVertices[4][1], TransformVertices[4][2], 0.f, 0.f };
-
-		MU_DrawBoundQuad3D(quad, 153, 153, 153, 255);
-	}
-
-	// face 5
-	{
-		MU3DVertex quad[4];
-
-		quad[0] = { TransformVertices[7][0], TransformVertices[7][1], TransformVertices[7][2], 1.f, 1.f };
-		quad[1] = { TransformVertices[5][0], TransformVertices[5][1], TransformVertices[5][2], 1.f, 0.f };
-		quad[2] = { TransformVertices[1][0], TransformVertices[1][1], TransformVertices[1][2], 0.f, 0.f };
-		quad[3] = { TransformVertices[3][0], TransformVertices[3][1], TransformVertices[3][2], 0.f, 1.f };
-
-		MU_DrawBoundQuad3D(quad, 102, 102, 102, 255);
-	}
-
-	// face 6
-	{
-		MU3DVertex quad[4];
-
-		quad[0] = { TransformVertices[0][0], TransformVertices[0][1], TransformVertices[0][2], 0.f, 1.f };
-		quad[1] = { TransformVertices[4][0], TransformVertices[4][1], TransformVertices[4][2], 1.f, 1.f };
-		quad[2] = { TransformVertices[6][0], TransformVertices[6][1], TransformVertices[6][2], 1.f, 0.f };
-		quad[3] = { TransformVertices[2][0], TransformVertices[2][1], TransformVertices[2][2], 0.f, 0.f };
-
-		MU_DrawBoundQuad3D(quad, 102, 102, 102, 255);
-	}
-}
 
 void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 {
@@ -1057,50 +949,16 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 
 }
 
-/*
-void BeginSprite_OLD()
-{
-	g_savedViewForSprite = g_muView;
-
-	// old OpenGL did glLoadIdentity()
-	MU_LoadIdentity(g_muView);
-
-	glUseProgram(g_muProgram);
-	MU_ApplyMatrices();
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glDepthMask(GL_FALSE);
-	glDisable(GL_CULL_FACE);
-}*/
-
-/*
-void EndSprite_OLD()
-{
-	g_muView = g_savedViewForSprite;
-
-	glUseProgram(g_muProgram);
-	MU_ApplyMatrices();
-
-	glDepthMask(GL_TRUE);
-}
-*/
-
 void BeginSprite()
 {
-	// Save the current state by pushing a copy
-	modelViewStack.push_back(modelViewStack.back());
-
-	// glLoadIdentity equivalent: set the top of the stack to identity
-	modelViewStack.back() = glm::mat4(1.0f);
+	myShader.use();
+	glPushMatrix();
+	glLoadIdentity();
 }
 
 void EndSprite()
 {
-	// Restore the previous state
-	if (modelViewStack.size() > 1) {
-		modelViewStack.pop_back();
-	}
+	glPopMatrix();
 }
 
 //
@@ -1245,7 +1103,10 @@ void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, flo
 	// Color (4 floats - pulls from the Light[i] data we packed)
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 	MU_ApplyMatrices();
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 3. Draw
 	// Using GL_TRIANGLE_FAN as the quad replacement
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -1319,30 +1180,37 @@ float RenderNumber2D(float x, float y, int Num, float Width, float Height)
 
 void BeginBitmap() {
 
-	projectionStack.push_back(projectionStack.back());
-	modelViewStack.push_back(modelViewStack.back());
+	myShader.use();
 
-	// BOTTOM-UP Ortho: 0.0 is Bottom, WindowHeight is Top
-	projectionStack.back() = glm::ortho(0.0f, (float)WindowWidth, 0.0f, (float)WindowHeight, -1.0f, 1.0f);
-	modelViewStack.back() = glm::mat4(1.0f);
+	// 1. Handle Projection Stack
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix(); // Pushes a copy onto your manual projectionStack
+	glLoadIdentity();
 
+	// 2. Hardware Viewport
 	glViewport(0, 0, WindowWidth, WindowHeight);
-	glDisable(GL_DEPTH_TEST);
 
-	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-	myShader.setFloat(g_uFogEnabledLoc, 0.0f);
-	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	// 3. Set the Ortho (Matches gluOrtho2D 0, W, 0, H)
+	// We skip the perspective math because your legacy code wipes it out anyway
+	projectionStack.back() = glm::ortho(0.0f, (float)WindowWidth, 0.0f, (float)WindowHeight, -1.0f, 1.0f);
+
+	// 4. Handle ModelView Stack
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix(); // Pushes a copy onto your manual modelViewStack
+	glLoadIdentity();
+
+	// Apply the Ortho + Identity matrices to the GPU
+	MU_ApplyMatrices();
+
+	DisableDepthTest();
 }
 
 
 void EndBitmap() {
-	// 4. Replacement for glPopMatrix() on ModelView
-	if (modelViewStack.size() > 1) modelViewStack.pop_back();
-
-	// 5. Replacement for glPopMatrix() on Projection
-	if (projectionStack.size() > 1) projectionStack.pop_back();
-
-	glEnable(GL_DEPTH_TEST);
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 }
 
 void RenderColor(float x, float y, float Width, float Height, float Alpha, int Flag)
@@ -1441,7 +1309,10 @@ void RenderColorBitmap(int Texture, float x, float y, float Width, float Height,
 
 	glEnableVertexAttribArray(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+
 	MU_ApplyMatrices();
+	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	// 4. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1515,7 +1386,7 @@ void RenderBitmap(int Texture, float x, float y, float Width, float Height,
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	// 5. Reset global color to full opaque for subsequent calls
-	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	//myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 //
 void RenderBitmapRotate(int Texture, float x, float y, float Width, float Height, float Rotate, float u, float v, float uWidth, float vHeight)

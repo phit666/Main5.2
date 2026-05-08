@@ -155,11 +155,15 @@ void CUIMng::ReleaseTitleSceneUI()
 	m_nScene = UIM_SCENE_NONE;
 }
 
+//bool    showShoppingMall = false;
+
 void CUIMng::RenderTitleSceneUI(HDC hDC, DWORD dwNow, DWORD dwTotal)
 {
 	::BeginOpengl();
 	::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	::BeginBitmap();
+
+	myShader.setFloat(g_uAlphaTestLoc, 1.0f);
 
 	for (int i = 0; i < UIM_TS_MAX; ++i)
 	{
@@ -177,7 +181,7 @@ void CUIMng::RenderTitleSceneUI(HDC hDC, DWORD dwNow, DWORD dwTotal)
 	::glFlush();
 
 #ifdef MU_USE_SDL
-	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);

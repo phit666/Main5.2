@@ -311,53 +311,6 @@ void CNewUIInGameShop::SetRateScale(int _ItemType)
 	}
 }
 
-#define GL_MODELVIEW  0x1700
-#define GL_PROJECTION 0x1701
-
-// Global variable to track the current mode
-GLenum g_currentMatrixMode = GL_MODELVIEW;
-
-void MU_glMatrixMode(GLenum mode) {
-	g_currentMatrixMode = mode;
-}
-
-void MU_glLoadIdentity() {
-	if (g_currentMatrixMode == GL_PROJECTION) {
-		projectionStack.back() = glm::mat4(1.0f);
-	}
-	else {
-		modelViewStack.back() = glm::mat4(1.0f);
-	}
-	// Sync the shader
-	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-}
-
-void MU_glPushMatrixEX() {
-	if (g_currentMatrixMode == GL_PROJECTION) {
-		projectionStack.push_back(projectionStack.back());
-	}
-	else {
-		modelViewStack.push_back(modelViewStack.back());
-	}
-}
-
-void MU_glPopMatrixEX() {
-	if (g_currentMatrixMode == GL_PROJECTION) {
-		if (projectionStack.size() > 1) projectionStack.pop_back();
-	}
-	else {
-		if (modelViewStack.size() > 1) modelViewStack.pop_back();
-	}
-	// Sync the shader
-	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-}
-
-#define glLoadIdentity MU_glLoadIdentity
-#define glMatrixMode MU_glMatrixMode
-#define glPushMatrixEX MU_glPushMatrixEX
-#define glPopMatrixEX MU_glPopMatrixEX
-
-
 void CNewUIInGameShop::RenderDisplayItems()
 {
 	// 1. Close 2D Pass
@@ -365,7 +318,7 @@ void CNewUIInGameShop::RenderDisplayItems()
 
 	// 2. Setup 3D Projection
 	glMatrixMode(GL_PROJECTION);
-	glPushMatrixEX();
+	glPushMatrix();
 	glLoadIdentity();
 	glViewport(0, 0, WindowWidth, WindowHeight);
 
@@ -375,7 +328,7 @@ void CNewUIInGameShop::RenderDisplayItems()
 
 	// 3. Setup ModelView
 	glMatrixMode(GL_MODELVIEW);
-	glPushMatrixEX();
+	glPushMatrix();
 	glLoadIdentity();
 
 	// 4. SHADER STATE RESET (Crucial for UI 3D items)
@@ -409,10 +362,10 @@ void CNewUIInGameShop::RenderDisplayItems()
 	// 8. Restore Stacks
 	// These wrappers (MU_glPopMatrix) will automatically re-sync the shader to the previous matrix
 	glMatrixMode(GL_MODELVIEW);
-	glPopMatrixEX();
+	glPopMatrix();
 
 	glMatrixMode(GL_PROJECTION);
-	glPopMatrixEX();
+	glPopMatrix();
 
 	// 9. Re-open 2D Pass
 	BeginBitmap();

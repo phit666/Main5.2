@@ -144,7 +144,10 @@ void    CSWaterTerrain::Render ( void )
     // IMPORTANT: Enable the color attribute for per-vertex lighting
     glEnableVertexAttribArray(g_aColorLoc);
     glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
+
     MU_ApplyMatrices();
+    myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
     // 3. Draw
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
 
@@ -497,6 +500,8 @@ void CSWaterTerrain::RenderWaterBitmapTile(
     glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
     MU_ApplyMatrices();
+    myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
     // 3. Draw
     // GL_TRIANGLE_FAN is the direct GLES2 replacement for a single QUAD
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
