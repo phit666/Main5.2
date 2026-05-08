@@ -138,8 +138,6 @@ void InitShader()
 {
     const char* vertexShaderSource = R"(
 
-precision mediump float;
-
 attribute vec4 a_position;
 attribute vec2 a_texCoord;
 attribute vec4 a_color;

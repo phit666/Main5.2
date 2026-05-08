@@ -301,6 +301,13 @@ void CSprite::Render()
 	if (!m_bShow)
 		return;
 
+	// convert color to float
+	float cr = m_byRed / 255.0f;
+	float cg = m_byGreen / 255.0f;
+	float cb = m_byBlue / 255.0f;
+	float ca = m_byAlpha / 255.0f;
+
+
 	if (-1 < m_nTexID)
 	{
 		if (!TextureEnable)
@@ -327,12 +334,6 @@ void CSprite::Render()
 			count++;
 		}
 
-		// 2. Set the Color Uniform (converting bytes to floats)
-		myShader.setVec4(g_uColorLoc,
-			m_byRed / 255.0f,
-			m_byGreen / 255.0f,
-			m_byBlue / 255.0f,
-			m_byAlpha / 255.0f);
 
 		// 3. Set Attributes
 		// Position
@@ -345,12 +346,16 @@ void CSprite::Render()
 
 		// Ensure per-vertex color is disabled (we are using the uniform above)
 		glDisableVertexAttribArray(g_aColorLoc);
+		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
+
 		MU_ApplyMatrices();
+
 		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
 
 		// 5. Cleanup
 		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aColorLoc);
 
 	}
 	else
@@ -372,26 +377,22 @@ void CSprite::Render()
 			count++;
 		}
 
-		// 2. Set the Color Uniform
-		myShader.setVec4(g_uColorLoc,
-			m_byRed / 255.0f,
-			m_byGreen / 255.0f,
-			m_byBlue / 255.0f,
-			m_byAlpha / 255.0f);
 
 		// 3. Set Attributes
 		// Position is required
 		glEnableVertexAttribArray(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, vao);
 
-		// IMPORTANT: Disable UV and Color attributes
-		// Since u_hasTexture is false, the shader won't use UVs, 
-		// and we want it to use the u_color uniform instead of a_color.
 		glDisableVertexAttribArray(g_aTexLoc);
+
 		glDisableVertexAttribArray(g_aColorLoc);
+		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
+
 		MU_ApplyMatrices();
 		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
+
+		glDisableVertexAttribArray(g_aColorLoc);
 
 	}
 }

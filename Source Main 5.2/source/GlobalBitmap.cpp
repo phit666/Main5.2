@@ -341,6 +341,7 @@ void CGlobalBitmap::Init()
 GLuint CGlobalBitmap::LoadImage(const std::string& filename, GLuint uiFilter, GLuint uiWrapMode)
 {
 	BITMAP_t* pBitmap = FindTexture(filename);
+
 	if(pBitmap)
 	{
 		if(pBitmap->Ref > 0)
@@ -363,6 +364,11 @@ GLuint CGlobalBitmap::LoadImage(const std::string& filename, GLuint uiFilter, GL
 			return uiNewTextureIndex;
 		}
 	}
+
+	char t[100] = { 0 };
+	sprintf(t, "[SDL-DEBUG] CGlobalBitmap::LoadImage, %s load failed.", filename.c_str());
+	OutputDebugString(t);
+
 	return BITMAP_UNKNOWN;
 }
 bool CGlobalBitmap::LoadImage(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter, GLuint uiWrapMode)

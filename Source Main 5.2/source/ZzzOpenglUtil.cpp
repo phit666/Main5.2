@@ -309,6 +309,9 @@ void BindTexture(int tex) {
 		CachTexture = tex;
 		GLuint texID = (tex >= 0) ? Bitmaps[tex].TextureNumber : (GLuint)(-1 * tex);
 		glBindTexture(GL_TEXTURE_2D, texID);
+		//char t[100] = { 0 };
+		//sprintf(t, "[SDL-DEBUG] BindTexture %u", tex);
+		//OutputDebugString(t);
 	}
 	myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 }
@@ -1326,17 +1329,9 @@ void BeginBitmap() {
 	glViewport(0, 0, WindowWidth, WindowHeight);
 	glDisable(GL_DEPTH_TEST);
 
-	// Sync Shader
-	myShader.use();
 	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
 	myShader.setFloat(g_uFogEnabledLoc, 0.0f);
 	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-
-	//char t[100] = { 0 };
-	//float tval;
-	//glGetUniformfv(g_muProgram, g_uFogColorLoc, &tval);
-	//sprintf(t, "[SDL-DEBUG-2] Fog:%f (%u)", tval, g_uFogColorLoc);
-	//OutputDebugStringA(t);
 }
 
 
