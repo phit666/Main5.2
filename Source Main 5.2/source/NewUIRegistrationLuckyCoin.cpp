@@ -111,11 +111,12 @@ namespace SEASON3B
 
 		// 2. PROJECTION RESET (Mini-3D Scene)
 		projectionStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
-		glViewport(0, 0, WindowWidth, WindowHeight);
+		glViewport2(0, 0, WindowWidth, WindowHeight);
 
 		float aspect = (float)WindowWidth / (float)WindowHeight;
 		// Note: 1.0f degree FOV is a massive zoom (Telephoto effect)
 		projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
+		gluPerspective2(1.f, (float)(WindowWidth) / (float)(WindowHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
 
 		// 3. MODELVIEW RESET
 		modelViewStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity

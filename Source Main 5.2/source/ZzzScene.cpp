@@ -534,11 +534,12 @@ void RenderInfomation3D()
 
 		// 1. PROJECTION RESET
 		projectionStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
-		glViewport(0, 0, WindowWidth, WindowHeight);
+		glViewport2(0, 0, WindowWidth, WindowHeight);
 
 		float aspect = (float)WindowWidth / (float)WindowHeight;
 		// gluPerspective2(1.f, ...) -> Note: 1.0f degree is a massive zoom
 		projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, CameraViewNear, CameraViewFar);
+		gluPerspective2(1.f, (float)(WindowWidth) / (float)(WindowHeight), CameraViewNear, CameraViewFar);
 
 		// 2. MODELVIEW RESET
 		modelViewStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity

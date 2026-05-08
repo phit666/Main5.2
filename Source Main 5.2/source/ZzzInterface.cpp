@@ -7759,6 +7759,14 @@ int SelectCharacter(BYTE Kind)
 						o->OBB.XAxis[0] += 100.f;
 						o->OBB.ZAxis[2] += 100.f;
 					}
+
+					char t[512] = { 0 };
+					sprintf(t, "[SDL-DEBUG-4] x:%f y:%f z:%f - tx:%f ty:%f tz:%f",
+						MousePosition[0], MousePosition[1], MousePosition[2],
+						MouseTarget[0], MouseTarget[1], MouseTarget[2]
+
+					);
+					OutputDebugStringA(t);
 					
 					if(CollisionDetectLineToOBB(MousePosition,MouseTarget,o->OBB))
 					{
@@ -7887,6 +7895,11 @@ void SelectObjects()
 	SelectedItem      = -1;
 	SelectedNpc       = -1;
 	SelectedOperate   = -1;
+
+	//char t[100] = { 0 };
+	//sprintf(t, "[SDL-DEBUG-4] MouseOnWindow %d CheckMouseUse %d ScrnW %d MouseIn %d", MouseOnWindow, g_pNewUISystem->CheckMouseUse(), GetScreenWidth(),
+		//SEASON3B::CheckMouseIn(0, 0, GetScreenWidth(), 429));
+	//OutputDebugStringA(t);
 
 	if(!MouseOnWindow && false == g_pNewUISystem->CheckMouseUse() && SEASON3B::CheckMouseIn(0, 0, GetScreenWidth(), 429))
 	{

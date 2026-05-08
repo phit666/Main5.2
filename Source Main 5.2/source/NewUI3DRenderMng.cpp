@@ -113,11 +113,14 @@ bool SEASON3B::CNewUI3DCamera::Render()
 	// 2. PROJECTION RESET (New 3D Context)
 	// Using m_uiWidth/Height for the sub-window/sub-scene size
 	projectionStack.push_back(glm::mat4(1.0f));
-	glViewport(0, 0, m_uiWidth, m_uiHeight);
+	glViewport2(0, 0, m_uiWidth, m_uiHeight);
 
 	float aspect = (float)m_uiWidth / (float)m_uiHeight;
 	// gluPerspective2(1.f, ...) -> Intense telephoto zoom
 	projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
+
+	gluPerspective2(1.f, (float)(m_uiWidth) / (float)(m_uiHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
+
 
 	// 3. MODELVIEW RESET
 	modelViewStack.push_back(glm::mat4(1.0f));

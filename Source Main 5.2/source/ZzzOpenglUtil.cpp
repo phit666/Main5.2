@@ -210,7 +210,27 @@ void GetOpenGLMatrix(float Matrix[3][4])
 
 void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 {
+	// 1. Update the manual Projection Stack
+	// glm::perspective uses radians, so we convert Fov
+	//projectionStack.back() = glm::perspective(glm::radians(Fov), Aspect, ZNear, ZFar);
+
+	// 2. Sync the Shader (Ensures the world looks right)
+	//MU_ApplyMatrices();
+
+	// 3. Keep your Legacy Mouse-to-World Math
+	// These variables are critical for your Click-to-Move and Object Picking
+	ScreenCenterX = OpenglWindowX + OpenglWindowWidth / 2;
+	ScreenCenterY = OpenglWindowY + OpenglWindowHeight / 2;
+	ScreenCenterYFlip = WindowHeight - ScreenCenterY; // Fixed: WindowHeight is standard for flipping Y
+
+	float AspectY = (float)(WindowHeight) / (float)(OpenglWindowHeight);
+
+	// This calculates how much the 3D ray expands per pixel away from center
+	float tanFov = tanf(Fov * 0.5f * 3.141592f / 180.f);
+	PerspectiveX = tanFov / (float)(OpenglWindowWidth / 2) * Aspect;
+	PerspectiveY = tanFov / (float)(OpenglWindowHeight / 2) * AspectY;
 }
+
 
 void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 {
@@ -636,10 +656,11 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	glViewport(x, y, Width, Height);
+	glViewport2(x, y, Width, Height);
 
 	float aspect = (float)Width / (float)Height;
 	projectionStack.back() = glm::perspective(glm::radians(CameraFOV), aspect, CameraViewNear, CameraViewFar * 1.4f);
+	gluPerspective2(CameraFOV, (float)Width / (float)Height, CameraViewNear, CameraViewFar * 1.4f);
 
 	// --- MODELVIEW ---
 	glMatrixMode(GL_MODELVIEW);
@@ -673,10 +694,6 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	glDepthMask(GL_TRUE);
 	glAlphaFunc(0, 0.25f);  // Wrapper for threshold
 
-	// Ensure blending is on
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	// --- FOG ---
 	if (FogEnable)
 	{
@@ -698,8 +715,10 @@ void BeginOpengl(int x, int y, int Width, int Height)
 
 void EndOpengl()
 {
-	if (modelViewStack.size() > 1) modelViewStack.pop_back();
-	if (projectionStack.size() > 1) projectionStack.pop_back();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 }
 
 void UpdateMousePositionn()
@@ -1946,7 +1965,7 @@ bool ProjectLineBox(vec3_t ax, vec3_t p1, vec3_t p2, OBB_t obb)
 	if (mn2 > mx1) return false;
 
 	return true;
-}
+}//
 
 bool CollisionDetectLineToOBB(vec3_t p1, vec3_t p2, OBB_t obb)
 {

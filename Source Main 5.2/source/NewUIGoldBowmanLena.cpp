@@ -265,11 +265,12 @@ void CNewUIGoldBowmanLena::Render3D()
 
 	// 2. PROJECTION RESET (Mini-3D Scene)
 	projectionStack.push_back(glm::mat4(1.0f)); // Equivalent to glPushMatrix + glLoadIdentity
-	glViewport(0, 0, WindowWidth, WindowHeight);
+	glViewport2(0, 0, WindowWidth, WindowHeight);
 
 	float aspect = (float)WindowWidth / (float)WindowHeight;
 	// gluPerspective2(1.f, ...) -> Zoomed 3D View
 	projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
+	gluPerspective2(1.f, (float)(WindowWidth) / (float)(WindowHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
 
 	// 3. MODELVIEW RESET
 	modelViewStack.push_back(glm::mat4(1.0f)); // Equivalent to glPushMatrix + glLoadIdentity
