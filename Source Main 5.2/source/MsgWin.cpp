@@ -461,9 +461,9 @@ void CMsgWin::PopUp(int nMsgCode, char* pszMsg)
 		(winH - m_sprBack.GetHeight()) / 2
 	);
 
-	char t[100] = { 0 };
-	sprintf(t, "[SDL-DEBUG] PopUp %d, w:%d h:%d / %d %d", m_nMsgCode, winW, winH, (winW - m_sprBack.GetWidth()) / 2, (winH - m_sprBack.GetHeight()) / 2);
-	OutputDebugStringA(t);
+	//char t[100] = { 0 };
+	//sprintf(t, "[SDL-DEBUG] PopUp %d, w:%d h:%d / %d %d", m_nMsgCode, winW, winH, (winW - m_sprBack.GetWidth()) / 2, (winH - m_sprBack.GetHeight()) / 2);
+	//OutputDebugStringA(t);
 #endif
 
 	rUIMng.ShowWin(this);

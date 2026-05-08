@@ -32,6 +32,75 @@ MU_Mat4 g_savedViewForSprite;
 
 float g_CurrentColor[4] = { 1.f, 1.f, 1.f, 1.f };
 
+
+void MU_glColor4f(float r, float g, float b, float a)
+{
+    g_CurrentColor[0] = r;
+    g_CurrentColor[1] = g;
+    g_CurrentColor[2] = b;
+    g_CurrentColor[3] = a;
+    //GLint isEnabled = 0;
+    //glGetVertexAttribiv(g_aColorLoc, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &isEnabled);
+    //if (isEnabled) {
+        //glDisableVertexAttribArray(g_aColorLoc);
+        //glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+    //}
+    myShader.setVec4(g_uColorLoc, r, g, b, a);
+}
+
+void MU_glColor4ub(GLubyte r, GLubyte g, GLubyte b, GLubyte a)
+{
+    g_CurrentColor[0] = r / 255.0f;
+    g_CurrentColor[1] = g / 255.0f;
+    g_CurrentColor[2] = b / 255.0f;
+    g_CurrentColor[3] = a / 255.0f;
+    //glDisableVertexAttribArray(g_aColorLoc);
+    //glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+    myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+}
+
+void MU_glColor3ub(GLubyte r, GLubyte g, GLubyte b)
+{
+    g_CurrentColor[0] = r / 255.0f;
+    g_CurrentColor[1] = g / 255.0f;
+    g_CurrentColor[2] = b / 255.0f;
+    g_CurrentColor[3] = 1.0f;
+    //glDisableVertexAttribArray(g_aColorLoc);
+    //glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+    myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
+}
+
+void MU_glLoadIdentity() {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        projectionStack.back() = glm::mat4(1.0f);
+    }
+    else {
+        modelViewStack.back() = glm::mat4(1.0f);
+    }
+    // Sync the shader
+    myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+}
+
+void MU_glPushMatrix() {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        projectionStack.push_back(projectionStack.back());
+    }
+    else {
+        modelViewStack.push_back(modelViewStack.back());
+    }
+}
+
+void MU_glPopMatrix() {
+    if (g_currentMatrixMode == GL_PROJECTION) {
+        if (projectionStack.size() > 1) projectionStack.pop_back();
+    }
+    else {
+        if (modelViewStack.size() > 1) modelViewStack.pop_back();
+    }
+    // Sync the shader
+    myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
+}
+
 void MU_TransformPoint(const MU_Mat4& m, const vec3_t in, vec3_t out)
 {
     out[0] = m.m[0] * in[0] + m.m[4] * in[1] + m.m[8] * in[2] + m.m[12];
@@ -77,6 +146,9 @@ void MU_Perspective(MU_Mat4& out, float fovyDeg, float aspect, float zNear, floa
 void MU_ApplyMatrices()
 {
     glUseProgram(g_muProgram);
+
+    //myShader.setVec4(g_uColorLoc, 0.5f, 0.5f, 0.5f, 0.5f);
+
 
     // 1. Sync View (ModelView) Matrix
     // This is used by the shader for Fog (v_dist) calculation
@@ -126,9 +198,9 @@ GLuint CompileShader(GLenum type, const char* src)
     {
         char log[512];
         glGetShaderInfoLog(shader, 512, NULL, log);
-        char t[100] = { 0 };
-        sprintf(t, "[SDL-DEBUG] Shader compile error, type %d %s", (int)type, log);
-        OutputDebugStringA(t);
+        //char t[100] = { 0 };
+        //sprintf(t, "[SDL-DEBUG] Shader compile error, type %d %s", (int)type, log);
+        //OutputDebugStringA(t);
     }
 
     return shader;
@@ -269,7 +341,8 @@ void main()
     glDeleteShader(fs);
 
     g_muProgram = program;
-    myShader.ID = program;
+
+    myShader.init(program);
 
     g_uTexEnabledLoc = glGetUniformLocation(g_muProgram, "u_hasTexture");
     g_uAlphaTestLoc = glGetUniformLocation(g_muProgram, "u_alphaTestEnabled");
@@ -294,6 +367,52 @@ void main()
 
 }
 
+
+Shader::Shader() {
+    ID = -1;
+    uColor.m[0] = 0.0f;
+    uColor.m[1] = 0.0f;
+    uColor.m[2] = 0.0f;
+    uColor.m[3] = 0.0f;
+}
+
+Shader::~Shader() {
+
+}
+
+void Shader::init(GLuint iID) {
+    ID = iID;
+}
+
+void Shader::use() { glUseProgram(ID); }
+
+void Shader::setBool(GLuint iID, bool value){
+    glUniform1i(iID, (int)value);
+}
+void Shader::setFloat(GLuint iID, float value){
+    glUniform1f(iID, value);
+}
+void Shader::setVec4(GLuint iID, float x, float y, float z, float w){
+
+    if (g_uColorLoc == iID) {
+        if (uColor.m[0] == x && uColor.m[1] == y && uColor.m[2] == z && uColor.m[3] == w) {
+            return;
+        }
+    }
+
+    glUniform4f(iID, x, y, z, w);
+
+    if (g_uColorLoc == iID) {
+        uColor.m[0] = x;
+        uColor.m[1] = y;
+        uColor.m[2] = z;
+        uColor.m[3] = w;
+    }
+}
+void Shader::setMat4(GLuint iID, const glm::mat4& mat){
+    glUniformMatrix4fv(iID, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
 void testprogram() {
     char t[100] = { 0 };
     //GLint currentProgram = 0;
@@ -301,8 +420,8 @@ void testprogram() {
     float f1, f2; // Buffer for a vec4 color
     glGetUniformfv(g_muProgram, g_uAlphaTestLoc, &f1);
     glGetUniformfv(g_muProgram, g_uAlphaThresholdLoc, &f2);
-    sprintf(t, "[SDL-DEBUG2] Current Program = %d (alphatest:%f), myProgram = %d (threshold:%f)",
-        g_muProgram, f1,
-        g_muProgram, f2);
-    OutputDebugStringA(t);
+   // sprintf(t, "[SDL-DEBUG2] Current Program = %d (alphatest:%f), myProgram = %d (threshold:%f)",
+     //   g_muProgram, f1,
+     //   g_muProgram, f2);
+    //OutputDebugStringA(t);
 }

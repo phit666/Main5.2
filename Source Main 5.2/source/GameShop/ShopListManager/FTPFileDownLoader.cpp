@@ -48,8 +48,9 @@ WZResult CFTPFileDownLoader::DownLoadFiles(DownloaderType type,
 
 	char Buffer[MAX_PATH] = {0};
 
+#ifdef _TODO
 	StringCchPrintfA(Buffer,sizeof(Buffer),"%03d.%04d.%03d",Version.Zone,Version.year,Version.yearId);
-
+#endif
 	strRemotepath += Buffer;
 	strRemotepath += "/";
 	strlocalpath += Buffer;
@@ -92,11 +93,12 @@ void	CFTPFileDownLoader::Break() // OK
 
 BOOL CFTPFileDownLoader::CreateFolder(std::string strFilePath) // OK
 {
+#ifdef _TODO
 	if(GetFileAttributes(strFilePath.c_str())==INVALID_FILE_ATTRIBUTES)
 	{
 		return CreateDirectory(strFilePath.c_str(),0);
 	}
-
+#endif
 	return 1;
 }
 #endif

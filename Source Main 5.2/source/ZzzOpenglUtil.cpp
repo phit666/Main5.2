@@ -207,15 +207,14 @@ void GetOpenGLMatrix(float Matrix[3][4])
 	}
 }
 
-
 void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 {
 	// 1. Update the manual Projection Stack
 	// glm::perspective uses radians, so we convert Fov
-	//projectionStack.back() = glm::perspective(glm::radians(Fov), Aspect, ZNear, ZFar);
+	projectionStack.back() = glm::perspective(glm::radians(Fov), Aspect, ZNear, ZFar);
 
 	// 2. Sync the Shader (Ensures the world looks right)
-	//MU_ApplyMatrices();
+	MU_ApplyMatrices();
 
 	// 3. Keep your Legacy Mouse-to-World Math
 	// These variables are critical for your Click-to-Move and Object Picking
@@ -685,7 +684,7 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	myShader.use();
 	myShader.setFloat(g_uAlphaTestLoc, AlphaTestEnable ? 1.0f : 0.0f);
 	myShader.setFloat(g_uTexEnabledLoc, TextureEnable ? 1.0f : 0.0f);
-	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Reset global tint
+	//myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Reset global tint
 
 	// --- HARDWARE STATES ---
 	glEnable(GL_DEPTH_TEST);
@@ -708,9 +707,10 @@ void BeginOpengl(int x, int y, int Width, int Height)
 		//myShader.setFloat(g_uFogEnabledLoc, 0.0f);
 	}
 
-	// --- FINAL SYNC ---
-	MU_ApplyMatrices();            // Sends MVP and MV to GPU
 	GetOpenGLMatrix(CameraMatrix); // Fills CameraMatrix for legacy CPU math
+
+	// --- FINAL SYNC ---
+	//MU_ApplyMatrices();            // Sends MVP and MV to GPU
 }
 
 void EndOpengl()
@@ -955,7 +955,7 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 
 	// Disable color attribute if not used, or use glVertexAttrib4f for a constant color
 	glDisableVertexAttribArray(g_aColorLoc);
-	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	MU_ApplyMatrices();
 
@@ -964,7 +964,7 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
+	//glDisableVertexAttribArray(g_aTexLoc);
 
 }
 
@@ -1060,14 +1060,14 @@ void RenderSprite(int Texture, vec3_t Position, float Width, float Height, vec3_
 
 	// Disable per-vertex color attribute (we are using the uniform u_color instead)
 	glDisableVertexAttribArray(g_aColorLoc);
-	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default to white
+	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default to white
 	MU_ApplyMatrices();
 	// 4. Draw
 	// GL_TRIANGLE_FAN is the GLES2 replacement for GL_QUADS
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	// 5. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
+	//glDisableVertexAttribArray(g_aTexLoc);
 
 }
 //
@@ -1537,13 +1537,13 @@ void RenderBitRotate(int Texture, float x, float y, float Width, float Height, f
 
 	// Ensure the constant color is white (unless set otherwise by a previous helper)
 	glDisableVertexAttribArray(g_aColorLoc);
-	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
+	//glDisableVertexAttribArray(g_aTexLoc);
 
 }
 //

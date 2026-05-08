@@ -869,7 +869,7 @@ void CPhysicsCloth::RenderFace(BOOL bFront, int iTexture, vec3_t* pvRenderPos)
 
 		// Disable per-vertex color since we're using your Uniform wrapper MU_glColor
 		glDisableVertexAttribArray(g_aColorLoc);
-		glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+		//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 		MU_ApplyMatrices();
 		for (int q = 0; q < clothBuffer.size() / 4; q++) {
 			glDrawArrays(GL_TRIANGLE_FAN, q * 4, 4);

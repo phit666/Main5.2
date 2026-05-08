@@ -1862,8 +1862,6 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 		glEnableVertexAttribArray(g_aColorLoc);
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
 
-		// Ensure global uniform color is neutral so per-vertex color takes over
-		//myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 		MU_ApplyMatrices();
 		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 

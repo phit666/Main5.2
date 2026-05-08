@@ -13,10 +13,11 @@
 #include "BannerInfo.h"
 #include "StringToken.h"
 #include "StringMethod.h"
-
+#ifdef _WIN32
 #include <UrlMon.h>
-
 #pragma comment(lib,"Urlmon.lib")
+#endif
+
 
 CBannerInfo::CBannerInfo() // OK
 {
@@ -57,6 +58,7 @@ bool	CBannerInfo::SetBanner(std::string strdata,std::string strDirPath,bool bDon
 	std::string url = this->BannerImageURL;
 	std::size_t pos = url.rfind("/",std::string::npos);
 
+#ifdef _TODO
 	if(pos!= std::string::npos)
 	{
 		std::string sub = url.substr(pos+1,url.length()-pos-1);
@@ -68,7 +70,7 @@ bool	CBannerInfo::SetBanner(std::string strdata,std::string strDirPath,bool bDon
 			URLDownloadToFile(0,this->BannerImageURL,this->BannerImagePath,0,0);
 		}
 	}
-
+#endif
 	return 1;
 }
 #endif

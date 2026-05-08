@@ -105,7 +105,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.254.116";
+char *szServerIpAddress = "192.168.254.115";
 WORD g_ServerPort = 44405;
 
 #ifdef MOVIE_DIRECTSHOW

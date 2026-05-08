@@ -2,10 +2,10 @@
 #ifndef _WIN32
 #include <GLES2/gl2.h>
 #else
-//#include <GL/glew.h>
-//#include <GL/gl.h>
 #include <SDL.h>
+#ifdef _WIN32
 #include "glad.h"
+#endif
 #include <SDL_opengles2.h>
 #endif
 #include <math.h>
@@ -13,7 +13,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#ifdef _WIN32
+
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
@@ -21,7 +21,7 @@
 #ifndef min
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
-#endif
+
 
 #define USE_GLES2_PORT
 
@@ -152,22 +152,18 @@ void MU_TransformPoint(const MU_Mat4& m, const vec3_t in, vec3_t out);
 
 class Shader {
 public:
+    Shader();
+    ~Shader();
+private:
     GLuint ID; // Your linked Program ID
-
-    void use() { glUseProgram(ID); }
-
-    void setBool(GLuint iID, bool value) const {
-        glUniform1i(iID, (int)value);
-    }
-    void setFloat(GLuint iID, float value) const {
-        glUniform1f(iID, value);
-    }
-    void setVec4(GLuint iID, float x, float y, float z, float w) const {
-        glUniform4f(iID, x, y, z, w);
-    }
-    void setMat4(GLuint iID, const glm::mat4& mat) const {
-        glUniformMatrix4fv(iID, 1, GL_FALSE, glm::value_ptr(mat));
-    }
+    MU_Mat4 uColor;
+public:
+    void init(GLuint iID);
+    void use();
+    void setBool(GLuint iID, bool value);
+    void setFloat(GLuint iID, float value);
+    void setVec4(GLuint iID, float x, float y, float z, float w);
+    void setMat4(GLuint iID, const glm::mat4& mat);
 };
 
 struct SpriteVertex {

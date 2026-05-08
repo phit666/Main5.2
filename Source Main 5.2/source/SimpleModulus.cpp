@@ -375,8 +375,8 @@ BOOL CSimpleModulus::LoadKey(LPSTR lpszFileName,
 
     MU_FILE* hFile = MU_fopen(lpszFileName, "rb");
 
-	char t[100] = { 0 };
-	OutputDebugString("[SDL-DEBUG] CSimpleModulus::LoadKey...");
+	//char t[100] = { 0 };
+	//OutputDebugString("[SDL-DEBUG] CSimpleModulus::LoadKey...");
 
     if (!hFile)
         return FALSE;
@@ -394,15 +394,15 @@ BOOL CSimpleModulus::LoadKey(LPSTR lpszFileName,
                 (int)(((size_t)bLoadModulus + bLoadEncKey + bLoadDecKey + bLoadXORKey)
                       * sizeof(XORTable)) + sizeof(ENCDEC_FILEHEADER);
 
-		sprintf(t, "[SDL-DEBUG] %u / %u", HeaderBuffer.dwSize, expectedSize);
-		OutputDebugStringA(t);
+		//sprintf(t, "[SDL-DEBUG] %u / %u", HeaderBuffer.dwSize, expectedSize);
+		//OutputDebugStringA(t);
 
         if (HeaderBuffer.dwSize == expectedSize)
         {
-			sprintf(t, "[SDL-DEBUG] XORTable, %u %u %u %u", XORTable[0], XORTable[1], XORTable[2], XORTable[3]);
-			OutputDebugStringA(t);
-			sprintf(t, "[SDL-DEBUG] s_dwSaveLoadXOR, %u %u %u %u", s_dwSaveLoadXOR[0], s_dwSaveLoadXOR[1], s_dwSaveLoadXOR[2], s_dwSaveLoadXOR[3]);
-			OutputDebugStringA(t);
+			//sprintf(t, "[SDL-DEBUG] XORTable, %u %u %u %u", XORTable[0], XORTable[1], XORTable[2], XORTable[3]);
+			//OutputDebugStringA(t);
+			//sprintf(t, "[SDL-DEBUG] s_dwSaveLoadXOR, %u %u %u %u", s_dwSaveLoadXOR[0], s_dwSaveLoadXOR[1], s_dwSaveLoadXOR[2], s_dwSaveLoadXOR[3]);
+			//OutputDebugStringA(t);
 
             if (bLoadModulus)
             {
@@ -442,7 +442,7 @@ BOOL CSimpleModulus::LoadKey(LPSTR lpszFileName,
     MU_fclose(hFile);
 
 
-	OutputDebugString("[SDL-DEBUG] CSimpleModulus::LoadKey...done");
+	//OutputDebugString("[SDL-DEBUG] CSimpleModulus::LoadKey...done");
 
     return FALSE;
 }

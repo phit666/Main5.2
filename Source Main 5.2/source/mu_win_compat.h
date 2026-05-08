@@ -29,128 +29,8 @@
 //#include "ZzzOpenglUtil.h"
 #ifdef USE_GLES2_PORT
 
-inline void MU_glColor4f(float r, float g, float b, float a)
-{
-    g_CurrentColor[0] = r;
-    g_CurrentColor[1] = g;
-    g_CurrentColor[2] = b;
-    g_CurrentColor[3] = a;
-    GLint isEnabled = 0;
-    glGetVertexAttribiv(g_aColorLoc, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &isEnabled);
-    if (isEnabled) {
-        glDisableVertexAttribArray(g_aColorLoc);
-        glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-    }
-    myShader.setVec4(g_uColorLoc, r, g, b, a);
-}
-
-inline void MU_glColor3f(float r, float g, float b)
-{
-    MU_glColor4f(r, g, b, 1.f);
-}
-
-inline void MU_glColor3fv(const float* v)
-{
-    MU_glColor4f(v[0], v[1], v[2], 1.f);
-}
-
-inline void MU_glColor4fv(const float* v)
-{
-    MU_glColor4f(v[0], v[1], v[2], v[3]);
-}
-
-inline void MU_glColor4ub(GLubyte r, GLubyte g, GLubyte b, GLubyte a)
-{
-    g_CurrentColor[0] = r / 255.0f;
-    g_CurrentColor[1] = g / 255.0f;
-    g_CurrentColor[2] = b / 255.0f;
-    g_CurrentColor[3] = a / 255.0f;
-    glDisableVertexAttribArray(g_aColorLoc);
-    glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-    myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
-}
-
-inline void MU_glColor3ub(GLubyte r, GLubyte g, GLubyte b)
-{
-    g_CurrentColor[0] = r / 255.0f;
-    g_CurrentColor[1] = g / 255.0f;
-    g_CurrentColor[2] = b / 255.0f;
-    g_CurrentColor[3] = 1.0f;
-    glDisableVertexAttribArray(g_aColorLoc);
-    glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-    myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
-}
-
-inline void MU_glEnable_TEXTURE_2D()
-{
-    myShader.setFloat(g_uTexEnabledLoc, 1.0);
-}
-
-inline void MU_glDisable_TEXTURE_2D()
-{
-    myShader.setFloat(g_uTexEnabledLoc, 0.0);
-}
-
-inline void MU_glGetColor4(int flag, vec4_t vec)
-{
-    vec[0] = g_CurrentColor[0];
-    vec[1] = g_CurrentColor[1];
-    vec[2] = g_CurrentColor[2];
-    vec[3] = g_CurrentColor[3];
-}
-
-inline void MU_glGetColor3(int flag, vec3_t vec)
-{
-    vec[0] = g_CurrentColor[1];
-    vec[1] = g_CurrentColor[2];
-    vec[2] = g_CurrentColor[3];
-}
-
-inline void MU_glAlphaFunc(GLenum func, float threshold)
-{
-    myShader.setFloat(g_uAlphaThresholdLoc, threshold);
-}
-
 #define GL_MODELVIEW  0x1700
 #define GL_PROJECTION 0x1701
-
-extern GLenum g_currentMatrixMode;
-
-inline void MU_glMatrixMode(GLenum mode) {
-    g_currentMatrixMode = mode;
-}
-
-inline void MU_glLoadIdentity() {
-    if (g_currentMatrixMode == GL_PROJECTION) {
-        projectionStack.back() = glm::mat4(1.0f);
-    }
-    else {
-        modelViewStack.back() = glm::mat4(1.0f);
-    }
-    // Sync the shader
-    myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-}
-
-inline void MU_glPushMatrix() {
-    if (g_currentMatrixMode == GL_PROJECTION) {
-        projectionStack.push_back(projectionStack.back());
-    }
-    else {
-        modelViewStack.push_back(modelViewStack.back());
-    }
-}
-
-inline void MU_glPopMatrix() {
-    if (g_currentMatrixMode == GL_PROJECTION) {
-        if (projectionStack.size() > 1) projectionStack.pop_back();
-    }
-    else {
-        if (modelViewStack.size() > 1) modelViewStack.pop_back();
-    }
-    // Sync the shader
-    myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-}
-
 // --- GLES2 Legacy Compatibility Definitions ---
 
 // Missing Texture Environment Constants
@@ -183,7 +63,68 @@ inline void MU_glPopMatrix() {
 #define GL_ALPHA_TEST 0x0BC0
 #endif
 
+extern GLenum g_currentMatrixMode;
+
+
+void MU_glColor4f(float r, float g, float b, float a);
+void MU_glColor4ub(GLubyte r, GLubyte g, GLubyte b, GLubyte a);
+void MU_glColor3ub(GLubyte r, GLubyte g, GLubyte b);
+
+void MU_glLoadIdentity();
+void MU_glPushMatrix();
+void MU_glPopMatrix();
+
 void EnableAlphaTest(bool DepthMake = true);
+
+
+inline void MU_glColor3f(float r, float g, float b)
+{
+    MU_glColor4f(r, g, b, 1.f);
+}
+
+inline void MU_glColor3fv(const float* v)
+{
+    MU_glColor4f(v[0], v[1], v[2], 1.f);
+}
+
+inline void MU_glColor4fv(const float* v)
+{
+    MU_glColor4f(v[0], v[1], v[2], v[3]);
+}
+
+inline void MU_glEnable_TEXTURE_2D()
+{
+    myShader.setFloat(g_uTexEnabledLoc, 1.0);
+}
+
+inline void MU_glDisable_TEXTURE_2D()
+{
+    myShader.setFloat(g_uTexEnabledLoc, 0.0);
+}
+
+inline void MU_glGetColor4(int flag, vec4_t vec)
+{
+    vec[0] = g_CurrentColor[0];
+    vec[1] = g_CurrentColor[1];
+    vec[2] = g_CurrentColor[2];
+    vec[3] = g_CurrentColor[3];
+}
+
+inline void MU_glGetColor3(int flag, vec3_t vec)
+{
+    vec[0] = g_CurrentColor[1];
+    vec[1] = g_CurrentColor[2];
+    vec[2] = g_CurrentColor[3];
+}
+
+inline void MU_glAlphaFunc(GLenum func, float threshold)
+{
+    myShader.setFloat(g_uAlphaThresholdLoc, threshold);
+}
+
+inline void MU_glMatrixMode(GLenum mode) {
+    g_currentMatrixMode = mode;
+}
 
 // We use your existing EnableAlphaTest helper to redirect legacy calls
 inline void MU_glEnable(GLenum cap) {
@@ -203,10 +144,6 @@ inline void MU_glDisable(GLenum cap) {
         ::glDisable(cap);
     }
 }
-
-//#define glEnable  MU_glEnable
-//#define glDisable MU_glDisable
-
 
 // Rotation Wrapper
 inline void MU_glRotatef(float angle, float x, float y, float z) {
@@ -243,8 +180,6 @@ inline void MU_glScalef(float x, float y, float z) {
     // Update the GPU immediately
     MU_ApplyMatrices();
 }
-
-
 
 // The "Do Nothing" Wrappers
 inline void MU_glTexEnvf(GLenum target, GLenum pname, GLfloat param) {}

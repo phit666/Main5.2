@@ -18,7 +18,8 @@ extern ItemAddOptioninfo*			g_pItemAddOptioninfo;
 #include "./Utilities/Log/muConsoleDebug.h"
 #include "NewUISystem.h" 
 #include "ProtocolSend.h" 
-#include "Utilities\Log\DebugAngel.h" 
+#include "Utilities\Log\DebugAngel.h"
+
 
 #define PACKET_MOVE         0xD4
 #define PACKET_POSITION     0x15
@@ -96,11 +97,11 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 	PBMSG_ENCRYPTED bc;
 	PWMSG_ENCRYPTED wc;
 
-	OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-0...");
+	//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-0...");
 
 	int iSize = g_SimpleModulusCS.Encrypt( NULL, byBuffer + iSkip, len - iSkip);
 
-	OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-0...done");
+	//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-0...done");
 
 	
 	if ( iSize < 256 && bForceC4 == FALSE)
@@ -110,12 +111,12 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 		bc.Code = 0xC3;
 		bc.Size = iLength;
 
-		OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-1...");
+		//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-1...");
 
 
 		g_SimpleModulusCS.Encrypt( bc.byBuffer, byBuffer + iSkip, len - iSkip);
 
-		OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-1...done");
+		//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-1...done");
 
 
 		assert( iSize < 256);
@@ -130,11 +131,11 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 		wc.SizeL = iLength % 256;
 		wc.SizeH = iLength / 256;
 
-		OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-2...");
+		//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-2...");
 
 		g_SimpleModulusCS.Encrypt( wc.byBuffer, byBuffer + iSkip, len - iSkip);
 
-		OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-2...done");
+		//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-2...done");
 
 
 		assert( iSize <= MAX_SPE_BUFFERSIZE_);

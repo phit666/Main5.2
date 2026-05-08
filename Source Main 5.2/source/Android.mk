@@ -161,6 +161,7 @@ LOCAL_SRC_FILES := \
     MultiLanguage.cpp \
     mu_2d_renderer.cpp \
     mu_sdl.cpp \
+    mu_gles2_matrix.cpp \
     mu_wininet_curl_compat.cpp \
     NewBloodCastleSystem.cpp \
     NewChaosCastleSystem.cpp \

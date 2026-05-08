@@ -57,10 +57,10 @@ void    CSWaterTerrain::Render ( void )
 
     CreateTerrain((Hero->PositionX) * 2, (Hero->PositionY) * 2);
 
-    float alpha;
-    int   offset;
-    int   i, j;
-    for (i = 0; i < MAX_WATER_GRID * MAX_WATER_GRID; i++)
+    //float alpha;
+    //int   offset;
+    //int   i, j;
+    for (int i = 0; i < MAX_WATER_GRID * MAX_WATER_GRID; i++)
     {
         float* Normal = m_Normals[i];
         g_chrome[i][0] = Normal[2] * 0.5f + 0.1f;

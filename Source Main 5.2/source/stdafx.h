@@ -78,7 +78,9 @@
 #else
 #pragma warning( pop )
 #include <SDL.h>
+#ifdef _WIN32
 #include "glad.h"
+#endif
 #include <SDL_opengles2.h>
 #endif
 

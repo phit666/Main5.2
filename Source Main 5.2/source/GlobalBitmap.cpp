@@ -365,9 +365,9 @@ GLuint CGlobalBitmap::LoadImage(const std::string& filename, GLuint uiFilter, GL
 		}
 	}
 
-	char t[100] = { 0 };
-	sprintf(t, "[SDL-DEBUG] CGlobalBitmap::LoadImage, %s load failed.", filename.c_str());
-	OutputDebugString(t);
+	//char t[100] = { 0 };
+	//sprintf(t, "[SDL-DEBUG] CGlobalBitmap::LoadImage, %s load failed.", filename.c_str());
+	//OutputDebugString(t);
 
 	return BITMAP_UNKNOWN;
 }

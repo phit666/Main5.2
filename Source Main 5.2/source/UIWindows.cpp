@@ -1759,7 +1759,6 @@ extern void MoveCharacterVisual(CHARACTER *c,OBJECT *o);
 
 void CUIPhotoViewer::RenderPhotoCharacter()
 {
-	/*
 	float fPos_x = m_iPos_x * 1.2f + m_iWidth / 2 - 50;
 	float fPos_y = m_iPos_y * 1.2f + m_iHeight * 1.2f - 62;
 
@@ -1780,7 +1779,7 @@ void CUIPhotoViewer::RenderPhotoCharacter()
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	MU_CopyViewToCameraMatrix(CameraMatrix);
+	GetOpenGLMatrix(CameraMatrix);
 	EnableDepthTest();
 	EnableDepthMask();
 	
@@ -1808,7 +1807,8 @@ void CUIPhotoViewer::RenderPhotoCharacter()
 	DepthMaskEnable = true;
 	glDepthFunc(GL_LEQUAL);
 	glAlphaFunc(GL_GREATER,0.25f);
-	glDisable(GL_FOG);
+	myShader.setFloat(g_uFogEnabledLoc, 0.0f);
+	//glDisable(GL_FOG);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	o->Scale = 0.7f * m_fCurrentZoom;
 	m_PhotoHelper.Scale = m_fPhotoHelperScale * m_fCurrentZoom;
@@ -1835,7 +1835,6 @@ void CUIPhotoViewer::RenderPhotoCharacter()
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glViewport2(0,0,WindowWidth,WindowHeight);
-	*/
 }
 
 int CUIPhotoViewer::SetPhotoPose(int iCurrentAni, int iMoveDir)

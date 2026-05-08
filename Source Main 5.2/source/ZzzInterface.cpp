@@ -7760,13 +7760,13 @@ int SelectCharacter(BYTE Kind)
 						o->OBB.ZAxis[2] += 100.f;
 					}
 
-					char t[512] = { 0 };
-					sprintf(t, "[SDL-DEBUG-4] x:%f y:%f z:%f - tx:%f ty:%f tz:%f",
-						MousePosition[0], MousePosition[1], MousePosition[2],
-						MouseTarget[0], MouseTarget[1], MouseTarget[2]
+					//char t[512] = { 0 };
+					//sprintf(t, "[SDL-DEBUG-4] x:%f y:%f z:%f - tx:%f ty:%f tz:%f",
+						//MousePosition[0], MousePosition[1], MousePosition[2],
+						//MouseTarget[0], MouseTarget[1], MouseTarget[2]
 
-					);
-					OutputDebugStringA(t);
+					//);
+					//OutputDebugStringA(t);
 					
 					if(CollisionDetectLineToOBB(MousePosition,MouseTarget,o->OBB))
 					{

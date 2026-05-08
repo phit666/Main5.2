@@ -1348,7 +1348,7 @@ int main(int argc, char* argv[])
 	MSG msg;
 #endif
 
-	OutputDebugStringA("[SDL-DEBUG] AttachExceptionHandler");
+	//OutputDebugStringA("[SDL-DEBUG] AttachExceptionHandler");
 
 
 	leaf::AttachExceptionHandler(ExceptionCallback);
@@ -1359,7 +1359,7 @@ int main(int argc, char* argv[])
 	char lpszFile[MAX_PATH];
 	WORD wVersion[4] = { 0,};
 
-	OutputDebugStringA("[SDL-DEBUG] GetFileNameOfFilePath");
+	//OutputDebugStringA("[SDL-DEBUG] GetFileNameOfFilePath");
 
 
 	if ( GetFileNameOfFilePath( lpszFile, lpszCommandLine))
@@ -1376,14 +1376,14 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	OutputDebugStringA("[SDL-DEBUG] g_ErrorReport.Write");
+	//OutputDebugStringA("[SDL-DEBUG] g_ErrorReport.Write");
 
 	g_ErrorReport.Write( "\r\n");
 	g_ErrorReport.WriteLogBegin();
 	g_ErrorReport.AddSeparator();
 	g_ErrorReport.Write( "Mu online %s (%s) executed. (%d.%d.%d.%d)\r\n", lpszExeVersion, "Eng", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
 
-	OutputDebugStringA("[SDL-DEBUG] g_ConsoleDebug->Write");
+	//OutputDebugStringA("[SDL-DEBUG] g_ConsoleDebug->Write");
 
 	g_ConsoleDebug->Write(MCD_NORMAL, "Mu Online (Version: %d.%d.%d.%d)", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
 
@@ -1411,19 +1411,19 @@ int main(int argc, char* argv[])
 
 	//strcpy(szServerIpAddress, "192.168.1.19");
 
-	OutputDebugStringA("[SDL-DEBUG] OpenMainExe");
+	//OutputDebugStringA("[SDL-DEBUG] OpenMainExe");
 
 	if ( !OpenMainExe())
 	{
 		return false;
 	}
 
-	OutputDebugStringA("[SDL-DEBUG] LoadEncryptionKey");
+	//OutputDebugStringA("[SDL-DEBUG] LoadEncryptionKey");
 	// PKD_ADD_BINARY_PROTECTION
 	//VM_START
 	g_SimpleModulusCS.LoadEncryptionKey( "Data\\Enc1.dat");
 
-	OutputDebugStringA("[SDL-DEBUG] LoadDecryptionKey");
+	//OutputDebugStringA("[SDL-DEBUG] LoadDecryptionKey");
 
 	g_SimpleModulusSC.LoadDecryptionKey( "Data\\Dec2.dat");
 	//VM_END
@@ -1489,7 +1489,7 @@ int main(int argc, char* argv[])
 
 #ifdef MU_USE_SDL
 
-	OutputDebugStringA("[SDL-DEBUG] MU_InitSDL");
+	//OutputDebugStringA("[SDL-DEBUG] MU_InitSDL");
 
 	if (!MU_InitSDL(WindowWidth, WindowHeight)) {
 		return FALSE;

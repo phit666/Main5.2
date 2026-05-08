@@ -386,10 +386,10 @@ void CSprite::Render()
 		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
 
 		MU_ApplyMatrices();
+
 		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
 
-		glDisableVertexAttribArray(g_aColorLoc);
 
 	}
 }

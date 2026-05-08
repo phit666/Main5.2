@@ -7210,13 +7210,13 @@ void RenderJoints( BYTE bRenderOneMore )
 					// Ensure the color is set to white (or whatever your current global color is)
 					glDisableVertexAttribArray(g_aColorLoc);
 					// If you want the tail to be tinted, use your setVec4(g_uColorLoc, ...) before this
-					glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+					//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 					MU_ApplyMatrices();
 					// 3. Draw
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 					// 4. Cleanup
-					glDisableVertexAttribArray(g_aTexLoc);
+					//glDisableVertexAttribArray(g_aTexLoc);
 
 				}
 				else
