@@ -52,7 +52,7 @@ typedef unsigned char BYTE;
 #endif
 
 #ifndef DWORD
-typedef uint32_t DWORD;
+typedef unsigned long DWORD;
 #endif
 
 #ifndef DWORD_PTR
@@ -82,6 +82,19 @@ typedef char* LPSTR;
 #ifndef LPDWORD
 typedef DWORD* LPDWORD;
 #endif
+
+#ifndef HIBYTE
+#define HIBYTE(w) ((BYTE)(((WORD)(w) >> 8) & 0xFF))
+#endif
+
+#ifndef LOBYTE
+#define LOBYTE(w) ((BYTE)((WORD)(w) & 0xFF))
+#endif
+
+#ifndef MAKELONG
+#define MAKELONG(a, b) ((LONG)(((WORD)((DWORD_PTR)(a) & 0xffff)) | ((DWORD)((WORD)((DWORD_PTR)(b) & 0xffff))) << 16))
+#endif
+
 #endif
 typedef void* HINTERNET;
 

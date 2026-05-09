@@ -373,7 +373,7 @@ T& CList<T>::GetData( CNode<T>* pNode)
 {
 	if ( m_pHead == pNode || m_pTail == pNode)
 	{
-		T NullData;	// NULL ¸®ÅÏ¿¡ ÇÊ¿äÇÑ °ª
+		T NullData;	// NULL ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½
 		memset( &NullData, 0, sizeof( T));
 
 		return ( NullData);
@@ -414,7 +414,7 @@ template <class T>
 BOOL CQueue<T>::Insert( T NewElement)
 {
 	if ( NULL == AddTail( NewElement))
-	{	// ½ÇÆÐÇÏ¸é
+	{	// ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½
 		return ( FALSE);
 	}
 
@@ -424,20 +424,20 @@ BOOL CQueue<T>::Insert( T NewElement)
 template <class T>
 T CQueue<T>::Remove( void)
 {
-	return( RemoveHead());
+	return this->RemoveHead();
 }
 
 template <class T>
 void CQueue<T>::CleanUp( void)
 {
-	RemoveAll();
+	this->RemoveAll();
 }
 
 template <class T>
 BOOL CQueue<T>::Find( T Element)
 {
 	if ( NULL == FindNode( Element))
-	{	// Ã£Áö ¸øÇÏ¸é
+	{	// Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¸ï¿½
 		return ( FALSE);
 	}
 
@@ -471,7 +471,7 @@ class CBNode
 		CBNode( T Data, S CompValue);
 		~CBNode();
 
-		// µ¥ÀÌÅÍ Ã³¸®
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
 		void SetData( T Data)	{ m_Data = Data; }
 		void SetValue( S CompValue)	{ m_CompValue = CompValue; }
 		T& GetData( void)		{ return ( m_Data);	}
@@ -1035,7 +1035,8 @@ void CDimension<T>::CheckDimensionSize( int nIndex)
 {
 	if ( nIndex >= m_nSize)
 	{
-		for ( int nNewSize = m_nSize; nNewSize <= nIndex; nNewSize *= 2)
+		int nNewSize = 1;
+		for ( nNewSize = m_nSize; nNewSize <= nIndex; nNewSize *= 2)
 		{
 		}
 

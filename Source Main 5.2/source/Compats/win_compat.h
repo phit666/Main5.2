@@ -32,15 +32,15 @@ typedef int                 BOOL;
 typedef uint8_t             BYTE;
 typedef uint8_t*             PBYTE;
 typedef uint16_t            WORD;
-typedef uint32_t            DWORD;
-typedef int32_t             LONG;
-typedef uint32_t            ULONG;
+typedef unsigned long            DWORD;
+typedef long             LONG;
+typedef unsigned long            ULONG;
 //typedef uint64_t            QWORD;
 typedef uint64_t            ULONGLONG;
 typedef char CHAR;
 typedef int INT;
 typedef void VOID;
-typedef uint32_t* LPDWORD;
+typedef unsigned long* LPDWORD;
 typedef void* LPOVERLAPPED;
 typedef void* CONTEXT;
 
@@ -1401,4 +1401,29 @@ inline int CloseHandle(void* h)
 #endif
 
 #define stricmp strcasecmp
+
+
+// Wrapper to mimic the MSVC basic_string::_Copy_s member
+inline size_t ndk_copy_s(const std::string& str, char* dest, size_t destSize, size_t count) {
+    if (!dest || destSize == 0) return 0;
+
+    // MSVC's _Copy_s copies 'count' characters or the string length,
+    // whichever is smaller, provided it fits in destSize.
+    size_t lengthToCopy = (std::min)({count, str.length(), destSize});
+
+    size_t copied = str.copy(dest, lengthToCopy);
+
+    // IMPORTANT: _Copy_s does NOT null-terminate.
+    // If your code expects a C-string, you might need:
+    // if (copied < destSize) dest[copied] = '\0';
+
+    return copied;
+}
+
+#define _MAX_PATH   260 // max. length of full pathname
+#define _MAX_DRIVE  3   // max. length of drive component
+#define _MAX_DIR    256 // max. length of path component
+#define _MAX_FNAME  256 // max. length of file name component
+#define _MAX_EXT    256 // max. length of extension component
+
 #endif

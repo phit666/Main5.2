@@ -719,7 +719,12 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 		memset(pNewBitmap, 0, sizeof(BITMAP_t));
 
 		pNewBitmap->BitmapIndex = uiBitmapIndex;
+
+#ifdef _WIN32
 		filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#else
+		ndk_copy_s(filename, pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#endif
 
 		pNewBitmap->Width = (float)Width;
 		pNewBitmap->Height = (float)Height;
@@ -863,7 +868,12 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 	memset(pNewBitmap, 0, sizeof(BITMAP_t));
 
 	pNewBitmap->BitmapIndex = uiBitmapIndex;
+
+#ifdef _WIN32
 	filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#else
+    ndk_copy_s(filename,pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#endif
 
 	pNewBitmap->Width = (float)Width;
 	pNewBitmap->Height = (float)Height;
@@ -992,8 +1002,11 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 
 		pNewBitmap->BitmapIndex = uiBitmapIndex;
 
+#ifdef _WIN32
 		filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
-
+#else
+        ndk_copy_s(filename,pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#endif
 		pNewBitmap->Width      = (float)Width;
 		pNewBitmap->Height     = (float)Height;
 		pNewBitmap->Components = 3;
@@ -1087,7 +1100,11 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 
 	pNewBitmap->BitmapIndex = uiBitmapIndex;
 
-	filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#ifdef _WIN32
+    filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#else
+    ndk_copy_s(filename,pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#endif
 
 	pNewBitmap->Width = (float)Width;
 	pNewBitmap->Height = (float)Height;
@@ -1138,6 +1155,35 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 	return true;
 }
 #endif
+
+#include <libgen.h>
+#include <string.h>
+
+inline void _splitpath(const char* path, char* drv, char* dir, char* name, char* ext) {
+	if (drv) drv[0] = '\0'; // Drives don't exist on Android/Linux
+
+	char path_copy[1024];
+	strncpy(path_copy, path, sizeof(path_copy));
+
+	if (dir) strcpy(dir, dirname(path_copy));
+
+	// Reset copy for basename
+	strncpy(path_copy, path, sizeof(path_copy));
+	char* base = basename(path_copy);
+
+	char* dot = strrchr(base, '.');
+	if (dot) {
+		if (ext) strcpy(ext, dot);
+		if (name) {
+			size_t name_len = dot - base;
+			strncpy(name, base, name_len);
+			name[name_len] = '\0';
+		}
+	} else {
+		if (ext) ext[0] = '\0';
+		if (name) strcpy(name, base);
+	}
+}
 
 void CGlobalBitmap::SplitFileName(IN const std::string& filepath, OUT std::string& filename, bool bIncludeExt) 
 {

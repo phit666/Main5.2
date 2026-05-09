@@ -175,14 +175,14 @@ void CSDevilSquareMatch::SetMatchGameCommand ( const LPPRECEIVE_MATCH_GAME_STATE
 
 void CSDevilSquareMatch::RenderMatchResult ( void )
 {
-	int xPos[6] = {m_PosResult.x, };
+	long xPos[6] = {m_PosResult.x, };
 	xPos[1] = xPos[0] + 15;
 	xPos[2] = xPos[1] + 15;
 	xPos[3] = xPos[2] + 60;
 	xPos[4] = xPos[3] + 50;
 	xPos[5] = xPos[4] + 38;
 
-	int yPos = m_PosResult.y + 40;
+	long yPos = m_PosResult.y + 40;
 	
 	g_pRenderText->SetBgColor(0);
 

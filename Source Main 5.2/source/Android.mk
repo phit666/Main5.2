@@ -307,7 +307,7 @@ LOCAL_SRC_FILES := \
     UIWindows.cpp \
     UsefulDef.cpp \
     Utilities/Log/DebugAngel.cpp \
-    ErrorReport_Stub.cpp \
+    Utilities/Log/ErrorReport_Stub.cpp \
     Utilities/Log/muConsoleDebug.cpp \
     Utilities/Log/WindowsConsole.cpp \
     Utilities/Memory/MemoryLock.cpp \
@@ -363,7 +363,6 @@ LOCAL_SRC_FILES := \
 
 LOCAL_LDLIBS := -llog -landroid -lmediandk
 LOCAL_LDLIBS += -lGLESv2
-LOCAL_LDLIBS += -ljpeg
 
 LOCAL_CPP_FEATURES = exceptions
 
