@@ -1560,7 +1560,7 @@ void SEASON3B::CGemIntegrationUnityMsgBox::SetButtonInfo()
 	for( int k=0; k< (int)COMGEM::eCOMTYPE_END; k++ )
 	{
 		cButton.SetInfo(CNewUIMessageBoxMng::IMAGE_MSGBOX_BTN_EMPTY, x+50.0f, y+ (height+10.0f)*k, MSGBOX_BTN_EMPTY_WIDTH + 20, height, CNewUIMessageBoxButton::MSGBOX_BTN_SIZE_EMPTY);
-		// 1808 "%d°³ Á¶ÇÕ(%dÁ¨ ¼Ò¿ä)"
+		// 1808 "%dï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(%dï¿½ï¿½ ï¿½Ò¿ï¿½)"
 		unicode::_sprintf(szTemp, GlobalText[1808], 10*(k+1), 500000*(k+1));
 		cButton.SetText(szTemp);
 		m_cMixButton.push_back(cButton);
@@ -1714,7 +1714,9 @@ CALLBACK_RESULT SEASON3B::CGemIntegrationUnityMsgBox::SelectMixBtnDown(class CNe
 	}
 
 	SEASON3B::CNewUICommonMessageBox* pMsgBox = NULL;
-	SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout), &pMsgBox);
+	//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout), &pMsgBox);
+	SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout> container;
+	SEASON3B::CreateMessageBox(container, &pMsgBox);
 	if(pMsgBox)
 	{
 		unicode::t_char strText[256] = {0, };
@@ -1738,7 +1740,9 @@ CALLBACK_RESULT SEASON3B::CGemIntegrationUnityMsgBox::TenBtnDown(class CNewUIMes
 	if(COMGEM::CheckInv())
 	{
 		SEASON3B::CNewUICommonMessageBox* pMsgBox = NULL;
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		if(pMsgBox)
 		{
 			unicode::t_char strText[256] = {0, };
@@ -1778,7 +1782,9 @@ CALLBACK_RESULT SEASON3B::CGemIntegrationUnityMsgBox::TwentyBtnDown(class CNewUI
 	if(COMGEM::CheckInv())
 	{
 		SEASON3B::CNewUICommonMessageBox* pMsgBox = NULL;
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		if(pMsgBox)
 		{
 			unicode::t_char strText[256] = {0, };
@@ -1818,7 +1824,9 @@ CALLBACK_RESULT SEASON3B::CGemIntegrationUnityMsgBox::ThirtyBtnDown(class CNewUI
 	if(COMGEM::CheckInv())
 	{
 		SEASON3B::CNewUICommonMessageBox* pMsgBox = NULL;
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CGemIntegrationUnityCheckMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		if(pMsgBox)
 		{
 			unicode::t_char strText[256] = {0, };
@@ -2016,7 +2024,7 @@ CALLBACK_RESULT SEASON3B::CGemIntegrationDisjointMsgBox::LButtonUp(class CNewUIM
 CALLBACK_RESULT SEASON3B::CGemIntegrationDisjointMsgBox::BlessingBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
 	CGemIntegrationDisjointMsgBox* pMsgBox = dynamic_cast<CGemIntegrationDisjointMsgBox*>(pOwner);
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -2043,7 +2051,7 @@ CALLBACK_RESULT SEASON3B::CGemIntegrationDisjointMsgBox::BlessingBtnDown(class C
 CALLBACK_RESULT SEASON3B::CGemIntegrationDisjointMsgBox::SoulBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
 	CGemIntegrationDisjointMsgBox* pMsgBox = dynamic_cast<CGemIntegrationDisjointMsgBox*>(pOwner);
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -2075,7 +2083,9 @@ CALLBACK_RESULT SEASON3B::CGemIntegrationDisjointMsgBox::DisjointBtnDown(class C
 		COMGEM::SelectFromList(pUT->m_iInvenIdx, pUT->m_cLevel);
 		
 		SEASON3B::CNewUICommonMessageBox* pMsgBox = NULL;
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationDisjointCheckMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGemIntegrationDisjointCheckMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CGemIntegrationDisjointCheckMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 
 		if(pMsgBox)
 		{
@@ -2448,7 +2458,7 @@ CALLBACK_RESULT SEASON3B::CSystemMenuMsgBox::ChooseCharacterBtnDown(class CNewUI
 	g_ErrorReport.Write( "> Menu - Join with another character. ");
 	g_ErrorReport.WriteCurrentTime();
 
-    //  °ÔÀÓ³»¿¡¼­ ¼³Á¤ÇÑ µ¥ÀÌÅÍ ÀúÀå.
+    //  ï¿½ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
     SaveOptions();
 	SaveMacro("Data\\Macro.txt");
 
@@ -4370,7 +4380,7 @@ void CCherryBlossomMsgBox::SetButtonInfo()
 	x = GetPos().x + msgboxhalfwidth - btnhalfwidth;
 	y = GetPos().y + GetSize().cy - (MSGBOX_BTN_EMPTY_HEIGHT + MSGBOX_BTN_BOTTOM_BLANK);
 	m_BtnExit.SetInfo(CNewUIMessageBoxMng::IMAGE_MSGBOX_BTN_EMPTY_SMALL, x, y, width, height, CNewUIMessageBoxButton::MSGBOX_BTN_SIZE_EMPTY_SMALL);
-	// 1002 "´Ý±â"
+	// 1002 "ï¿½Ý±ï¿½"
 	m_BtnExit.SetText(GlobalText[1002]);
 }	
 
@@ -4690,7 +4700,9 @@ CALLBACK_RESULT SEASON3B::CPersonalShopItemValueMsgBoxLayout::ProcessOk(class CN
 	{
 		SEASON3B::CNewUI3DItemCommonMsgBox* lpMsgBox = NULL;
 
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CPersonalShopItemValueCheckMsgBoxLayout), &lpMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CPersonalShopItemValueCheckMsgBoxLayout), &lpMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CPersonalShopItemValueCheckMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		if(lpMsgBox)
 		{
 			unicode::t_char strText2[MAX_TEXT_LENGTH] = { 0, };
@@ -4937,7 +4949,7 @@ CALLBACK_RESULT SEASON3B::CPasswordKeyPadMsgBoxLayout::OkBtnDown(class CNewUIMes
 {
 	CNewUIKeyPadMsgBox* pMsgBox = dynamic_cast<CNewUIKeyPadMsgBox*>(pOwner);
 
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -4993,7 +5005,7 @@ CALLBACK_RESULT SEASON3B::CStorageLockKeyPadMsgBoxLayout::OkBtnDown(class CNewUI
 {
 	CNewUIKeyPadMsgBox* pMsgBox = dynamic_cast<CNewUIKeyPadMsgBox*>(pOwner);
 
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -5011,7 +5023,9 @@ CALLBACK_RESULT SEASON3B::CStorageLockKeyPadMsgBoxLayout::OkBtnDown(class CNewUI
 		}
 
 		CNewUIKeyPadMsgBox* pKeyPadMsgBox = NULL;
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CStorageLockCheckKeyPadMsgBoxLayout), &pKeyPadMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CStorageLockCheckKeyPadMsgBoxLayout), &pKeyPadMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CStorageLockCheckKeyPadMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pKeyPadMsgBox);
 		if(pKeyPadMsgBox)
 		{
 			pKeyPadMsgBox->SetCheckInputText(pMsgBox->GetInputText());
@@ -5051,7 +5065,7 @@ CALLBACK_RESULT SEASON3B::CStorageLockCheckKeyPadMsgBoxLayout::OkBtnDown(class C
 {
 	CNewUIKeyPadMsgBox* pMsgBox = dynamic_cast<CNewUIKeyPadMsgBox*>(pOwner);
 
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -5073,7 +5087,9 @@ CALLBACK_RESULT SEASON3B::CStorageLockCheckKeyPadMsgBoxLayout::OkBtnDown(class C
 			WORD wInputNumber = (WORD)atoi(pMsgBox->GetInputText());
 
 			CNewUITextInputMsgBox* pPassword = NULL;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CStorageLockMsgBoxLayout), &pPassword);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CStorageLockMsgBoxLayout), &pPassword);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CStorageLockMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pPassword);
 			if( pPassword )
 			{
 				pPassword->SetPassword(wInputNumber);
@@ -5137,7 +5153,7 @@ CALLBACK_RESULT SEASON3B::CStorageLockMsgBoxLayout::ProcessOk(class CNewUIMessag
 {
 	CNewUITextInputMsgBox* pMsgBox = dynamic_cast<CNewUITextInputMsgBox*>(pOwner);
 
-	if(pMsgBox == false)
+	if(pMsgBox == 0)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -5191,7 +5207,7 @@ CALLBACK_RESULT SEASON3B::CStorageLockFinalKeyPadMsgBoxLayout::OkBtnDown(class C
 {
 	CNewUIKeyPadMsgBox* pMsgBox = dynamic_cast<CNewUIKeyPadMsgBox*>(pOwner);
 
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -5246,7 +5262,7 @@ CALLBACK_RESULT SEASON3B::CStorageUnlockMsgBoxLayout::OkBtnDown(class CNewUIMess
 {
 	CNewUITextInputMsgBox* pMsgBox = dynamic_cast<CNewUITextInputMsgBox*>(pOwner);
 
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -5302,7 +5318,7 @@ CALLBACK_RESULT SEASON3B::CStorageUnlockKeyPadMsgBoxLayout::OkBtnDown(class CNew
 {
 	CNewUIKeyPadMsgBox* pMsgBox = dynamic_cast<CNewUIKeyPadMsgBox*>(pOwner);
 
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -5875,11 +5891,11 @@ void SEASON3B::CLuckyTradeMenuMsgBox::SetButtonInfo()
 	x = GetPos().x + msgboxhalfwidth - btnhalfwidth;
 	y = GetPos().y + 85;
 	m_BtnTrade.SetInfo(CNewUIMessageBoxMng::IMAGE_MSGBOX_BTN_EMPTY, x, y, width, height, CNewUIMessageBoxButton::MSGBOX_BTN_SIZE_EMPTY);
-	m_BtnTrade.SetText("·°Å°¾ÆÀÌÅÛ ±³È¯");	// "GlobalText"
+	m_BtnTrade.SetText("ï¿½ï¿½Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯");	// "GlobalText"
 
 	y = GetPos().y + 120;
 	m_BtnRefinery.SetInfo(CNewUIMessageBoxMng::IMAGE_MSGBOX_BTN_EMPTY, x, y, width, height, CNewUIMessageBoxButton::MSGBOX_BTN_SIZE_EMPTY);
-	m_BtnRefinery.SetText("·°Å°¾ÆÀÌÅÛ Á¦·Ã");	// "GlobalText"
+	m_BtnRefinery.SetText("ï¿½ï¿½Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½");	// "GlobalText"
 
 	width = MSGBOX_BTN_EMPTY_SMALL_WIDTH;
 	btnhalfwidth = width / 2.f;
@@ -5919,12 +5935,12 @@ void SEASON3B::CLuckyTradeMenuMsgBox::RenderTexts()
 	g_pRenderText->SetBgColor(0, 0, 0, 0);
 	g_pRenderText->SetTextColor(255, 255, 255, 255);
 	g_pRenderText->SetFont(g_hFontBold);
-	sprintf( szText, "·°Å°¾ÆÀÌÅÛ ±³È¯NPC" );	// "LuckyItem Trade NPC"
+	sprintf( szText, "ï¿½ï¿½Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯NPC" );	// "LuckyItem Trade NPC"
 	g_pRenderText->RenderText(fPos_x, fPos_y, szText, MSGBOX_WIDTH - 20.0f, 0, RT3_SORT_CENTER);
 	
 	fPos_y += 15;
 	g_pRenderText->SetFont(g_hFont);
-	sprintf( szText, "·°Å°¾ÆÀÌÅÛÀ¸·Î ±³È¯ÇÏ°Å³ª Á¦·ÃÇÒ ¼ö ÀÖ½À´Ï´." );
+	sprintf( szText, "ï¿½ï¿½Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ï°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´." );
 	g_pRenderText->RenderText(fPos_x, fPos_y+1*18, szText, MSGBOX_WIDTH - 20.0f, 0, RT3_SORT_CENTER);
 }
 
@@ -6532,7 +6548,7 @@ void SEASON3B::CElpisMsgBox::RenderTexts()
 	g_pRenderText->RenderText(fPos_x, fPos_y+0*18, szText, MSGBOX_WIDTH - 20.0f, 0, RT3_SORT_CENTER);
 
 	fPos_y += 15;
-	g_pRenderText->SetTextColor(220, 183, 131, 255);	// È²±Ý»ö
+	g_pRenderText->SetTextColor(220, 183, 131, 255);	// È²ï¿½Ý»ï¿½
 
 	switch(m_iMessageType)
 	{
@@ -6994,7 +7010,7 @@ void SEASON3B::CResetCharacterPointMsgBox::SetButtonInfo()
 	x = GetPos().x + msgboxhalfwidth - btnhalfwidth;
 	y = GetPos().y + 105;
 	m_ResetCharacterPointBtn.SetInfo(CNewUIMessageBoxMng::IMAGE_MSGBOX_BTN_EMPTY, x, y, width, height, CNewUIMessageBoxButton::MSGBOX_BTN_SIZE_EMPTY);
-	m_ResetCharacterPointBtn.SetText(GlobalText[1884]); // "½ºÅÈ ÃÊ±âÈ­"
+	m_ResetCharacterPointBtn.SetText(GlobalText[1884]); // "ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­"
 
 	
 	width = MSGBOX_BTN_EMPTY_SMALL_WIDTH;
@@ -7174,7 +7190,7 @@ CALLBACK_RESULT SEASON3B::CGuildBreakPasswordMsgBoxLayout::ProcessOk(class CNewU
 {
 	CNewUITextInputMsgBox* pMsgBox = dynamic_cast<CNewUITextInputMsgBox*>(pOwner);
 
-	if(pMsgBox == false)
+	if(pMsgBox == 0)
 	{
 		return CALLBACK_CONTINUE;
 	}

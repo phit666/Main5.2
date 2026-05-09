@@ -6,7 +6,9 @@
 #include "MsgWin.h"
 #include "Input.h"
 #include "UIMng.h"
+#ifdef _WIN32
 #include <crtdbg.h>
+#endif
 #include "ZzzBMD.h"
 #include "ZzzInfomation.h"
 #include "ZzzObject.h"
@@ -94,7 +96,7 @@ void CMsgWin::SetCtrlPosition()
 		m_sprInput.SetPosition(nBaseXPos + 32, nBtnYPos + 4);
 		m_aBtn[MW_OK].SetPosition(nBaseXPos + 209, nBtnYPos);
 		m_aBtn[MW_CANCEL].SetPosition(nBaseXPos + 264, nBtnYPos);
-		// ÀÔ·Â ÅØ½ºÆ® À§Ä¡ ÁöÁ¤.
+		// ï¿½Ô·ï¿½ ï¿½Ø½ï¿½Æ® ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½.
 		if (m_nMsgCode == MESSAGE_DELETE_CHARACTER_RESIDENT)
 			if (g_iChatInputType == 1)
 				g_pSinglePasswdInputBox->SetPosition(
@@ -278,8 +280,9 @@ void CMsgWin::RenderControls()
 
 void CMsgWin::SetMsg(MSG_WIN_TYPE eType, LPCTSTR lpszMsg, LPCTSTR lpszMsg2)
 {
+#ifdef _WIN32
 	_ASSERT(lpszMsg);
-
+#endif
 	m_eType = eType;
 
 	SetCtrlPosition();

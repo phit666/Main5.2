@@ -306,7 +306,9 @@ bool SEASON3B::CNewUIGuildInfoWindow::Check_Btn()
 						AppointStatus = (GUILD_STATUS)pText->m_GuildStatus;
 						DeleteIndex = GetGuildMemberIndex( pText->m_szID );
 						CNewUICommonMessageBox* pMsgBox = NULL;
-						SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(CGuildPerson_Cancel_Position_MsgBoxLayout), &pMsgBox);
+						//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(CGuildPerson_Cancel_Position_MsgBoxLayout), &pMsgBox);
+						SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CGuildPerson_Cancel_Position_MsgBoxLayout> container;
+						SEASON3B::CreateMessageBox(container, &pMsgBox);
 						if(pMsgBox != NULL)
 						{
 							unicode::t_char strText[256];
@@ -1059,7 +1061,9 @@ void SEASON3B::CNewUIGuildInfoWindow::ReceiveGuildRelationShip( BYTE byRelationS
 		}
 
 		SEASON3B::CNewUICommonMessageBox* pMsgBox = NULL;
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGuildRelationShipMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGuildRelationShipMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CGuildRelationShipMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		if(pMsgBox)
 		{
 			pMsgBox->AddMsg(szText[0]);

@@ -801,7 +801,7 @@ void CNewUIMixInventory::RenderMixDescriptions(float fPos_x, float fPos_y)
 
 int CNewUIMixInventory::Rtn_MixRequireZen( int _nMixZen, int _nTax )
 {
-	if( _nTax )		_nMixZen += ((LONGLONG)_nMixZen*g_nChaosTaxRate)/100;
+	if( _nTax )		_nMixZen += ((int64_t)_nMixZen*g_nChaosTaxRate)/100;
 	return _nMixZen;
 }
 

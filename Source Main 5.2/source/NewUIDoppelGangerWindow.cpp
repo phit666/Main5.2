@@ -282,7 +282,9 @@ bool CNewUIDoppelGangerWindow::BtnProcess()
 		else
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CDoppelGangerMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2779], RGBA(255, 255, 255, 255), MSGBOX_FONT_NORMAL);
 		}
 		return true;

@@ -260,6 +260,7 @@ void CInput::Update()
 		}
 	}
 #if	defined WINDOWMODE
+#ifdef _WIN32
 	if(GetActiveWindow() == NULL)
 	{
 		m_lDX = m_lDY = 0L;
@@ -271,5 +272,6 @@ void CInput::Update()
 		m_ptCursor.x = m_ptCursor.y = 0;
 		return;
 	}
+#endif
 #endif
 }

@@ -483,7 +483,7 @@ void SEASON3B::CNewUIMainFrameWindow::RenderExperience()
 			fExpBarNum = ((double)fExp / (double)fNeedExp) * (double)10.f;
 		}
 
-		double fProgress = fExpBarNum - __int64(fExpBarNum);
+		double fProgress = fExpBarNum - (__int64)(fExpBarNum);
 
 		if(m_bExpEffect == true)
 		{
@@ -505,7 +505,7 @@ void SEASON3B::CNewUIMainFrameWindow::RenderExperience()
 				{
 					fPreProgress = ((double)fPreExp / (double)fNeedExp) * (double)10.f;
 					iPreExpBarNum = (int)fPreProgress;
-					fPreProgress = (double)fPreProgress - __int64(fPreProgress);
+					fPreProgress = (double)fPreProgress - (__int64)(fPreProgress);
 				}
 				iExpBarNum = (int)fExpBarNum;
 
@@ -2192,7 +2192,7 @@ void SEASON3B::CNewUISkillList::RenderSkillIcon(int iIndex, float x, float y, fl
 		}
 	}
 #ifdef PJH_FIX_SPRIT
-/*¹ÚÁ¾ÈÆ*/
+/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 	if( bySkillType>=AT_PET_COMMAND_DEFAULT && bySkillType<AT_PET_COMMAND_END )
 	{
 		int iCharisma = CharacterAttribute->Charisma+CharacterAttribute->AddCharisma;

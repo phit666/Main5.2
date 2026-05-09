@@ -9,12 +9,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-
 #include <SDL.h>
 #include "mu_sdl.h"
-
-
 #include <algorithm>
+#include <wchar.h>
+#include <string.h>
+
+/**
+ * Android NDK wrapper for Windows _mbclen.
+ * Returns the length in bytes of the multibyte character.
+ */
 
 #ifndef min
 #define min(a,b) ((a) < (b) ? (a) : (b))
@@ -1420,10 +1424,88 @@ inline size_t ndk_copy_s(const std::string& str, char* dest, size_t destSize, si
     return copied;
 }
 
+#include <libgen.h>
+//#include <string.h>
+
+inline void _splitpath(const char* path, char* drv, char* dir, char* name, char* ext) {
+    if (drv) drv[0] = '\0'; // Drives don't exist on Android/Linux
+
+    char path_copy[1024];
+    strncpy(path_copy, path, sizeof(path_copy));
+
+    if (dir) strcpy(dir, dirname(path_copy));
+
+    // Reset copy for basename
+    strncpy(path_copy, path, sizeof(path_copy));
+    char* base = basename(path_copy);
+
+    char* dot = strrchr(base, '.');
+    if (dot) {
+        if (ext) strcpy(ext, dot);
+        if (name) {
+            size_t name_len = dot - base;
+            strncpy(name, base, name_len);
+            name[name_len] = '\0';
+        }
+    } else {
+        if (ext) ext[0] = '\0';
+        if (name) strcpy(name, base);
+    }
+}
+
+inline int _mbclen(const unsigned char* s) {
+    if (s == nullptr || *s == '\0') {
+        return 1; // Windows _mbclen typically returns 1 for null/invalid input
+    }
+
+    mbstate_t state;
+    memset(&state, 0, sizeof(state));
+    // mbrlen returns size_t. In NDK/Linux, MB_CUR_MAX is usually 4 (for UTF-8).
+    size_t result = mbrlen((const char*)s, MB_CUR_MAX, &state);
+
+    // Handle error or incomplete sequences
+    if (result == (size_t)-1 || result == (size_t)-2) {
+        return 1; // Fallback to 1 byte if invalid or incomplete
+    }
+
+    if (result == 0) {
+        return 1; // Null character
+    }
+
+    return (int)result;
+}
+
 #define _MAX_PATH   260 // max. length of full pathname
 #define _MAX_DRIVE  3   // max. length of drive component
 #define _MAX_DIR    256 // max. length of path component
 #define _MAX_FNAME  256 // max. length of file name component
 #define _MAX_EXT    256 // max. length of extension component
+
+#ifdef __ANDROID__
+#include <android/keycodes.h>
+
+#define VK_F1     AKEYCODE_F1
+#define VK_F2     AKEYCODE_F2
+#define VK_F3     AKEYCODE_F3
+#define VK_F4     AKEYCODE_F4
+#define VK_F5     AKEYCODE_F5
+#define VK_F6     AKEYCODE_F6
+#define VK_F7     AKEYCODE_F7
+#define VK_F8     AKEYCODE_F8
+#define VK_F9     AKEYCODE_F9
+#define VK_F10     AKEYCODE_F10
+#define VK_F11     AKEYCODE_F11
+#define VK_F12     AKEYCODE_F12
+#define VK_RETURN AKEYCODE_ENTER
+#define VK_BACK   AKEYCODE_DEL
+#define VK_TAB    AKEYCODE_TAB
+#define VK_PRIOR  AKEYCODE_PAGE_UP
+#define VK_NEXT   AKEYCODE_PAGE_DOWN
+#define VK_LEFT   AKEYCODE_DPAD_LEFT
+#define VK_UP     AKEYCODE_DPAD_UP
+#define VK_RIGHT  AKEYCODE_DPAD_RIGHT
+#define VK_DOWN   AKEYCODE_DPAD_DOWN
+#define CP_ACP    0
+#endif
 
 #endif

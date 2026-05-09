@@ -18,7 +18,8 @@ extern bool g_bWndActive;
 
 bool SEASON3B::CreateOkMessageBox(const unicode::t_string& strMsg, DWORD dwColor, float fPriority)
 {
-	CNewUICommonMessageBox* pMsgBox = g_MessageBox->NewMessageBox(MSGBOX_CLASS(CNewUICommonMessageBox));
+	SEASON3B::CNewUIMessageBoxFactory::TContainer<SEASON3B::CNewUICommonMessageBox> container;
+	CNewUICommonMessageBox* pMsgBox = g_MessageBox->NewMessageBox(container);
 	if(pMsgBox)
 	{
 		return pMsgBox->Create(MSGBOX_COMMON_TYPE_OK, strMsg, dwColor);

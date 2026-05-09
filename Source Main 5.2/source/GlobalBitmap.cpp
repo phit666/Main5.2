@@ -1156,35 +1156,6 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 }
 #endif
 
-#include <libgen.h>
-#include <string.h>
-
-inline void _splitpath(const char* path, char* drv, char* dir, char* name, char* ext) {
-	if (drv) drv[0] = '\0'; // Drives don't exist on Android/Linux
-
-	char path_copy[1024];
-	strncpy(path_copy, path, sizeof(path_copy));
-
-	if (dir) strcpy(dir, dirname(path_copy));
-
-	// Reset copy for basename
-	strncpy(path_copy, path, sizeof(path_copy));
-	char* base = basename(path_copy);
-
-	char* dot = strrchr(base, '.');
-	if (dot) {
-		if (ext) strcpy(ext, dot);
-		if (name) {
-			size_t name_len = dot - base;
-			strncpy(name, base, name_len);
-			name[name_len] = '\0';
-		}
-	} else {
-		if (ext) ext[0] = '\0';
-		if (name) strcpy(name, base);
-	}
-}
-
 void CGlobalBitmap::SplitFileName(IN const std::string& filepath, OUT std::string& filename, bool bIncludeExt) 
 {
 	char __fname[_MAX_FNAME] = {0, };

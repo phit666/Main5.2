@@ -1111,7 +1111,7 @@ void ConvertGold64(__int64 Gold,unicode::t_char* Text)
 
 void ConvertTaxGold(DWORD Gold,char *Text)
 {
-	Gold += ((LONGLONG)Gold * g_pNPCShop->GetTaxRate()) / 100;
+	Gold += ((int64_t)Gold * g_pNPCShop->GetTaxRate()) / 100;
 
 	int Gold1 = Gold%1000;
 	int Gold2 = Gold%1000000/1000;
@@ -1129,7 +1129,7 @@ void ConvertTaxGold(DWORD Gold,char *Text)
 
 void ConvertChaosTaxGold(DWORD Gold,char *Text)
 {
-	Gold += ((LONGLONG)Gold*g_nChaosTaxRate)/100;
+	Gold += ((int64_t)Gold*g_nChaosTaxRate)/100;
 
 	int Gold1 = Gold%1000;
 	int Gold2 = Gold%1000000/1000;

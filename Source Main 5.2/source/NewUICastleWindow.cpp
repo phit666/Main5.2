@@ -335,7 +335,11 @@ void CNewUICastleWindow::UpdateGateManagingTab()
 	if(m_BtnBuy.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_BUY_GATE);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
+
 		pMsgBox->AddMsg(GlobalText[1551]);
 		unicode::_sprintf( szText, GlobalText[1617], g_SenatusInfo.GetRepairCost(&g_SenatusInfo.GetCurrGateInfo()) );
 		InsertComma(szText, g_SenatusInfo.GetRepairCost(&g_SenatusInfo.GetCurrGateInfo()));
@@ -345,7 +349,9 @@ void CNewUICastleWindow::UpdateGateManagingTab()
 	else if(m_BtnRepair.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_REPAIR_GATE);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		pMsgBox->AddMsg(GlobalText[1552]);
 		unicode::_sprintf( szText, GlobalText[1617], g_SenatusInfo.GetRepairCost(&g_SenatusInfo.GetCurrGateInfo()) );
 		InsertComma(szText, g_SenatusInfo.GetRepairCost(&g_SenatusInfo.GetCurrGateInfo()));
@@ -355,7 +361,9 @@ void CNewUICastleWindow::UpdateGateManagingTab()
 	else if(m_BtnUpgradeHP.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_UPGRADE_GATE_HP);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		pMsgBox->AddMsg(GlobalText[1555]);
 
 		if( g_SenatusInfo.GetHPLevel( &g_SenatusInfo.GetCurrGateInfo() ) == 0 )
@@ -371,7 +379,9 @@ void CNewUICastleWindow::UpdateGateManagingTab()
 	else if(m_BtnUpgradeDefense.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_UPGRADE_GATE_DEFENSE);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		pMsgBox->AddMsg(GlobalText[1556]);
 		if( g_SenatusInfo.GetDefenseLevel( &g_SenatusInfo.GetCurrGateInfo() ) == 0 )
 			unicode::_sprintf( szText, GlobalText[1553], 2, 3000000 );
@@ -409,7 +419,9 @@ void CNewUICastleWindow::UpdateStatueManagingTab()
 	if(m_BtnBuy.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_BUY_STATUE);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		pMsgBox->AddMsg(GlobalText[1610]);
 		unicode::_sprintf( szText, GlobalText[1617], g_SenatusInfo.GetRepairCost(&g_SenatusInfo.GetCurrStatueInfo()) );
 		InsertComma(szText, g_SenatusInfo.GetRepairCost(&g_SenatusInfo.GetCurrStatueInfo()));
@@ -419,7 +431,9 @@ void CNewUICastleWindow::UpdateStatueManagingTab()
 	else if(m_BtnRepair.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_REPAIR_STATUE);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		pMsgBox->AddMsg(GlobalText[1611]);
 		unicode::_sprintf( szText, GlobalText[1617], g_SenatusInfo.GetRepairCost(&g_SenatusInfo.GetCurrStatueInfo()) );
 		InsertComma(szText, g_SenatusInfo.GetRepairCost(&g_SenatusInfo.GetCurrStatueInfo()));
@@ -429,7 +443,9 @@ void CNewUICastleWindow::UpdateStatueManagingTab()
 	else if(m_BtnUpgradeHP.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_UPGRADE_STATUE_HP);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		pMsgBox->AddMsg(GlobalText[1613]);
 
 		if( g_SenatusInfo.GetHPLevel( &g_SenatusInfo.GetCurrStatueInfo() ) == 0 )
@@ -445,7 +461,9 @@ void CNewUICastleWindow::UpdateStatueManagingTab()
 	else if(m_BtnUpgradeDefense.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_UPGRADE_STATUE_DEFENSE);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		pMsgBox->AddMsg(GlobalText[1614]);
 
 		if( g_SenatusInfo.GetDefenseLevel( &g_SenatusInfo.GetCurrStatueInfo() ) == 0 )
@@ -461,7 +479,9 @@ void CNewUICastleWindow::UpdateStatueManagingTab()
 	else if(m_BtnUpgradeRecover.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_UPGRADE_STATUE_RECOVER);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		pMsgBox->AddMsg(GlobalText[1615]);
 
 		if( g_SenatusInfo.GetRecoverLevel( &g_SenatusInfo.GetCurrStatueInfo() ) == 0 )
@@ -483,7 +503,9 @@ void CNewUICastleWindow::UpdateTaxManagingTab()
 	if(m_BtnApplyTax.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_APPLY_TAX);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 		unicode::_sprintf( szText, GlobalText[1566], g_SenatusInfo.GetChaosTaxRate() );
 		pMsgBox->AddMsg(szText);
 		unicode::_sprintf( szText, GlobalText[1567], g_SenatusInfo.GetNormalTaxRate() );
@@ -493,7 +515,9 @@ void CNewUICastleWindow::UpdateTaxManagingTab()
 	else if(m_BtnWithdraw.UpdateMouseEvent() == true)
 	{
 		SetCurrMsgBoxRequest(CASTLE_MSGREQ_WITHDRAW);
-		SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleWithdrawMsgBoxLayout), &pMsgBox);
+		//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCastleWithdrawMsgBoxLayout), &pMsgBox);
+		SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCastleWithdrawMsgBoxLayout> container;
+		SEASON3B::CreateMessageBox(container, &pMsgBox);
 	}
 	else if(m_BtnChaosTaxUp.UpdateMouseEvent() == true)
 	{
@@ -867,7 +891,7 @@ void CNewUICastleWindow::RenderCastleItem(int nPosX, int nPosY, LPPMSG_NPCDBLIST
 	const int nDefenseBlockSize = 24 / (g_SenatusInfo.GetMaxDefenseLevel()+1);
 	const int nRecoverBlockSize = 24 / (g_SenatusInfo.GetMaxRecoverLevel()+1);
 
-	if( g_SenatusInfo.IsGate(pInfo) )	// ¼º¹®
+	if( g_SenatusInfo.IsGate(pInfo) )	// ï¿½ï¿½ï¿½ï¿½
 	{
 		glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
 

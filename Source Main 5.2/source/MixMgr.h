@@ -24,7 +24,8 @@ namespace SEASON3A
 		
 		bool operator==(ITEM * rhs)
 		{
-			return IsSameItem(CMixItem(rhs, 0));
+			CMixItem cm = CMixItem(rhs, 0);
+			return IsSameItem(cm);
 		}
 
 		short m_sType;
@@ -207,14 +208,14 @@ namespace SEASON3A
 #endif //LJH_MOD_CANNOT_USE_CHARMITEM_AND_CHAOSCHARMITEM_SIMULTANEOUSLY
 
 	protected:
-		bool IsOptionItem(MIX_RECIPE_ITEM & rItem) { return (rItem.m_iCountMin == 0); }	// ¿É¼Ç(¾È³Ö¾îµµ µÇ´Â) ¾ÆÀÌÅÛÀÎ°¡
+		bool IsOptionItem(MIX_RECIPE_ITEM & rItem) { return (rItem.m_iCountMin == 0); }	// ï¿½É¼ï¿½(ï¿½È³Ö¾îµµ ï¿½Ç´ï¿½) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î°ï¿½
 		BOOL CheckRecipeSub(std::vector<MIX_RECIPE *>::iterator iter, int iNumMixItems, CMixItem * pMixItems);
-		int CheckRecipeSimilaritySub(std::vector<MIX_RECIPE *>::iterator iter, int iNumMixItems, CMixItem * pMixItems);	// À¯»çµµ ºñ±³
-		bool CheckItem(MIX_RECIPE_ITEM & rItem, CMixItem & rSource);	// °°Àº ¾ÆÀÌÅÛÀÎÁö ºñ±³
+		int CheckRecipeSimilaritySub(std::vector<MIX_RECIPE *>::iterator iter, int iNumMixItems, CMixItem * pMixItems);	// ï¿½ï¿½ï¿½çµµ ï¿½ï¿½
+		bool CheckItem(MIX_RECIPE_ITEM & rItem, CMixItem & rSource);	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 		void EvaluateMixItems(int iNumMixItems, CMixItem * pMixItems);
 		void CalcMixRate(int iNumMixItems, CMixItem * pMixItems);
 		void CalcMixReqZen(int iNumMixItems, CMixItem * pMixItems);
-		BOOL GetRecipeName(MIX_RECIPE * pRecipe, unicode::t_char * pszNameOut, int iNameLine, BOOL bSimilarRecipe);	// ÁÖ¾îÁø Á¶ÇÕ¹ýÀÇ ÀÌ¸§ ¾ò±â
+		BOOL GetRecipeName(MIX_RECIPE * pRecipe, unicode::t_char * pszNameOut, int iNameLine, BOOL bSimilarRecipe);	// ï¿½Ö¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½
 		BOOL IsChaosItem(CMixItem & rSource);
 		BOOL IsChaosJewel(CMixItem & rSource);
 		BOOL Is380AddedItem(CMixItem & rSource);

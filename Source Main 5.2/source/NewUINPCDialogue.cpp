@@ -5,8 +5,9 @@
 #include "stdafx.h"
 #include "NewUINPCDialogue.h"
 #include "wsclientinline.h"
+#ifdef _WIN32
 #include "CRTDBG.h"
-
+#endif
 using namespace SEASON3B;
 
 #define ND_NPC_MAX_LINE_PER_PAGE		7
@@ -494,8 +495,9 @@ void CNewUINPCDialogue::CalculateSelTextMaxPage(int nSelTextCount)
 
 void CNewUINPCDialogue::SetQuestListText(DWORD* adwSrcQuestIndex, int nIndexCount)
 {
+#ifdef _WIN32
 	_ASSERT(0 <= nIndexCount && nIndexCount <= ND_QUEST_INDEX_MAX_COUNT);
-
+#endif
 	::memset(m_adwQuestIndex, 0, sizeof(DWORD)*ND_QUEST_INDEX_MAX_COUNT);
 	::memcpy(m_adwQuestIndex, adwSrcQuestIndex, sizeof(DWORD) * nIndexCount);
 

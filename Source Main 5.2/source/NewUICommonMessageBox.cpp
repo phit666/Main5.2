@@ -1559,7 +1559,7 @@ bool SEASON3B::CFenrirRepairMsgBoxLayout::SetLayout()
 CALLBACK_RESULT SEASON3B::CFenrirRepairMsgBoxLayout::OkBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
 	CFenrirRepairMsgBox* pMsgBox = dynamic_cast<CFenrirRepairMsgBox*>(pOwner);
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}
@@ -1841,7 +1841,11 @@ CALLBACK_RESULT SEASON3B::CChaosCastleTimeCheckMsgBoxLayout::OkBtnDown(class CNe
 	}
 	else
 	{
+#ifdef __ANDROID__
+		__builtin_trap();
+#else
 		__asm { int 3 };
+#endif
 	}
 	
 	PlayBuffer(SOUND_CLICK01);
@@ -1933,7 +1937,7 @@ bool  SEASON3B::CLuckyItemMsgBoxLayout::SetLayout()
 	if(false == pMsgBox->Create(MSGBOX_COMMON_TYPE_OKCANCEL))
 		return false;
 	
-	// ¾ÆÀÌÅÛ Á¦¸ñ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	int				nTextIndex[10]	= {0, };
 	eLUCKYITEMTYPE	eAct		 = g_pLuckyItemWnd->GetAct();
 	
@@ -2732,7 +2736,7 @@ bool SEASON3B::CPersonalShopItemValueCheckMsgBoxLayout::SetLayout()
 CALLBACK_RESULT SEASON3B::CPersonalShopItemValueCheckMsgBoxLayout::OkBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
 	CNewUI3DItemCommonMsgBox* pMsgBox = dynamic_cast<CNewUI3DItemCommonMsgBox*>(pOwner);
-	if(pMsgBox == false)
+	if(pMsgBox == NULL)
 	{
 		return CALLBACK_CONTINUE;
 	}

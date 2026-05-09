@@ -127,7 +127,7 @@ void SEASON3B::CNewUIMessageBoxBase::RenderMsgBackColor(bool _bRender)
 		EnableAlphaTest();
 		//glColor4f(0.2f, 0.2f, 0.2f, m_fOpacityAlpha);
 		glColor4f(m_vColor[0], m_vColor[1], m_vColor[2], m_fOpacityAlpha);
-		// ¸ÞÀÎÇÁ·¹ÀÓ¿¡¼­ ³ôÀÌ°ªÀ» 51À» Àâ°íÀÖÀ½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ï¿½ï¿½ 51ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		RenderColor(_fPosX, _fPosY, _fWidth, _fHeight-50.0f);
 		//glEnable(GL_TEXTURE_2D);
 		myShader.setFloat(g_uTexEnabledLoc, 1.0);
@@ -326,7 +326,11 @@ bool SEASON3B::CNewUIMessageBoxMng::Update()
 				}
 				if(CALLBACK_EXCEPTION == Result)
 				{
+#ifdef __ANDROID__
+					__builtin_trap();
+#else
 					__asm { int 3 };
+#endif
 				}
 				if(CALLBACK_POP_ALL_EVENTS == Result)
 				{

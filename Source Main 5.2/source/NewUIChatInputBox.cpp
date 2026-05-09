@@ -11,6 +11,7 @@
 #include "MapManager.h"
 using namespace SEASON3B;
 
+
 SEASON3B::CNewUIChatInputBox::CNewUIChatInputBox() : MAX_CHAT_SIZE_UTF16((int)(MAX_CHAT_SIZE/(g_pMultiLanguage->GetNumByteForOneCharUTF8())))
 
 { 
@@ -690,33 +691,33 @@ bool SEASON3B::CNewUIChatInputBox::RenderFrame()
 
 void SEASON3B::CNewUIChatInputBox::RenderButtons()
 {
-	// Ã¤ÆÃ Å¸ÀÔ ¹öÆ°
+	// Ã¤ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½Æ°
 	RenderImage(IMAGE_INPUTBOX_NORMAL_ON+m_iInputMsgType, m_WndPos.x+27*m_iInputMsgType, m_WndPos.y, 27, 26);
 
-	// ±Ó¼Ó¸» Â÷´Ü On/Off
+	// ï¿½Ó¼Ó¸ï¿½ ï¿½ï¿½ï¿½ï¿½ On/Off
 	if(m_bBlockWhisper)
 	{
 		RenderImage(IMAGE_INPUTBOX_WHISPER_ON, m_WndPos.x+87, m_WndPos.y, 27, 26);
 	}
 
-	// Ã¤ÆÃ ·Î±× Ãâ·Â On/Off
+	// Ã¤ï¿½ï¿½ ï¿½Î±ï¿½ ï¿½ï¿½ï¿½ On/Off
 	if(m_bShowChatLog)
 	{
 		RenderImage(IMAGE_INPUTBOX_CHATLOG_ON, m_WndPos.x+141, m_WndPos.y, 27, 26);
 
-		// ½Ã½ºÅÛ ¸Þ¼¼Áö¸¸ Ãâ·Â On/Off
+		// ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ On/Off
 		if(m_bOnlySystemMessage)
 		{
 			RenderImage(IMAGE_INPUTBOX_SYSTEM_ON, m_WndPos.x+114, m_WndPos.y, 27, 26);
 		}
 	}
 
-	// Ã¤ÆÃ ·Î±× Ãâ·Â On/Off
+	// Ã¤ï¿½ï¿½ ï¿½Î±ï¿½ ï¿½ï¿½ï¿½ On/Off
 	if(m_pNewUIChatLogWnd->IsShowFrame())
 	{
 		RenderImage(IMAGE_INPUTBOX_FRAME_ON, m_WndPos.x+173, m_WndPos.y, 27, 26);
 
-		// »çÀÌÁî º¯°æ, Åõ¸íµµ Á¶Àý ¹öÆ°
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°
 		m_BtnSize.Render();
 		m_BtnTransparency.Render();
 	}
