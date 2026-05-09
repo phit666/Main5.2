@@ -8,9 +8,11 @@
 #include "Input.h"
 
 #include "ZzzOpenglUtil.h"
-
+#ifdef _WIN32
 #include <crtdbg.h>
+#endif
 #include "mu_sdl.h"
+#include "wt.h"
 
 CSprite::CSprite()
 {

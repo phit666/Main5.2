@@ -37,4 +37,13 @@ evutil_socket_t MU_GetFD();
 
 void UpdateDebugCameraByKeyboard(float dt);
 
+#ifndef _WIN32
+bool SetCursorPos(int x, int y) {
+    if (!gSDLWindow) return false;
+    // SDL_WarpMouseInWindow moves the mouse to (x, y) relative to the window.
+    SDL_WarpMouseInWindow(gSDLWindow, x, y);
+    return true;
+}
+#endif
+
 

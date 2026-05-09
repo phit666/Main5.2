@@ -6,8 +6,10 @@
 #include "QuestMng.h"
 #include "./Utilities/Log/ErrorReport.h"
 #include "wsclientinline.h"
-
+#ifdef _WIN32
 #include <crtdbg.h>
+#endif
+#include "wt.h"
 
 #define	QM_NPCDIALOGUE_FILE			"Data\\Local\\NPCDialogue.bmd"
 #define	QM_QUESTPROGRESS_FILE		"Data\\Local\\QuestProgress.bmd"

@@ -216,7 +216,7 @@ void COptionWin::RenderControls()
 		nTextPosY = int((m_aSlider[i].GetYPos() - 18) / g_fScreenRate_y);
 		g_pRenderText->RenderText(int(m_aSlider[i].GetXPos() / g_fScreenRate_x),nTextPosY, apszSldText[i]);
 
-		::_itoa(anVal[i], szVal, 10);
+		itoa(anVal[i], szVal, 10);
 		g_pRenderText->RenderText(int((m_aSlider[i].GetXPos() + 85)/ g_fScreenRate_x),nTextPosY, szVal);
 		
 		m_aSlider[i].Render();

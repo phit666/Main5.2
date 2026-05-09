@@ -28,11 +28,11 @@ bool CProtectSysKey::AttachProtectSysKey(HINSTANCE hInst, HWND hWnd)
 		// for Windows2000 and WindowsXP
 		// WH_KEYBOARD_LL = 13
 		m_hKeyboardHook = SetWindowsHookEx(13, CProtectSysKey::LowLevelKeyHookProc, hInst, 0);
-		
+#ifdef _WIN32
 		// for Window98 9 (lol by louis)
 		if(RegisterHotKey( hWnd, 0, MOD_ALT, VK_TAB))
 			m_hWnd = hWnd;
-
+#endif
 		return true;
 	}
 	return false;
@@ -43,10 +43,12 @@ void CProtectSysKey::DetachProtectSysKey()
 		UnhookWindowsHookEx(m_hKeyboardHook);
 		m_hKeyboardHook = NULL;
 	}
+#ifdef _WIN32
 	if(m_hWnd) {
 		UnregisterHotKey(m_hWnd, 0);
 		m_hWnd = NULL;
 	}
+#endif
 }
 
 HHOOK CProtectSysKey::GetHookHandle() const
@@ -60,6 +62,7 @@ CProtectSysKey* CProtectSysKey::GetObjPtr()
 
 LRESULT CALLBACK CProtectSysKey::LowLevelKeyHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
+#ifdef _WIN32
 	if(nCode == HC_ACTION) {
 		switch(wParam)
 		{
@@ -87,4 +90,7 @@ LRESULT CALLBACK CProtectSysKey::LowLevelKeyHookProc(int nCode, WPARAM wParam, L
 		}
 	}
 	return CallNextHookEx(CProtectSysKey::GetObjPtr()->GetHookHandle(), nCode, wParam, lParam);
+#else
+	return NULL;
+#endif
 }

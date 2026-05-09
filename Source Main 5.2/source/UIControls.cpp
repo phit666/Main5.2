@@ -21,6 +21,7 @@
 #include "UIManager.h"
 #include "NewUISystem.h"
 #include "mu_sdl.h"
+#include "wt.h"
 
 extern BYTE m_CrywolfState;
 
@@ -537,7 +538,7 @@ void CUITextListBox<T>::Clear()
 template <class T>
 void CUITextListBox<T>::ResetCheckedLine(BOOL bFlag)
 {
-	std::deque<T>::iterator EndIter = m_TextList.end();
+	typename std::deque<T>::iterator EndIter = m_TextList.end();
 	for (m_TextListIter = m_TextList.begin(); m_TextListIter != EndIter; ++m_TextListIter)
 	{
 		m_TextListIter->m_bIsSelected = bFlag;
@@ -547,7 +548,7 @@ void CUITextListBox<T>::ResetCheckedLine(BOOL bFlag)
 template <class T>
 BOOL CUITextListBox<T>::HaveCheckedLine()
 {
-	std::deque<T>::iterator EndIter = m_TextList.end();
+	typename std::deque<T>::iterator EndIter = m_TextList.end();
 	for (m_TextListIter = m_TextList.begin(); m_TextListIter != EndIter; ++m_TextListIter)
 	{
 		if (m_TextListIter->m_bIsSelected == TRUE) return TRUE;
@@ -559,7 +560,7 @@ template <class T>
 int CUITextListBox<T>::GetCheckedLines(std::deque<T*> * pSelectLineList)
 {
 	int iSelectLineNum = 0;
-	std::deque<T>::iterator EndIter = m_TextList.end();
+	typename std::deque<T>::iterator EndIter = m_TextList.end();
 	for (m_TextListIter = m_TextList.begin(); m_TextListIter != EndIter; ++m_TextListIter)
 	{
 		if (m_TextListIter->m_bIsSelected == TRUE)
@@ -618,7 +619,7 @@ typename std::deque<T>::iterator CUITextListBox<T>::SLGetSelectLine()
 	else if (m_iSelectLineNum == 0) return m_TextList.end();
 
 	int iLineCount = 1;
-	for (std::deque<T>::iterator resultIter = m_TextList.begin(); resultIter != m_TextList.end(); ++resultIter, ++iLineCount)
+	for (typename std::deque<T>::iterator resultIter = m_TextList.begin(); resultIter != m_TextList.end(); ++resultIter, ++iLineCount)
 	{
 		if (iLineCount == m_iSelectLineNum) return resultIter;
 	}
@@ -1496,7 +1497,7 @@ BOOL CUISimpleChatListBox::RenderDataLine(int iLineNumber)
 	char Text[MAX_TEXT_LENGTH + 1] = {0};
 	
 	SIZE TextSize = {0, 0};
-	// ÀÌ¸§
+	// ï¿½Ì¸ï¿½
 	if(m_TextListIter->m_szID[0] != NULL)
 	{
 		switch(m_TextListIter->m_iType)
@@ -1701,12 +1702,12 @@ void CUIChatPalListBox::RenderInterface()
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x + m_iWidth - 12, m_iPos_y - m_iHeight - 1, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1,13.0f, 13.0f, 13.0f/16.0f, 29.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
-			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1,13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡ã
+			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1,13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 		
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x + m_iWidth - 12, m_iPos_y - 12, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 13.0f/16.0f, 16.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
-			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡å
+			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 
 		SetLineColor(2);
 		RenderColor((float)m_iPos_x + m_iWidth - m_fScrollBarWidth + 1, m_fScrollBarRange_top,(float)1,(float)m_fScrollBarRange_bottom - m_fScrollBarRange_top);
@@ -2373,7 +2374,7 @@ BOOL CUILetterTextListBox::RenderDataLine(int iLineNumber)
 {
 	EnableAlphaTest();
 	char Text[MAX_TEXT_LENGTH + 1] = {0};
-	// ³»¿ë
+	// ï¿½ï¿½ï¿½ï¿½
 	g_pRenderText->SetTextColor(230, 220, 200, 255);
 	g_pRenderText->SetBgColor(0, 0, 0, 0);
 
@@ -2391,7 +2392,7 @@ CUISocketListBox::CUISocketListBox()
 {
 	m_iMaxLineCount = UIMAX_TEXT_LINE;
 	m_iCurrentRenderEndLine = 0;
-	m_iNumRenderLine = 6;	// 3ÀÇ ¹è¼ö·Î -_-
+	m_iNumRenderLine = 6;	// 3ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ -_-
 
 	m_fScrollBarRange_top = 0;
 	m_fScrollBarRange_bottom = 0;
@@ -2642,6 +2643,7 @@ CUIRenderTextOriginal::~CUIRenderTextOriginal() { Release(); }
 
 bool CUIRenderTextOriginal::Create(HDC hDC)
 {
+#ifdef _WIN32
 	BITMAPINFO* DIB_INFO;
     DIB_INFO = (BITMAPINFO*)new BYTE[ sizeof(BITMAPINFOHEADER) + sizeof(PALETTEENTRY) * 256 ];
     memset( DIB_INFO, 0x00, sizeof(BITMAPINFOHEADER) );
@@ -2666,6 +2668,7 @@ bool CUIRenderTextOriginal::Create(HDC hDC)
 		Release();
 		return false;
 	}
+#endif
 	return true;
 }
 void CUIRenderTextOriginal::Release()
@@ -2706,7 +2709,7 @@ void CUIRenderTextOriginal::WriteText(int iOffset, int iWidth, int iHeight)
 {
 	const int LIMIT_WIDTH = 256, LIMIT_HEIGHT = 32;
 	
-	SIZE FontDCSize = { 640*g_fScreenRate_x, 480*g_fScreenRate_y };
+	SIZE FontDCSize = { static_cast<LONG>(640*g_fScreenRate_x), static_cast<LONG>(480*g_fScreenRate_y) };
 	int iPitch = ((FontDCSize.cx*24+31)&~31)>>3;
 
 	BITMAP_t * pBitmapFont = &Bitmaps[BITMAP_FONT];
@@ -2724,11 +2727,11 @@ void CUIRenderTextOriginal::WriteText(int iOffset, int iWidth, int iHeight)
 				return;
 			}
 
-			if(*(m_pFontBuffer+SrcIndex) == 255)	// ±ÛÀÚ
+			if(*(m_pFontBuffer+SrcIndex) == 255)	// ï¿½ï¿½ï¿½ï¿½
 			{
 				*((unsigned int *)(pBitmapFont->Buffer + DstIndex)) = m_dwTextColor;
 			}
-			else									// ¹è°æ
+			else									// ï¿½ï¿½ï¿½
 			{
 				//*((unsigned int *)(pBitmapFont->Buffer + DstIndex)) = m_dwBackColor;
 				*((unsigned int *)(pBitmapFont->Buffer + DstIndex)) = 0;
@@ -2818,7 +2821,7 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 	
 	MU_POINTF RealBoxPos = { (float)iPos_x*g_fScreenRate_x, (float)iPos_y*g_fScreenRate_y };
 	SIZEF RealBoxSize = { (float)iBoxWidth*g_fScreenRate_x, (float)iBoxHeight*g_fScreenRate_y };
-	SIZEF RealRenderingSize = { (long)RealTextSize.cx, (long)RealTextSize.cy };	
+	SIZEF RealRenderingSize = { static_cast<float>((long)RealTextSize.cx), static_cast<float>((long)RealTextSize.cy) };
 	
 	if(RealBoxSize.cx == 0)
 		RealBoxSize.cx = RealTextSize.cx;
@@ -2939,21 +2942,26 @@ BOOL g_bIMEBlock = FALSE;
 
 void SaveIMEStatus()
 {
+#ifdef _WIN32
 	HIMC hIMC = ImmGetContext(g_hWnd);
 	ImmGetConversionStatus(hIMC, &g_dwBKConv, &g_dwBKSent);
 	ImmSetConversionStatus(hIMC, IME_CMODE_ALPHANUMERIC, IME_SMODE_NONE);
 	ImmReleaseContext(g_hWnd, hIMC);
+#endif
 }
 
 void RestoreIMEStatus()
 {
+#ifdef _WIN32
 	HIMC hIMC = ImmGetContext(g_hWnd);
 	ImmSetConversionStatus(hIMC, g_dwBKConv, g_dwBKSent);
 	ImmReleaseContext(g_hWnd, hIMC);
+#endif
 }
 
 void CheckTextInputBoxIME(int iMode)
 {
+#ifdef _WIN32
 	if (g_bIMEBlock == FALSE) return;
 	if (iMode & IME_CONVERSIONMODE)
 	{
@@ -2997,6 +3005,7 @@ void CheckTextInputBoxIME(int iMode)
 		ImmReleaseContext(g_hWnd, hIMC);
 //		g_bForceIMESent = FALSE;
 	}
+#endif
 }
 
 CUITextInputBox::CUITextInputBox()
@@ -3045,6 +3054,7 @@ CUITextInputBox::CUITextInputBox()
 
 CUITextInputBox::~CUITextInputBox()
 {
+#ifdef _WIN32
 	SetWindowLongW(m_hEditWnd, GWL_WNDPROC, (LONG)m_hOldProc);
 	m_hOldProc = NULL;
 
@@ -3063,6 +3073,7 @@ CUITextInputBox::~CUITextInputBox()
 		DeleteObject(m_hBitmap);
 		m_hBitmap = NULL;
 	}
+#endif
 }
 
 BOOL ClipboardCheck(HWND hWnd)
@@ -3876,12 +3887,12 @@ void CUITextInputBox::RenderScrollbar()
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x+m_iWidth-m_fScrollBarWidth, m_iPos_y - 4, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x+m_iWidth-m_fScrollBarWidth, (float)m_iPos_y - 4,13.0f, 13.0f, 13.0f/16.0f, 29.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
-			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x+m_iWidth-m_fScrollBarWidth, (float)m_iPos_y - 4,13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡ã
+			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x+m_iWidth-m_fScrollBarWidth, (float)m_iPos_y - 4,13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 		
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x+m_iWidth-m_fScrollBarWidth, m_iPos_y + m_iHeight - 9, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x+m_iWidth-m_fScrollBarWidth, (float)m_iPos_y + m_iHeight - 9,13.0f, 13.0f, 13.0f/16.0f, 16.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
-			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x+m_iWidth-m_fScrollBarWidth, (float)m_iPos_y + m_iHeight - 9,13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡å
+			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x+m_iWidth-m_fScrollBarWidth, (float)m_iPos_y + m_iHeight - 9,13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 
 		EnableAlphaTest();
 		SetLineColor(2);
@@ -4828,12 +4839,12 @@ void CUIGuildNoticeListBox::RenderInterface()
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x + m_iWidth - 12, m_iPos_y - m_iHeight - 1, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1,13.0f, 13.0f, 13.0f/16.0f, 29.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
-			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1,13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡ã
+			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1,13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 		
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x + m_iWidth - 12, m_iPos_y - 12, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 13.0f/16.0f, 16.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
-			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡å
+			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 
 		EnableAlphaTest();
 		SetLineColor(2);
@@ -4997,12 +5008,12 @@ void CUINewGuildMemberListBox::RenderInterface()
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x + m_iWidth - 12, m_iPos_y - m_iHeight - 1, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1, 13.0f, 13.0f, 13.0f/16.0f, 29.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
-			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1, 13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡ã
+			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1, 13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 		
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x + m_iWidth - 12, m_iPos_y - 12, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 13.0f/16.0f, 16.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
-			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡å
+			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,	13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 
 		EnableAlphaTest();
 		SetLineColor(2);
@@ -5212,14 +5223,14 @@ void CUIUnionGuildListBox::RenderInterface()
 				13.0f, 13.0f, 13.0f/16.0f, 29.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - m_iHeight - 1,
-				13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡ã
+				13.0f, 13.0f, 0.0f, 3.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 		
 		if (MouseLButtonPush && ::CheckMouseIn(m_iPos_x + m_iWidth - 12, m_iPos_y - 12, 13.0f, 13.0f) == TRUE)
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,
 				13.0f, 13.0f, 13.0f/16.0f, 16.0f/32.0f, -13.0f/16.0f, -13.0f/32.0f);
 		else
 			RenderBitmap(BITMAP_INTERFACE_EX+12, (float)m_iPos_x + m_iWidth - 12, (float)m_iPos_y - 12,
-				13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ¡å
+				13.0f, 13.0f, 0.0f, 16.0f/32.0f, 13.0f/16.0f, 13.0f/32.0f);	// ï¿½ï¿½
 
 		EnableAlphaTest();
 		SetLineColor(2);
@@ -6218,7 +6229,7 @@ void CUIQuestContentsListBox::RenderCoveredInterface()
 	if (SLGetSelectLine() == m_TextList.end())
 		return;
 	
-	// ¾ÆÀÌÅÛÀÎ°¡?
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î°ï¿½?
 	if (QUEST_REQUEST_ITEM == m_TextListIter->m_dwType
 		|| QUEST_REWARD_ITEM == m_TextListIter->m_dwType)
 	{

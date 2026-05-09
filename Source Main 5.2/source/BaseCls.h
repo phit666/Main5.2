@@ -413,8 +413,8 @@ CQueue<T>::~CQueue()
 template <class T>
 BOOL CQueue<T>::Insert( T NewElement)
 {
-	if ( NULL == AddTail( NewElement))
-	{	// �����ϸ�
+	if ( NULL == this->AddTail( NewElement))
+	{
 		return ( FALSE);
 	}
 
@@ -436,8 +436,8 @@ void CQueue<T>::CleanUp( void)
 template <class T>
 BOOL CQueue<T>::Find( T Element)
 {
-	if ( NULL == FindNode( Element))
-	{	// ã�� ���ϸ�
+	if ( NULL == this->FindNode( Element))
+	{
 		return ( FALSE);
 	}
 
