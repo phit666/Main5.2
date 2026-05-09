@@ -15,10 +15,6 @@
 #include <arpa/inet.h>
 #endif
 
-#ifndef _WIN32 // should be in wrapper
-short GetAsyncKeyState_SDL(int vKey);
-#endif
-
 typedef struct
 {
     BYTE c;

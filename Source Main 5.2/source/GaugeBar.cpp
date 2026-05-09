@@ -134,20 +134,20 @@ BOOL CGaugeBar::CursorInObject()
 	{
 		RECT rc = 
 		{
-			long(m_nXPos * fScaleX),
-			long(m_nYPos * fScaleY),
-			long((m_nXPos + m_psizeResponse->cx) * fScaleX),
-			long((m_nYPos + m_psizeResponse->cy) * fScaleY)
+			static_cast<LONG>(long(m_nXPos * fScaleX)),
+			static_cast<LONG>(long(m_nYPos * fScaleY)),
+			static_cast<LONG>(long((m_nXPos + m_psizeResponse->cx) * fScaleX)),
+			static_cast<LONG>(long((m_nYPos + m_psizeResponse->cy) * fScaleY))
 		};
 		return ::PtInRect(&rc, rInput.GetCursorPos());
 	}
 
 	RECT rc = 
 	{
-		long(m_rcGauge.left * fScaleX),
-		long(m_rcGauge.top * fScaleY),
-		long(m_rcGauge.right * fScaleX),
-		long(m_rcGauge.bottom * fScaleY)
+		static_cast<LONG>(long(m_rcGauge.left * fScaleX)),
+		static_cast<LONG>(long(m_rcGauge.top * fScaleY)),
+		static_cast<LONG>(long(m_rcGauge.right * fScaleX)),
+		static_cast<LONG>(long(m_rcGauge.bottom * fScaleY))
 	};
 	::OffsetRect(&rc, m_nXPos, m_nYPos);
 	return ::PtInRect(&rc, rInput.GetCursorPos());

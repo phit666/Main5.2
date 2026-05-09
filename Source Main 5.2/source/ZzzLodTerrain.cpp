@@ -1250,15 +1250,15 @@ void RenderFace(int Texture,int mx,int my)
 
 	// 2. Set Attributes
 	// Position
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
 	// Texture
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
 	// Color (Terrain Light)
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 	MU_ApplyMatrices();
@@ -1266,10 +1266,6 @@ void RenderFace(int Texture,int mx,int my)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
 }
 
 void RenderFace_After(int Texture, int mx, int my)
@@ -1308,15 +1304,15 @@ void RenderFace_After(int Texture, int mx, int my)
 
 	// 2. Set Attributes
 	// Position
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
 	// Texture
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
 	// Color (Terrain Light)
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 	MU_ApplyMatrices();
@@ -1324,10 +1320,6 @@ void RenderFace_After(int Texture, int mx, int my)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
 }
 
 void RenderFaceAlpha(int Texture,int mx,int my)
@@ -1372,15 +1364,15 @@ void RenderFaceAlpha(int Texture,int mx,int my)
 
 	// 2. Set Attributes
 	// Position
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
 	// Texture
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
 	// Color (RGBA - now including Terrain Alpha)
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 	MU_ApplyMatrices();
@@ -1388,10 +1380,6 @@ void RenderFaceAlpha(int Texture,int mx,int my)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
 }
 
 void RenderFaceBlend(int Texture,int mx,int my)
@@ -1428,15 +1416,15 @@ void RenderFaceBlend(int Texture,int mx,int my)
 
 	// 2. Set Attributes
 	// Position
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
 	// Texture UV
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
 	// Color (Mapping Alpha used as RGB Light)
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 	MU_ApplyMatrices();
@@ -1444,11 +1432,6 @@ void RenderFaceBlend(int Texture,int mx,int my)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
-
 }
 
 void FaceTexture(int Texture,float xf,float yf,bool Water,bool Scale)
@@ -1643,13 +1626,13 @@ void RenderTerrainFace(float xf,float yf,int xi,int yi,float lodf)
 				vao[3].r = PrimaryTerrainLight[TerrainIndex4][0]; vao[3].g = PrimaryTerrainLight[TerrainIndex4][1]; vao[3].b = PrimaryTerrainLight[TerrainIndex4][2]; vao[3].a = 1.0f;
 
 				// 2. Set Attributes
-				glEnableVertexAttribArray(g_aPosLoc);
+				safe_enable_attr(g_aPosLoc);
 				glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
-				glEnableVertexAttribArray(g_aTexLoc);
+				safe_enable_attr(g_aTexLoc);
 				glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
-				glEnableVertexAttribArray(g_aColorLoc);
+				safe_enable_attr(g_aColorLoc);
 				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 				MU_ApplyMatrices();
@@ -1657,10 +1640,6 @@ void RenderTerrainFace(float xf,float yf,int xi,int yi,float lodf)
 
 				// 3. Draw using GL_TRIANGLE_FAN (direct replacement for GL_QUADS)
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-				// 4. Cleanup
-				glDisableVertexAttribArray(g_aTexLoc);
-				glDisableVertexAttribArray(g_aColorLoc);
 
 
 				if (gMapManager.IsPKField() || IsDoppelGanger2())
@@ -1825,15 +1804,15 @@ void RenderTerrainBitmapTile(float xf, float yf, float lodf, int lodi,
 
 	// 2. Set Attributes
 	// Position
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
 	// Texture UV
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
 	// Color/Light (this is the per-vertex lighting)
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 	MU_ApplyMatrices();
@@ -1841,11 +1820,6 @@ void RenderTerrainBitmapTile(float xf, float yf, float lodf, int lodi,
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup optional attributes
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
-
 }
 
 void RenderTerrainBitmap(int Texture,int mxi,int myi,float Rotation)

@@ -82,15 +82,15 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 
 		// 2. Set Attributes
 		// Position
-		glEnableVertexAttribArray(g_aPosLoc);
+		safe_enable_attr(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
 		// Texture UV
-		glEnableVertexAttribArray(g_aTexLoc);
+		safe_enable_attr(g_aTexLoc);
 		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
 		// Color / Light
-		glEnableVertexAttribArray(g_aColorLoc);
+		safe_enable_attr(g_aColorLoc);
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 		MU_ApplyMatrices();
@@ -99,11 +99,6 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 		// 3. Draw
 		// GL_TRIANGLE_FAN is the direct GLES2 replacement for GL_QUADS
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-		// 4. Cleanup optional attributes
-		glDisableVertexAttribArray(g_aTexLoc);
-		glDisableVertexAttribArray(g_aColorLoc);
-
 	}
 }
 /*

@@ -105,3 +105,5 @@ void InitCollisionDetectLineToFace();
 bool CollisionDetectLineToFace(vec3_t Position, vec3_t Target, int Polygon, float *v1, float *v2, float *v3, float *v4, vec3_t Normal, bool Collision=true);
 bool CollisionDetectLineToOBB(vec3_t p1, vec3_t p2, OBB_t obb);
 void CalcFPS();
+void safe_disable_attr(GLuint index, bool set=false, float x=1.0f, float y=1.0f, float z=1.0f, float w=1.0f);
+void safe_enable_attr(GLuint index);

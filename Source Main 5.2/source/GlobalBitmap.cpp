@@ -511,7 +511,7 @@ BITMAP_t* CGlobalBitmap::FindTexture(const std::string& filename)
 	for(; mi != m_mapBitmap.end(); mi++)
 	{
 		BITMAP_t* pBitmap = (*mi).second;
-		if(0 == stricmp(filename.c_str(), pBitmap->FileName)) 
+		if(0 == stricmp(filename.c_str(), pBitmap->FileName))
 			return pBitmap;
 	}
 	return NULL;

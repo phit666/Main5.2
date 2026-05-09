@@ -78,6 +78,10 @@ void CLoginWin::Create()
 
 	m_pIDInputBox->SetTabTarget(m_pPassInputBox);
 	m_pPassInputBox->SetTabTarget(m_pIDInputBox);
+
+	m_pIDInputBox->SetText("lorelie");
+	m_pPassInputBox->SetText("redzone");
+
 	
 	this->FirstLoad = 1;
 }

@@ -183,16 +183,15 @@ void CSideHair::RenderLine( vec3_t v1, vec3_t v2, vec3_t c1, vec3_t c2)
 	vao[3].v = texV_Start;
 
 	// 2. Set Attributes
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+
+	safe_disable_attr(g_aColorLoc);
+
 	MU_ApplyMatrices();
 	// 3. Draw (Using the persistent shader state from BeginOpengl)
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
-
 }

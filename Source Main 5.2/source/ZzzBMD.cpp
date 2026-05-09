@@ -1375,23 +1375,19 @@ void BMD::RenderMesh(int i, int RenderFlag, float Alpha, int BlendMesh, float Bl
 
 
 
-		glEnableVertexAttribArray(g_aPosLoc);
+		safe_enable_attr(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].x);
 
-		glEnableVertexAttribArray(g_aTexLoc);
+		safe_enable_attr(g_aTexLoc);
 		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].u);
 
-		glEnableVertexAttribArray(g_aColorLoc);
+		safe_enable_attr(g_aColorLoc);
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
 
 		MU_ApplyMatrices();
 		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 		
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
-
-		// Cleanup
-		glDisableVertexAttribArray(g_aTexLoc);
-		glDisableVertexAttribArray(g_aColorLoc);
 	}
 
 }
@@ -1853,23 +1849,19 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 	// 2. Set Attributes and Draw
 	if (!meshVao.empty())
 	{
-		glEnableVertexAttribArray(g_aPosLoc);
+		safe_enable_attr(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].x);
 
-		glEnableVertexAttribArray(g_aTexLoc);
+		safe_enable_attr(g_aTexLoc);
 		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].u);
 
-		glEnableVertexAttribArray(g_aColorLoc);
+		safe_enable_attr(g_aColorLoc);
 		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
 
 		MU_ApplyMatrices();
 		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
-
-		// 3. Cleanup
-		glDisableVertexAttribArray(g_aTexLoc);
-		glDisableVertexAttribArray(g_aColorLoc);
 	}
 
 }
@@ -1961,13 +1953,12 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 				if (!shadowVao.empty())
 				{
 					// 2. Set Attributes
-					glEnableVertexAttribArray(g_aPosLoc);
+					safe_enable_attr(g_aPosLoc);
 					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &shadowVao[0].x);
 
 					// 3. Disable UV and Color attributes (Shadows are usually a solid color)
-					glDisableVertexAttribArray(g_aTexLoc);
-					glDisableVertexAttribArray(g_aColorLoc);
-					myShader.setFloat(g_uTexEnabledLoc, 0.0);
+					safe_disable_attr(g_aTexLoc);
+					safe_disable_attr(g_aColorLoc);
 
 					// 4. Set Shadow Color (Usually black or dark grey with alpha)
 					// You can set this before the function or right here:

@@ -307,13 +307,13 @@ void CShadowVolume::RenderShadowVolume( void)
 	// and m_nNumVertices is the total count.
 
 	// 2. Set Attributes
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	// Points directly to your m_pVertices array in memory
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, 0, m_pVertices);
 
 	// 3. Disable other attributes (Safety)
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
+	safe_disable_attr(g_aTexLoc);
+	safe_disable_attr(g_aColorLoc);
 	// Set a default neutral white color for the shader math
 	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 	MU_ApplyMatrices();

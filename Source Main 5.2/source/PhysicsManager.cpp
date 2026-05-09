@@ -862,13 +862,13 @@ void CPhysicsCloth::RenderFace(BOOL bFront, int iTexture, vec3_t* pvRenderPos)
 
 	// Render the buffer
 	if (!clothBuffer.empty()) {
-		glEnableVertexAttribArray(g_aPosLoc);
+		safe_enable_attr(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &clothBuffer[0].x);
-		glEnableVertexAttribArray(g_aTexLoc);
+		safe_enable_attr(g_aTexLoc);
 		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &clothBuffer[0].u);
 
 		// Disable per-vertex color since we're using your Uniform wrapper MU_glColor
-		glDisableVertexAttribArray(g_aColorLoc);
+		safe_disable_attr(g_aColorLoc);
 		//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 		MU_ApplyMatrices();
 		for (int q = 0; q < clothBuffer.size() / 4; q++) {

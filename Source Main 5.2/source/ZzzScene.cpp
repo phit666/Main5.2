@@ -105,7 +105,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.254.115";
+char *szServerIpAddress = "192.168.1.19";
 WORD g_ServerPort = 44405;
 
 #ifdef MOVIE_DIRECTSHOW
@@ -1485,7 +1485,7 @@ void LoadingScene(HDC hDC)
 	//::glFlush();
 
 #ifdef MU_USE_SDL
-	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);

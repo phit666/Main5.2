@@ -179,13 +179,13 @@ void RenderBlurs()
 				}
 
 				// 2. Set Attributes (Position, Tex, Color)
-				glEnableVertexAttribArray(g_aPosLoc);
+				safe_enable_attr(g_aPosLoc);
 				glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].x);
 
-				glEnableVertexAttribArray(g_aTexLoc);
+				safe_enable_attr(g_aTexLoc);
 				glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].u);
 
-				glEnableVertexAttribArray(g_aColorLoc);
+				safe_enable_attr(g_aColorLoc);
 				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].r);
 
 				MU_ApplyMatrices();
@@ -196,11 +196,6 @@ void RenderBlurs()
 				for (int i = 0; i < (b->Number - 1); i++) {
 					glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
 				}
-
-				// 4. Cleanup
-				glDisableVertexAttribArray(g_aTexLoc);
-				glDisableVertexAttribArray(g_aColorLoc);
-
 			}
 		}
 	}
@@ -385,13 +380,13 @@ void RenderObjectBlurs()
 					vao[3].r = b->Light[0] * light2; vao[3].g = b->Light[1] * light2; vao[3].b = b->Light[2] * light2; vao[3].a = 1.0f;
 
 					// 2. Set Attributes
-					glEnableVertexAttribArray(g_aPosLoc);
+					safe_enable_attr(g_aPosLoc);
 					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
-					glEnableVertexAttribArray(g_aTexLoc);
+					safe_enable_attr(g_aTexLoc);
 					glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
-					glEnableVertexAttribArray(g_aColorLoc);
+					safe_enable_attr(g_aColorLoc);
 					glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 					MU_ApplyMatrices();
@@ -399,10 +394,6 @@ void RenderObjectBlurs()
 
 					// 3. Draw
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-					// 4. Cleanup
-					glDisableVertexAttribArray(g_aTexLoc);
-					glDisableVertexAttribArray(g_aColorLoc);
 				}
 			}
 		}
@@ -696,13 +687,13 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 	}
 
 	// 2. Set Attributes
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 	MU_ApplyMatrices();
@@ -710,11 +701,6 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, n);
-
-	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
-
 
 	BindTexture(Tex1);
 
@@ -753,13 +739,13 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 	}
 
 	// 2. Set Attributes using vao2
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].x);
 
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].u);
 
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
 
 	MU_ApplyMatrices();
@@ -767,11 +753,6 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, count2);
-
-	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
-
 
 }
 

@@ -312,6 +312,7 @@ void CSprite::Render()
 		if (!TextureEnable)
 		{
 			TextureEnable = true;
+			myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 		}
 
 		BindTexture(m_nTexID);
@@ -335,26 +336,21 @@ void CSprite::Render()
 
 		// 3. Set Attributes
 		// Position
-		glEnableVertexAttribArray(g_aPosLoc);
+		safe_enable_attr(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
 		// Texture
-		glEnableVertexAttribArray(g_aTexLoc);
+		safe_enable_attr(g_aTexLoc);
 		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
 
 		// Ensure per-vertex color is disabled (we are using the uniform above)
-		glDisableVertexAttribArray(g_aColorLoc);
-		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
+		safe_disable_attr(g_aColorLoc, true, cr, cg, cb, ca);
+		//glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
 
 		MU_ApplyMatrices();
 
 		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
-
-		// 5. Cleanup
-		glDisableVertexAttribArray(g_aTexLoc);
-		glDisableVertexAttribArray(g_aColorLoc);
-
 	}
 	else
 	{
@@ -377,13 +373,13 @@ void CSprite::Render()
 
 		// 3. Set Attributes
 		// Position is required
-		glEnableVertexAttribArray(g_aPosLoc);
+		safe_enable_attr(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, vao);
 
-		glDisableVertexAttribArray(g_aTexLoc);
+		safe_disable_attr(g_aTexLoc);
 
-		glDisableVertexAttribArray(g_aColorLoc);
-		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
+		safe_disable_attr(g_aColorLoc, true, cr, cg, cb, ca);
+		//glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
 
 		MU_ApplyMatrices();
 

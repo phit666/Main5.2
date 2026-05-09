@@ -980,7 +980,7 @@ __forceinline bool SendRequestEquipmentItem(int iSrcType,int iSrcIndex, ITEM* pI
 	}
 	else
 		splitType = ((BYTE)(pItem->Type>>5)&240);
-
+#ifdef KJH_PBG_ADD_INGAMESHOP_SYSTEM
 	if( pItem->bPeriodItem == true )
 	{
 		splitType |= 0x02;
@@ -990,7 +990,7 @@ __forceinline bool SendRequestEquipmentItem(int iSrcType,int iSrcIndex, ITEM* pI
 	{
 		splitType |= 0x04;
 	}
-
+#endif
 	BYTE spareBits;
 	if (g_SocketItemMgr.IsSocketItem(pItem))
 	{

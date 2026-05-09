@@ -185,9 +185,9 @@ namespace SEASON3B
 			IMAGE_GAUGE_SD,		// newui_menu_SD.tga
 			IMAGE_GAUGE_EXBAR,	// newui_Exbar.jpg
 			IMAGE_MASTER_GAUGE_BAR,	// Exbar_Master.jpg
-#ifdef PBG_ADD_INGAMESHOP_UI_MAINFRAME
+//#ifdef PBG_ADD_INGAMESHOP_UI_MAINFRAME
 			IMAGE_MENU_BTN_CSHOP,
-#endif //defined PBG_ADD_INGAMESHOP_UI_MAINFRAME
+//#endif //defined PBG_ADD_INGAMESHOP_UI_MAINFRAME
 			IMAGE_MENU_BTN_CHAINFO,
 			IMAGE_MENU_BTN_MYINVEN,
 			IMAGE_MENU_BTN_FRIEND,
@@ -269,9 +269,9 @@ namespace SEASON3B
 		DWORD m_dwPreExp;
 		DWORD m_dwGetExp;
 
-#ifdef PBG_ADD_INGAMESHOP_UI_MAINFRAME
+//#ifdef PBG_ADD_INGAMESHOP_UI_MAINFRAME
 		CNewUIButton m_BtnCShop;
-#endif //defined PBG_ADD_INGAMESHOP_UI_MAINFRAME
+//#endif //defined PBG_ADD_INGAMESHOP_UI_MAINFRAME
 		CNewUIButton m_BtnChaInfo;
 		CNewUIButton m_BtnMyInven;
 		CNewUIButton m_BtnFriend;

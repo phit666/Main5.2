@@ -255,13 +255,13 @@ typedef struct tagITEM
 	
 	BYTE byColorState;
 	
-#ifdef KJH_ADD_PERIOD_ITEM_SYSTEM
+//#ifdef KJH_ADD_PERIOD_ITEM_SYSTEM
 	bool	bPeriodItem;
 	bool	bExpiredPeriod;
 	//DWORD	dwLeftTime;
 	long	lExpireTime;
 	//DWORD	dwPastSystemTime;
-#endif // KJH_ADD_PERIOD_ITEM_SYSTEM
+//#endif // KJH_ADD_PERIOD_ITEM_SYSTEM
 
 private:
 	friend class SEASON3B::CNewUIItemMng;

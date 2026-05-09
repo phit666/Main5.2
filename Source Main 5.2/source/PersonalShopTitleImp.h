@@ -1,14 +1,14 @@
 #ifndef _PERSONALSHOPTITLEIMP_H_
 #define _PERSONALSHOPTITLEIMP_H_
 
-// - ÀÌÇö
+// - ï¿½ï¿½ï¿½ï¿½
 
 #include "zzzinfomation.h"
 #include "ZzzBMD.h"
 #include "ZzzObject.h"
 #include "ZzzCharacter.h"
 
-inline POINT MakePos(long x, long y)
+inline POINT MakePos(LONG x, LONG y)
 {
 	POINT pos = { x, y };
 	return pos;

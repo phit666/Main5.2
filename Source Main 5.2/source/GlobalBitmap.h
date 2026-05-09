@@ -9,7 +9,11 @@
 #include <deque>
 #include <string>
 #include <setjmp.h>
+#ifdef _WIN32
 #include "Jpeglib.h"
+#else
+#include <Jpeglib.h>
+#endif
 #include "./Time/Timer.h"
 
 #define MAX_BITMAP_FILE_NAME 256

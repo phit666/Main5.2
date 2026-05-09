@@ -309,6 +309,14 @@ struct RECT
     LONG bottom;
 };
 
+inline void OffsetRect(RECT* prc, int dx, int dy) {
+    if (!prc) return;
+    prc->left += dx;
+    prc->right += dx;
+    prc->top += dy;
+    prc->bottom += dy;
+}
+
 typedef POINT* LPPOINT;
 typedef const POINT* LPCPOINT;
 
@@ -1379,4 +1387,18 @@ inline int CloseHandle(void* h)
 #define _atoi64 atoll
 #endif
 
+
+#ifndef HIBYTE
+#define HIBYTE(w) ((BYTE)(((WORD)(w) >> 8) & 0xFF))
+#endif
+
+#ifndef LOBYTE
+#define LOBYTE(w) ((BYTE)((WORD)(w) & 0xFF))
+#endif
+
+#ifndef MAKELONG
+#define MAKELONG(a, b) ((LONG)(((WORD)((DWORD_PTR)(a) & 0xffff)) | ((DWORD)((WORD)((DWORD_PTR)(b) & 0xffff))) << 16))
+#endif
+
+#define stricmp strcasecmp
 #endif

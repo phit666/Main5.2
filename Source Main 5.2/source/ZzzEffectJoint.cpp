@@ -7035,12 +7035,13 @@ void MoveJoints()
 
 void RenderJoints( BYTE bRenderOneMore )
 {
-
 	for (int i = 0; i < MAX_JOINTS; i++)
 	{
 		JOINT* o = &Joints[i];
+
 		if (o->Type == BITMAP_JOINT_ENERGY && o->SubType == 54 && o->Target->CurrentAction != MONSTER01_ATTACK1)
 			continue;
+
 		if (o->Live && o->NumTails > 0 && o->RenderFace != 0)
 		{
 			if (bRenderOneMore == 1 && o->byOnlyOneRender == 2) continue;
@@ -7201,23 +7202,19 @@ void RenderJoints( BYTE bRenderOneMore )
 					vao[3].u = Light2;              vao[3].v = 0.0f;
 
 					// 2. Set Attributes
-					glEnableVertexAttribArray(g_aPosLoc);
+					safe_enable_attr(g_aPosLoc);
 					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
-					glEnableVertexAttribArray(g_aTexLoc);
+					safe_enable_attr(g_aTexLoc);
 					glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
 					// Ensure the color is set to white (or whatever your current global color is)
-					glDisableVertexAttribArray(g_aColorLoc);
+					safe_disable_attr(g_aColorLoc);
 					// If you want the tail to be tinted, use your setVec4(g_uColorLoc, ...) before this
 					//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 					MU_ApplyMatrices();
 					// 3. Draw
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-					// 4. Cleanup
-					//glDisableVertexAttribArray(g_aTexLoc);
-
 				}
 				else
 				{
@@ -7361,7 +7358,7 @@ void RenderJoints( BYTE bRenderOneMore )
 						glMatrixMode(GL_MODELVIEW);
 						glPushMatrix();
 						glTranslatef(t_bias[0], t_bias[1], t_bias[2]);
-
+						/*
 						glBegin(GL_QUADS);
 						glTexCoord2f(Light1, 1.f); glVertex3fv(o->Tails[j][2]);
 						glTexCoord2f(Light1, 0.f); glVertex3fv(o->Tails[j][3]);
@@ -7372,7 +7369,7 @@ void RenderJoints( BYTE bRenderOneMore )
 						glTexCoord2f(Light2, 1.f); glVertex3fv(o->Tails[j + 1][1]);
 						glTexCoord2f(Light2, 0.f); glVertex3fv(o->Tails[j + 1][0]);
 						glEnd();
-
+						*/
 						glPopMatrix();
 						continue;
 					}
@@ -7426,21 +7423,18 @@ void RenderJoints( BYTE bRenderOneMore )
 
 
 						// 2. Set Attributes
-						glEnableVertexAttribArray(g_aPosLoc);
+						safe_enable_attr(g_aPosLoc);
 						glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
-						glEnableVertexAttribArray(g_aTexLoc);
+						safe_enable_attr(g_aTexLoc);
 						glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
 						// Ensure constant color is set (uses the Luminosity color you just set)
-						glDisableVertexAttribArray(g_aColorLoc);
+						safe_disable_attr(g_aColorLoc);
+
 						MU_ApplyMatrices();
 						// 3. Draw
 						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-						// 4. Cleanup
-						glDisableVertexAttribArray(g_aTexLoc);
-
 					}
 
 					if ((o->RenderFace & RENDER_FACE_TWO) == RENDER_FACE_TWO)
@@ -7472,22 +7466,17 @@ void RenderJoints( BYTE bRenderOneMore )
 						vao[3].u = L2; vao[3].v = V1;
 
 						// 2. Set Attributes
-						glEnableVertexAttribArray(g_aPosLoc);
+						safe_enable_attr(g_aPosLoc);
 						glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
-						glEnableVertexAttribArray(g_aTexLoc);
+						safe_enable_attr(g_aTexLoc);
 						glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
 						// Constant color was set by myShader.setVec4(g_uColorLoc, Luminosity...) earlier
-						glDisableVertexAttribArray(g_aColorLoc);
+						safe_disable_attr(g_aColorLoc);
 						MU_ApplyMatrices();
 						// 3. Draw
 						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-						// 4. Cleanup
-						glDisableVertexAttribArray(g_aTexLoc);
-
-
 					}
 				}
 			}
@@ -7508,7 +7497,6 @@ void RenderJoints( BYTE bRenderOneMore )
 
 		}
 	}
-
 }
 
 void GetMagicScrew( int iParam, vec3_t vResult, float fSpeedRate)

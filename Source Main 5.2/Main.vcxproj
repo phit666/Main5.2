@@ -941,6 +941,7 @@
     <ClInclude Include="source\npcBreeder.h" />
     <ClInclude Include="source\npcCatapult.h" />
     <ClInclude Include="source\npcGateSwitch.h" />
+    <ClInclude Include="source\nuklear_sdl_gles2.h" />
     <ClInclude Include="source\Observer.h" />
     <ClInclude Include="source\OptionWin.h" />
     <ClInclude Include="source\PartyManager.h" />

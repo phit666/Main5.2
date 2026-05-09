@@ -49,7 +49,8 @@ bool         MouseMButtonPush;
 int          MouseWheel;
 DWORD		 MouseRButtonPress = 0;
 
-
+// Simple state tracker
+static GLboolean attr_enabled[3] = { GL_FALSE, GL_FALSE, GL_FALSE };
 
 void OpenExploper(char* Name, char* para)
 {
@@ -193,17 +194,36 @@ int   ScreenCenterYFlip;
 
 void GetOpenGLMatrix(float Matrix[3][4])
 {
-	// Access the top matrix on the stack
 	const glm::mat4& m = modelViewStack.back();
 
 	for (int i = 0; i < 3; i++) // Rows
 	{
 		for (int j = 0; j < 4; j++) // Columns
 		{
-			// GLM is m[column][row]
-			// We map it to Matrix[row][column]
 			Matrix[i][j] = m[j][i];
 		}
+	}
+}
+
+
+void safe_disable_attr(GLuint index, bool set, float x, float y, float z, float w) {
+	if (attr_enabled[index] || (index == g_aColorLoc && set)) {
+		glDisableVertexAttribArray(index);
+		attr_enabled[index] = GL_FALSE;
+	}
+	if (g_aColorLoc == index && set) {
+		glVertexAttrib4f(g_aColorLoc, x, y, z, w);
+	}
+}
+
+void safe_enable_attr(GLuint index) {
+	if (!attr_enabled[index]) {
+		glEnableVertexAttribArray(index);
+		attr_enabled[index] = GL_TRUE;
+	}
+	if (g_aTexLoc == index) {
+		myShader.use();
+		myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 	}
 }
 
@@ -320,7 +340,7 @@ void BindTexture(int tex) {
 		//sprintf(t, "[SDL-DEBUG] BindTexture %u", tex);
 		//OutputDebugString(t);
 	}
-	myShader.setFloat(g_uTexEnabledLoc, 1.0f);
+	//myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 }
 
 // GLES2 does not support glBegin/glEnd. TextureStream must be handled 
@@ -715,6 +735,18 @@ void BeginOpengl(int x, int y, int Width, int Height)
 
 void EndOpengl()
 {
+	// Force-disable the common attributes used by UI/Sprites
+	safe_disable_attr(g_aPosLoc);
+	safe_disable_attr(g_aTexLoc);
+	safe_disable_attr(g_aColorLoc);
+
+	// Standard state resets
+	//glDisable(GL_SCISSOR_TEST); // Crucial: Nuklear leaves this on!
+	//glDisable(GL_BLEND);        // Most 3D shouldn't have UI-blending active
+	//glEnable(GL_DEPTH_TEST);    // UI usually turns this off
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
@@ -947,14 +979,14 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 	vao[3].u = 0.0f; vao[3].v = 0.0f;
 
 	// 2. Set Attributes
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
 	// Disable color attribute if not used, or use glVertexAttrib4f for a constant color
-	glDisableVertexAttribArray(g_aColorLoc);
+	safe_disable_attr(g_aColorLoc);
 	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	MU_ApplyMatrices();
@@ -962,10 +994,6 @@ void RenderPlane3D(float Width, float Height, float Matrix[3][4])
 	// 3. Draw
 	// GL_TRIANGLE_FAN draws 0-1-2 and then 0-2-3, forming the quad.
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup
-	//glDisableVertexAttribArray(g_aTexLoc);
-
 }
 
 void BeginSprite()
@@ -1051,24 +1079,20 @@ void RenderSprite(int Texture, vec3_t Position, float Width, float Height, vec3_
 
 	// 3. Set Attributes
 	// Position
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
 	// Texture UV
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
 	// Disable per-vertex color attribute (we are using the uniform u_color instead)
-	glDisableVertexAttribArray(g_aColorLoc);
+	safe_disable_attr(g_aColorLoc);
 	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Default to white
 	MU_ApplyMatrices();
 	// 4. Draw
 	// GL_TRIANGLE_FAN is the GLES2 replacement for GL_QUADS
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 5. Cleanup
-	//glDisableVertexAttribArray(g_aTexLoc);
-
 }
 //
 void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, float (*UV)[2], vec3_t Light[4], float Alpha)
@@ -1112,15 +1136,15 @@ void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, flo
 
 	// 2. Set Attributes
 	// Position (3 floats)
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
 	// UV (2 floats)
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
 	// Color (4 floats - pulls from the Light[i] data we packed)
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 	MU_ApplyMatrices();
@@ -1129,11 +1153,6 @@ void RenderSpriteUV(int Texture, vec3_t Position, float Width, float Height, flo
 	// 3. Draw
 	// Using GL_TRIANGLE_FAN as the quad replacement
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup optional attributes
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
-
 }
 
 void RenderNumber(vec3_t Position, int Num, vec3_t Color, float Alpha, float Scale)
@@ -1249,6 +1268,17 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 	p[2][0] = x + Width; p[2][1] = y - Height;
 	p[3][0] = x + Width; p[3][1] = y;
 
+	// 3. Set Attributes (Position only)
+	safe_enable_attr(g_aPosLoc);
+	// p is your float p[4][2] array from the original code
+	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, p);
+
+	// Disable UV and Color attributes as they aren't needed here
+	safe_disable_attr(g_aTexLoc);
+	safe_disable_attr(g_aColorLoc);
+
+	MU_ApplyMatrices();
+
 	// 1. Set the uniform color based on Flag
 	float finalAlpha = (Alpha > 0.0f) ? Alpha : 1.0f;
 	if (Flag == 0)
@@ -1256,15 +1286,6 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 	else if (Flag == 1)
 		myShader.setVec4(g_uColorLoc, 0.0f, 0.0f, 0.0f, finalAlpha); // Black
 
-	// 3. Set Attributes (Position only)
-	glEnableVertexAttribArray(g_aPosLoc);
-	// p is your float p[4][2] array from the original code
-	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, p);
-
-	// Disable UV and Color attributes as they aren't needed here
-	glDisableVertexAttribArray(g_aTexLoc);
-	glDisableVertexAttribArray(g_aColorLoc);
-	MU_ApplyMatrices();
 	// 4. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -1320,13 +1341,13 @@ void RenderColorBitmap(int Texture, float x, float y, float Width, float Height,
 	}
 
 	// 3. Set Attributes
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
-	glEnableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
 	MU_ApplyMatrices();
@@ -1334,11 +1355,6 @@ void RenderColorBitmap(int Texture, float x, float y, float Width, float Height,
 
 	// 4. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 5. Cleanup
-	glDisableVertexAttribArray(g_aColorLoc);
-	glDisableVertexAttribArray(g_aTexLoc);
-
 }
 
 //
@@ -1388,14 +1404,14 @@ void RenderBitmap(int Texture, float x, float y, float Width, float Height,
 	}
 
 	// 3. Set Attributes
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
 
 	// Ensure per-vertex color attribute is OFF (we're using the uniform instead)
-	glDisableVertexAttribArray(g_aColorLoc);
+	safe_disable_attr(g_aColorLoc);
 
 
 
@@ -1404,8 +1420,6 @@ void RenderBitmap(int Texture, float x, float y, float Width, float Height,
 	// 4. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	// 5. Reset global color to full opaque for subsequent calls
-	//myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 //
 void RenderBitmapRotate(int Texture, float x, float y, float Width, float Height, float Rotate, float u, float v, float uWidth, float vHeight)
@@ -1457,21 +1471,18 @@ void RenderBitmapRotate(int Texture, float x, float y, float Width, float Height
 
 	// 2. Set Attributes
 	// Position
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
 	// Texture UV
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
 
 	// Ensure per-vertex color is disabled (uses u_color uniform set by previous helpers)
-	glDisableVertexAttribArray(g_aColorLoc);
+	safe_enable_attr(g_aColorLoc);
 	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup optional attributes
-	glDisableVertexAttribArray(g_aTexLoc);
 }
 //
 void RenderBitRotate(int Texture, float x, float y, float Width, float Height, float Rotate)
@@ -1529,21 +1540,18 @@ void RenderBitRotate(int Texture, float x, float y, float Width, float Height, f
 	}
 
 	// 2. Set Attributes
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
 
 	// Ensure the constant color is white (unless set otherwise by a previous helper)
-	glDisableVertexAttribArray(g_aColorLoc);
+	safe_disable_attr(g_aColorLoc);
 	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup
-	//glDisableVertexAttribArray(g_aTexLoc);
 
 }
 //
@@ -1607,21 +1615,18 @@ void RenderPointRotate(int Texture, float ix, float iy, float iWidth, float iHei
 
 	// 2. Set Attributes
 	// Position (using global ID)
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
 	// Texture UV (using global ID)
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
 
 	// Ensure per-vertex color is disabled (uses u_color uniform)
-	glDisableVertexAttribArray(g_aColorLoc);
+	safe_disable_attr(g_aColorLoc);
 	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup optional attributes
-	glDisableVertexAttribArray(g_aTexLoc);
 
 
 	if (Num > -1)
@@ -1769,21 +1774,18 @@ void RenderBitmapUV(int Texture, float x, float y, float Width, float Height, fl
 
 	// 2. Set Attributes
 	// Position
-	glEnableVertexAttribArray(g_aPosLoc);
+	safe_enable_attr(g_aPosLoc);
 	glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
 
 	// Texture UV
-	glEnableVertexAttribArray(g_aTexLoc);
+	safe_enable_attr(g_aTexLoc);
 	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
 
 	// Ensure per-vertex color is disabled (uses u_color uniform)
-	glDisableVertexAttribArray(g_aColorLoc);
+	safe_disable_attr(g_aColorLoc);
 	MU_ApplyMatrices();
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	// 4. Cleanup
-	glDisableVertexAttribArray(g_aTexLoc);
 
 }
 

@@ -127,13 +127,13 @@ namespace SEASON3B
 		
 		unicode::t_string m_strText;
 		float m_x, m_y, m_width, m_height;
-#ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM
+//#ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM
 		float m_fButtonWidth;
 		float m_fButtonHeight;
 		int		m_iMoveTextPosX;
 		int		m_iMoveTextPosY;
 		bool	m_bClickEffect;
-#endif // KJH_ADD_INGAMESHOP_UI_SYSTEM
+//#endif // KJH_ADD_INGAMESHOP_UI_SYSTEM
 
 		EVENT_STATE m_EventState;
 	};
@@ -166,16 +166,16 @@ namespace SEASON3B
 	private:
 #endif //PBG_ADD_NAMETOPMSGBOX
 		void SetAddCallbackFunc();
-#ifdef PBG_ADD_NAMETOPMSGBOX
+//#ifdef PBG_ADD_NAMETOPMSGBOX
 		int SeparateText(const type_string& strMsg, DWORD dwColor = CLRDW_WHITE, BYTE byFontType = MSGBOX_FONT_NORMAL, int _TextSize = MSGBOX_TEXT_MAXWIDTH);
-#else //PBG_ADD_NAMETOPMSGBOX
-		int SeparateText(const type_string& strMsg, DWORD dwColor, BYTE byFontType);
-#endif //PBG_ADD_NAMETOPMSGBOX
+//#else //PBG_ADD_NAMETOPMSGBOX
+		//int SeparateText(const type_string& strMsg, DWORD dwColor, BYTE byFontType);
+//#endif //PBG_ADD_NAMETOPMSGBOX
 		void SetButtonInfo();
 		void AddButtonBlank(int iAddLine);
-#ifdef PBG_ADD_NAMETOPMSGBOX
+//#ifdef PBG_ADD_NAMETOPMSGBOX
 		void AddButtonBlank(int iAddLine, int _iImgSize);
-#endif //PBG_ADD_NAMETOPMSGBOX
+//#endif //PBG_ADD_NAMETOPMSGBOX
 		
 		void RenderFrame();
 		void RenderTexts();

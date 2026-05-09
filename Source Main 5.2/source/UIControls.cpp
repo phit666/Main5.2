@@ -3266,6 +3266,11 @@ void CUITextInputBox::GetText(wchar_t * pwszText, int iGetLenght)
 
 void CUITextInputBox::SetText(const char * pszText)
 {
+#ifdef MU_USE_SDL
+	if (pszText != 0) {
+		strcpy(m_szText, pszText);
+	}
+#else
 	if (pszText == NULL)
 	{
 		SetWindowTextW(m_hEditWnd, L"");
@@ -3277,6 +3282,7 @@ void CUITextInputBox::SetText(const char * pszText)
 	
 	if (wstrText.length() > MAX_TEXT_LENGTH) return;
 	SetWindowTextW(m_hEditWnd, wstrText.c_str());
+#endif
 }
 
 void CUITextInputBox::SetTextLimit(int iLimit)
@@ -3358,6 +3364,8 @@ void CUITextInputBox::SetSize(int iWidth, int iHeight)
 	}
 }
 
+static uint64_t titleseed = 100;
+
 void CUITextInputBox::Init(HWND hWnd, int iWidth, int iHeight, int iMaxLength, BOOL bIsPassword)
 {
 #ifdef MU_USE_SDL
@@ -3375,7 +3383,7 @@ void CUITextInputBox::Init(HWND hWnd, int iWidth, int iHeight, int iMaxLength, B
 	m_iRealWindowPos_y = (int)(m_iPos_y * g_fScreenRate_y);
 
 	m_bShow = false; // same idea as old ShowWindow(..., SW_HIDE)
-
+	m_title = std::to_string(titleseed++);
 	return;
 #else
 	m_hParentWnd = hWnd;

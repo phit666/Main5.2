@@ -92,17 +92,19 @@ void    CSWaterTerrain::Render ( void )
     }
 
     // 3. Set Attributes and Draw
-    glEnableVertexAttribArray(g_aPosLoc);
+    safe_enable_attr(g_aPosLoc);
     glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
 
-    glEnableVertexAttribArray(g_aTexLoc);
+    safe_enable_attr(g_aTexLoc);
     glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+
+    safe_disable_attr(g_aColorLoc);
+
+
     MU_ApplyMatrices();
     // 4. One draw call for the entire list
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
 
-    // 5. Cleanup
-    glDisableVertexAttribArray(g_aTexLoc);
 
     EnableAlphaBlend();
     BindTexture(BITMAP_MAPTILE + 1);
@@ -135,14 +137,14 @@ void    CSWaterTerrain::Render ( void )
     }
 
     // 2. Setup Attributes
-    glEnableVertexAttribArray(g_aPosLoc);
+    safe_enable_attr(g_aPosLoc);
     glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].x);
 
-    glEnableVertexAttribArray(g_aTexLoc);
+    safe_enable_attr(g_aTexLoc);
     glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].u);
 
     // IMPORTANT: Enable the color attribute for per-vertex lighting
-    glEnableVertexAttribArray(g_aColorLoc);
+    safe_enable_attr(g_aColorLoc);
     glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
 
     MU_ApplyMatrices();
@@ -150,11 +152,6 @@ void    CSWaterTerrain::Render ( void )
 
     // 3. Draw
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
-
-    // 4. Cleanup
-    glDisableVertexAttribArray(g_aTexLoc);
-    glDisableVertexAttribArray(g_aColorLoc);
-
 }
 
 void    CSWaterTerrain::CreateTerrain ( int x, int y )
@@ -488,15 +485,15 @@ void CSWaterTerrain::RenderWaterBitmapTile(
 
     // 2. Attributes Setup
     // Position (using global g_aPosLoc)
-    glEnableVertexAttribArray(g_aPosLoc);
+    safe_enable_attr(g_aPosLoc);
     glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
 
     // Texture (using global g_aTexLoc)
-    glEnableVertexAttribArray(g_aTexLoc);
+    safe_enable_attr(g_aTexLoc);
     glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
 
     // Color/Light (using global g_aColorLoc)
-    glEnableVertexAttribArray(g_aColorLoc);
+    safe_enable_attr(g_aColorLoc);
     glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
 
     MU_ApplyMatrices();
@@ -505,9 +502,5 @@ void CSWaterTerrain::RenderWaterBitmapTile(
     // 3. Draw
     // GL_TRIANGLE_FAN is the direct GLES2 replacement for a single QUAD
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    // 4. Cleanup optional attributes so they don't leak into the next draw call
-    glDisableVertexAttribArray(g_aTexLoc);
-    glDisableVertexAttribArray(g_aColorLoc);
 
 }
