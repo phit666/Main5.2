@@ -1,7 +1,7 @@
 //*****************************************************************************
 // File: UsefulDef.cpp
 //
-// Desc: À¯¿ëÇÑ Á¤ÀÇ ¸ðÀ½.
+// Desc: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 //
 // producer: Ahn Sang-Kyu
 //*****************************************************************************
@@ -10,6 +10,7 @@
 #include "mu_win_compat.h"
 #include "UsefulDef.h"
 #include "UIControls.h"
+#include "wt.h"
 
 extern float g_fScreenRate_x;
 

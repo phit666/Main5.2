@@ -3078,6 +3078,7 @@ CUITextInputBox::~CUITextInputBox()
 
 BOOL ClipboardCheck(HWND hWnd)
 {
+    #ifdef _WIN32
 	BOOL bClipboardIsNumber = TRUE;
     if (OpenClipboard(hWnd))
 	{
@@ -3102,10 +3103,14 @@ BOOL ClipboardCheck(HWND hWnd)
 		bClipboardIsNumber = FALSE;
 	}
 	return bClipboardIsNumber;
+    #else
+    return TRUE;
+    #endif
 }
 
 LRESULT CALLBACK EditWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+#ifdef _WIN32
 	CUITextInputBox *pTextInputBox = (CUITextInputBox *)GetWindowLongW(hWnd, GWL_USERDATA);
 	
 	if (pTextInputBox == NULL) 
@@ -3220,10 +3225,14 @@ LRESULT CALLBACK EditWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return CallWindowProcW(pTextInputBox->m_hOldProc, hWnd, msg, wParam, lParam );
+#else
+    return TRUE;
+#endif
 }
 
 void CUITextInputBox::SetIMEPosition()
 {
+#ifdef _WIN32
 	if (m_bIsReady == FALSE || m_hEditWnd == NULL) return;
 
 	int iSetPos_x = m_iPos_x * g_fScreenRate_x + WindowWidth;
@@ -3255,6 +3264,7 @@ void CUITextInputBox::SetIMEPosition()
 
 	ImmSetCompositionWindow(hIMC, &cpf);
 	ImmReleaseContext(m_hEditWnd, hIMC);
+#endif
 }
 
 void CUITextInputBox::GetText(char * pszText, int iGetLenght)
@@ -3271,8 +3281,14 @@ void CUITextInputBox::GetText(char * pszText, int iGetLenght)
 
 void CUITextInputBox::GetText(wchar_t * pwszText, int iGetLenght)
 {
-	if (pwszText == NULL) return;
+#ifdef MU_USE_SDL
+    if (pwszText != NULL) {
+        wcsncpy(pwszText, reinterpret_cast<const wchar_t *>(m_szText), iGetLenght - 1);
+    }
+#else
+    if (pwszText == NULL) return;
 	GetWindowTextW(m_hEditWnd, pwszText, iGetLenght);
+#endif
 }
 
 void CUITextInputBox::SetText(const char * pszText)
@@ -3310,13 +3326,15 @@ void CUITextInputBox::SetSize(int iWidth, int iHeight)
 #ifdef MU_USE_SDL
 	iWidth = iWidth * 0.66;
 	iHeight = iHeight * 0.90;
-#endif
-	if(iWidth == 0 || iHeight == 0) return;
+    m_iWidth = iWidth;
+    m_iHeight = iHeight;
+#else
+    if(iWidth == 0 || iHeight == 0) return;
 	if(iWidth == m_iWidth && iHeight == m_iHeight) return;
-	
+
 	m_iWidth = iWidth;
 	m_iHeight = iHeight;
-	
+
 	if (m_hMemDC != NULL)
 	{
 		DeleteDC(m_hMemDC);
@@ -3339,15 +3357,15 @@ void CUITextInputBox::SetSize(int iWidth, int iHeight)
 	DIB_INFO->bmiHeader.biPlanes      = 1;
 	DIB_INFO->bmiHeader.biBitCount    = 24;
 	DIB_INFO->bmiHeader.biCompression = BI_RGB;
-	
+
 	m_hBitmap = CreateDIBSection(hDC, DIB_INFO, DIB_RGB_COLORS, (void**)&m_pFontBuffer, NULL, NULL);
 	m_hMemDC = CreateCompatibleDC(hDC);
 	SelectObject(m_hMemDC, m_hBitmap);
 	SetFont(g_hFont);
-	
+
 	delete [] DIB_INFO;
-	
-	if(!m_hMemDC || !m_hBitmap) 
+
+	if(!m_hMemDC || !m_hBitmap)
 	{
 		if(m_hEditWnd != NULL)
 		{
@@ -3367,12 +3385,13 @@ void CUITextInputBox::SetSize(int iWidth, int iHeight)
 		}
 		return;
 	}
-	
+
 	if (m_hEditWnd != NULL)
 	{
 		SetWindowPos(m_hEditWnd, 0, 0, 0, iWidth*g_fScreenRate_x, iHeight*g_fScreenRate_y, SWP_NOMOVE | SWP_NOZORDER);
 		SendMessageW(m_hEditWnd, EM_SETSEL, (WPARAM)0, (LPARAM)0);
 	}
+#endif
 }
 
 static uint64_t titleseed = 100;
@@ -3702,18 +3721,19 @@ void CUITextInputBox::UploadText(int sx,int sy,int Width,int Height)
 
 void CUITextInputBox::WriteText(int iOffset, int iWidth, int iHeight)
 {
+#ifndef MU_USE_SDL
 	BOOL bIsCaretTime = (GetFocus() == m_hEditWnd && m_iCaretBlinkTemp % 24 < 12);
 	POINT pt;
 	GetCaretPos(&pt);
 
-	SIZE RealBoxSize = { (long)m_iWidth*g_fScreenRate_x, (long)m_iHeight*g_fScreenRate_y };
+	SIZE RealBoxSize = { static_cast<LONG>((long)m_iWidth*g_fScreenRate_x), static_cast<LONG>((long)m_iHeight*g_fScreenRate_y) };
 	const int LIMIT_WIDTH = 256, LIMIT_HEIGHT = 32;
 	int iPitch = ((RealBoxSize.cx*24+31)&~31)>>3;
 
 	int iSectionX = (iOffset % iPitch) / (LIMIT_WIDTH*3);
 	int iSectionY = iOffset / (iPitch*LIMIT_HEIGHT);
 
-	RECT rcCaret = { pt.x-LIMIT_WIDTH*iSectionX, pt.y-LIMIT_HEIGHT*iSectionY,pt.x-LIMIT_WIDTH*iSectionX+m_fCaretWidth, pt.y-LIMIT_HEIGHT*iSectionY+m_fCaretHeight };
+	RECT rcCaret = { pt.x-LIMIT_WIDTH*iSectionX, pt.y-LIMIT_HEIGHT*iSectionY,static_cast<LONG>(pt.x-LIMIT_WIDTH*iSectionX+m_fCaretWidth), static_cast<LONG>(pt.y-LIMIT_HEIGHT*iSectionY+m_fCaretHeight) };
 
 	BITMAP_t * pBitmapFont = &Bitmaps[BITMAP_FONT];
 	for(int y = 0; y < iHeight; ++y)
@@ -3756,7 +3776,9 @@ void CUITextInputBox::WriteText(int iOffset, int iWidth, int iHeight)
 			DstIndex += 4;
 		}
 	}
+#endif
 }
+
 void CUITextInputBox::Render()
 {
 #ifdef MU_USE_SDL
@@ -3920,6 +3942,7 @@ void CUITextInputBox::SetFont(HFONT hFont)
 
 BOOL CUITextInputBox::DoMouseAction()
 {
+#ifndef MU_USE_SDL
 	BOOL bResult = FALSE;
 	if (::CheckMouseIn(m_iPos_x, m_iPos_y - 4, m_iWidth, m_iHeight + 8) == TRUE)
 	{
@@ -4049,6 +4072,9 @@ BOOL CUITextInputBox::DoMouseAction()
 	}
 	
 	return bResult;
+#else
+    return TRUE;
+#endif
 }
 
 void CUIChatInputBox::Init(HWND hWnd)
@@ -4066,11 +4092,13 @@ void CUIChatInputBox::Init(HWND hWnd)
 	m_CurrentHistoryLine = m_HistoryList.begin();
 	m_bHistoryMode = FALSE;
 	memset(m_szTempText, 0, MAX_TEXT_LENGTH + 1);
-	SetFocus(g_hWnd);
 
+#ifndef MU_USE_SDL
+	SetFocus(g_hWnd);
 	HIMC hIMC = ImmGetContext(g_hWnd);
 	ImmGetConversionStatus(hIMC, &g_dwBKConv, &g_dwBKSent);
 	ImmReleaseContext(g_hWnd, hIMC);
+#endif
 }
 
 void CUIChatInputBox::Reset()
@@ -4089,6 +4117,7 @@ void CUIChatInputBox::Render()
 
 void CUIChatInputBox::TabMove(int iBoxNumber)
 {
+#ifndef MU_USE_SDL
 	if (GetState() == UISTATE_HIDE) return;
 	if (iBoxNumber == 1)
 	{
@@ -4100,6 +4129,7 @@ void CUIChatInputBox::TabMove(int iBoxNumber)
 		m_TextInputBox.GiveFocus();
 		PostMessage(m_TextInputBox.GetHandle(), EM_SETSEL, ( WPARAM)0, ( LPARAM)-1);
 	}
+#endif
 }
 
 void CUIChatInputBox::GetTexts(char * pText, char * pBuddyText)
@@ -4160,6 +4190,7 @@ void CUIChatInputBox::AddHistory(const char * pszText)
 
 void CUIChatInputBox::MoveHistory(int iDegree)
 {
+#ifndef MU_USE_SDL
 	if (m_HistoryList.empty() == TRUE) return;
 
 	HIMC hIMC = ImmGetContext(m_TextInputBox.GetHandle());
@@ -4173,7 +4204,7 @@ void CUIChatInputBox::MoveHistory(int iDegree)
 		ImmReleaseContext(m_TextInputBox.GetHandle(), hIMC);
 	}
 	else return;
-	
+#endif
 	if (iDegree == 10000)
 	{
 		m_CurrentHistoryLine = m_HistoryList.begin();
@@ -4190,7 +4221,9 @@ void CUIChatInputBox::MoveHistory(int iDegree)
 				if (m_bHistoryMode == TRUE)
 				{
 					SetText(TRUE, m_szTempText, FALSE, NULL);
+#ifndef MU_USE_SDL
 					SendMessage(m_TextInputBox.GetHandle(), EM_SETSEL, ( WPARAM)10000, ( LPARAM)-1);
+#endif
 					m_TextInputBox.m_iCaretBlinkTemp = 0;
 					m_bHistoryMode = FALSE;
 				}
@@ -4216,8 +4249,11 @@ void CUIChatInputBox::MoveHistory(int iDegree)
 		if (m_CurrentHistoryLine == m_HistoryList.end()) --m_CurrentHistoryLine;
 	}
 	SetText(TRUE, *m_CurrentHistoryLine, FALSE, NULL);
+#ifndef MU_USE_SDL
 	SendMessage(m_TextInputBox.GetHandle(), EM_SETSEL, ( WPARAM)10000, ( LPARAM)-1);
+#endif
 	m_TextInputBox.m_iCaretBlinkTemp = 0;
+
 }
 
 void CUIChatInputBox::RemoveHistory(BOOL bClear)
@@ -4614,8 +4650,9 @@ void CSlideHelpMgr::Init()
 	m_NoticeSlide.SetPosition(0, 0);
 	//m_HelpSlide.SetPosition(0, 429);
 	//m_NoticeSlide.SetPosition(0, 429);
-	
+
 	SetTimer( g_hWnd, SLIDEHELP_TIMER, m_iCreateDelay * 1000, 0);
+
 	CreateSlideText();
 }
 

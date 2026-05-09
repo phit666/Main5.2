@@ -48,14 +48,14 @@ CConsoleWindow::CConsoleWindow()
 	m_hWnd = NULL;
 	m_bActiveCloseButton = false;
 
-	m_LimitTimer.SetTimer(12000);	//. 12ÃÊ
+	m_LimitTimer.SetTimer(12000);	//. 12ï¿½ï¿½
 }
 CConsoleWindow::~CConsoleWindow() {}
 
 bool CConsoleWindow::Open(const std::string& title)
 {
 	Close();
-
+#ifdef _TODO
 	if(FALSE == ::AllocConsole())
 		return false;
 
@@ -84,11 +84,12 @@ bool CConsoleWindow::Open(const std::string& title)
 	}
 
 	m_bActiveCloseButton = true;
-
+#endif
 	return true;
 }
 void CConsoleWindow::Close()
 {
+#ifdef _TODO
 	fclose(stdin);
 	fclose(stdout);
 	fclose(stderr);
@@ -96,28 +97,40 @@ void CConsoleWindow::Close()
 	FreeConsole();
 	
 	m_hWnd = NULL;
+#endif
 }
 
 bool CConsoleWindow::SetTitle(const std::string& title)
 {
+#ifdef _TODO
 	if(FALSE == ::SetConsoleTitle(title.c_str()))
 		return false;
+#endif
 	return true;
 }
 const std::string& CConsoleWindow::GetTitle()
 {
+#ifdef _TODO
 	char szConsoleTile[1024] = {0, };
 	::GetConsoleTitle(szConsoleTile, 1024);
 	
 	static std::string s_title = szConsoleTile;
 	return s_title;
+#endif
+	return "";
 }
 
 HWND CConsoleWindow::GetWndHandle() { return m_hWnd; }
 
-bool CConsoleWindow::IsVisible() { return ::IsWindowVisible(GetWndHandle()) ? true : false; }
+bool CConsoleWindow::IsVisible() {
+#ifdef _TODO
+	return ::IsWindowVisible(GetWndHandle()) ? true : false;
+#endif
+	return false;
+}
 void CConsoleWindow::Show(bool bShow)
 {
+#ifdef _TODO
 	if(m_hWnd)
 	{
 		BOOL bResult = FALSE;
@@ -131,10 +144,12 @@ void CConsoleWindow::Show(bool bShow)
 			Sleep(10);
 		}
 	}
+#endif
 }
 
 void CConsoleWindow::ClearScreen()
 {
+#ifdef _TODO
 	/***************************************/
 	// This code is from one of Microsoft's
 	// knowledge base articles, you can find it at 
@@ -163,10 +178,12 @@ void CConsoleWindow::ClearScreen()
 
     /* put the cursor at (0, 0) */ 
     ::SetConsoleCursorPosition( ::GetStdHandle(STD_OUTPUT_HANDLE), coordScreen );
+#endif
 }
 
 WORD CConsoleWindow::GetTextColorIndex(WORD* pwBgColorIndex)
 {
+#ifdef _TODO
 	CONSOLE_SCREEN_BUFFER_INFO ConScreenBufInfo;
 	if(FALSE == ::GetConsoleScreenBufferInfo(::GetStdHandle(STD_OUTPUT_HANDLE), &ConScreenBufInfo))
 		return 0xFFFF;
@@ -177,17 +194,22 @@ WORD CConsoleWindow::GetTextColorIndex(WORD* pwBgColorIndex)
 		*pwBgColorIndex = wTextColorIndex>>4;
 	}
 	return wTextColorIndex;
+#endif
+	return 0;
 }
 void CConsoleWindow::SetTextColor(WORD wTextColorIndex, WORD wBgColorIndex)
 {
+#ifdef _TODO
 	WORD wColorAttr = (wBgColorIndex<<4)&0xF0;
 	wColorAttr |= wTextColorIndex;
 
 	::SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wColorAttr);
+#endif
 }
 
 void CConsoleWindow::ActivateCloseButton(bool bActive)
 {
+#ifdef _TODO
 	if(bActive && (m_hWnd != NULL))
 	{
 		// enable the [x] button if we found our console
@@ -205,11 +227,13 @@ void CConsoleWindow::ActivateCloseButton(bool bActive)
 			m_bActiveCloseButton = false;
 		}
 	}
+#endif
 }
 bool CConsoleWindow::IsActiveCloseButton() const { return m_bActiveCloseButton; }
 
 bool CConsoleWindow::SaveScreenBuffer(const std::string& filename)
 {
+#ifdef _TODO
 	CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */ 
 
 	/* get the number of character cells in the current buffer */ 
@@ -229,7 +253,7 @@ bool CConsoleWindow::SaveScreenBuffer(const std::string& filename)
 	}
 
 	delete [] pbyCharBuffer;
-
+#endif
 	return true;
 }
 
@@ -265,6 +289,7 @@ DWORD CConsoleWindow::Get32ColorFromColorIndex(WORD wColorIndex)
 }
 BOOL CALLBACK CConsoleWindow::EnumChildProc(HWND hWnd, LPARAM lParam)
 {
+#ifdef _TODO
 	CConsoleWindow* pConsoleWnd = (CConsoleWindow*)(lParam);
 	DWORD dwProcessId = 0;
 	if(GetWindowThreadProcessId(hWnd, &dwProcessId) == GetCurrentThreadId() 
@@ -279,5 +304,6 @@ BOOL CALLBACK CConsoleWindow::EnumChildProc(HWND hWnd, LPARAM lParam)
 			return FALSE;
 		}
 	}
+#endif
 	return TRUE;
 }

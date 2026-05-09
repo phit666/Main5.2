@@ -14,40 +14,9 @@
 #include "SocketSystem.h"
 #include "CSChaosCastle.h"
 #include "MapManager.h"
+#include "wt.h"
+
 using namespace SEASON3B;
-
-#ifndef _WIN32
-#include <algorithm>
-
-// Android NDK replacement for Windows IntersectRect
-bool IntersectRect(RECT* lprcDst, const RECT* lprcSrc1, const RECT* lprcSrc2) {
-	if (!lprcDst || !lprcSrc1 || !lprcSrc2) return false;
-
-	// Convert Windows RECT (L,T,R,B) to SDL_Rect (X,Y,W,H)
-	SDL_Rect s1 = { (int)lprcSrc1->left, (int)lprcSrc1->top,
-					(int)(lprcSrc1->right - lprcSrc1->left),
-					(int)(lprcSrc1->bottom - lprcSrc1->top) };
-
-	SDL_Rect s2 = { (int)lprcSrc2->left, (int)lprcSrc2->top,
-					(int)(lprcSrc2->right - lprcSrc2->left),
-					(int)(lprcSrc2->bottom - lprcSrc2->top) };
-
-	SDL_Rect res;
-
-	if (SDL_IntersectRect(&s1, &s2, &res)) {
-		// Convert back to Windows RECT format
-		lprcDst->left   = res.x;
-		lprcDst->top    = res.y;
-		lprcDst->right  = res.x + res.w;
-		lprcDst->bottom = res.y + res.h;
-		return true;
-	}
-
-	// Windows behavior: clear the rect if no intersection
-	lprcDst->left = lprcDst->top = lprcDst->right = lprcDst->bottom = 0;
-	return false;
-}
-#endif
 
 SEASON3B::CNewUIPickedItem::CNewUIPickedItem()
 {

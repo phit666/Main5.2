@@ -8,6 +8,7 @@
 #include "wsctlc.h"
 #include "wsctlc_addon.h"
 #include "mu_gles2_matrix.h"
+#include "wt.h"
 
 #ifndef _WIN32
 #include <sys/socket.h>
@@ -32,6 +33,8 @@ typedef struct
 
 SDL_Window* gSDLWindow = nullptr;
 SDL_GLContext gGLContext = nullptr;
+
+static std::map<uintptr_t, SDL_TimerID> g_ActiveTimers;
 
 bool gIsMixerInit = false;
 
@@ -345,6 +348,45 @@ void MU_CloseBev()
 evutil_socket_t MU_GetFD() {
     return bufferevent_getfd(g_bev);
 }
+
+// The background callback that pushes the event to the main loop
+Uint32 SDL_TimerCallbackWrapper(Uint32 interval, void* param) {
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_USEREVENT;
+    event.user.code = (intptr_t)param; // This is your CHATCONNECT_TIMER ID
+
+    SDL_PushEvent(&event);
+    return interval; // Return interval to keep it recurring
+}
+
+// Wrapper to mimic Windows SetTimer
+uintptr_t MU_SetTimer(void* hWnd, uintptr_t nIDEvent, unsigned int uElapse, void* lpTimerFunc) {
+    // If timer already exists for this ID, kill it first (Windows behavior)
+    if (g_ActiveTimers.count(nIDEvent)) {
+        SDL_RemoveTimer(g_ActiveTimers[nIDEvent]);
+    }
+
+    // Start the SDL timer
+    SDL_TimerID sdlID = SDL_AddTimer(uElapse, SDL_TimerCallbackWrapper, (void*)nIDEvent);
+
+    // Save it to our map
+    g_ActiveTimers[nIDEvent] = sdlID;
+
+    return nIDEvent;
+}
+
+bool MU_KillTimer(void* hWnd, uintptr_t nIDEvent) {
+    auto it = g_ActiveTimers.find(nIDEvent);
+    if (it != g_ActiveTimers.end()) {
+        SDL_RemoveTimer(it->second);
+        g_ActiveTimers.erase(it);
+        return true;
+    }
+    return false;
+}
+
+
 
 bool MU_InitSDL(int width, int height)
 {

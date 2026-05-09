@@ -17,6 +17,7 @@
 #include "UIControls.h"
 #include "ServerListManager.h"
 #include "mu_sdl.h"
+#include "wt.h"
 
 #define	DOCK_EXTENT		10
 

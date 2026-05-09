@@ -63,7 +63,7 @@
 #include "mu_sdl.h"
 #include "mu_socket.h"
 #include "mu_gles2_matrix.h"
-
+#include "wt.h"
 
 
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
@@ -1977,6 +1977,25 @@ void MU_ProcessSDLEvents()
 				break;
 			}
 			break;
+
+			case SDL_USEREVENT:
+
+				switch(e.user.code){
+
+					case CHATCONNECT_TIMER:
+						g_pFriendMenu->SendChatRoomConnectCheck();
+						break;
+					case SLIDEHELP_TIMER:
+						if(g_bWndActive)
+						{
+							if(g_pSlideHelpMgr)
+								g_pSlideHelpMgr->CreateSlideText();
+						}
+						break;
+
+				}
+
+				break;
 
 		case SDL_MOUSEMOTION:
 			MouseX = (float)e.motion.x / g_fScreenRate_x;

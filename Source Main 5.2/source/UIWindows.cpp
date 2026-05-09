@@ -18,6 +18,7 @@
 #include "SummonSystem.h"
 #include "MapManager.h"
 #include "CharacterManager.h"
+#include "wt.h"
 
 extern float g_fScreenRate_x;
 extern float g_fScreenRate_y;
@@ -679,7 +680,7 @@ void CUIWindowMgr::OpenMainWnd(int iPos_x, int iPos_y)
 		{
 			pWindow->SetSize(m_iMainWindowWidth, m_iMainWindowHeight);
 			pWindow->SetBackPosition(m_bIsMainWindowMaximize, m_iMainWindowBackPos_y, m_iMainWindowBackHeight);
-			// À©µµ¿ì ¸ñ·Ï º¹±¸
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			RefreshMainWndChatRoomList();
 			pWindow->Refresh();
 //			((CUIFriendWindow *)pWindow)->SetTabIndex(m_iLastFriendWindowTabIndex);
@@ -1308,18 +1309,18 @@ void CUIChatWindow::Init(const char * pszTitle, DWORD dwParentID)
 	m_TextInputBox.SetOption(UIOPTION_ENTERIMECHKOFF);
 	m_TextInputBox.SetBackColor(0, 0, 0, 0);
 
-//	m_PalListBox.AddText("ÀÌ¸§³×ÀÚ", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§³ËÀÚ", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§¼ö³Ý", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§1ÀÚ", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§2ÀÚ", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§3³Ý", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§4ÀÚ", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§5ÀÚ", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§6³Ý", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§7³Ý", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§8³Ý", 1, 1);
-//	m_PalListBox.AddText("ÀÌ¸§9³Ý", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½1ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½2ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½3ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½4ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½5ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½6ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½7ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½8ï¿½ï¿½", 1, 1);
+//	m_PalListBox.AddText("ï¿½Ì¸ï¿½9ï¿½ï¿½", 1, 1);
 
 	m_ChatListBox.SetParentUIID(GetUIID());
 	m_ChatListBox.SetArrangeType(2, 0, 16);
@@ -1379,7 +1380,7 @@ CWsctlc * CUIChatWindow::GetCurrentSocket()
 	if (pCRSocket != NULL) return &pCRSocket->m_WSClient;
 	else
 	{
-		assert(!"¹æ ¼ÒÄÏ °Ë»ö ½ÇÆÐ!!!");
+		assert(!"ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½ ï¿½ï¿½ï¿½ï¿½!!!");
 		return NULL;
 	}
 }
@@ -2064,7 +2065,7 @@ void CUIPhotoViewer::Init(int iInitType)
 
 	CreateCharacterPointer(&m_PhotoChar, MODEL_PLAYER, ( Hero->PositionX), ( Hero->PositionY), 0);
 	
-	// ÀÌµ¿
+	// ï¿½Ìµï¿½
 	Vector(-300,-300,-300,m_PhotoChar.Object.Position);
 
 	m_bIsInitialized = TRUE;
@@ -2151,7 +2152,7 @@ void CUIPhotoViewer::CopyPlayer()
 		if (CompareItemEqual(&m_PhotoChar.Helper, &Hero->Helper) == FALSE)
 			bChangeHelper = TRUE;
 	}
-	else	// º¯½Å »óÅÂ
+	else	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	{
 
 		if (CompareItemEqual(&m_PhotoChar.BodyPart[BODYPART_HELM], &CharacterMachine->Equipment[EQUIPMENT_HELM],
@@ -2209,7 +2210,7 @@ void CUIPhotoViewer::CopyPlayer()
 			memcpy(&m_PhotoChar.Helper, &Hero->Helper, sizeof(PART_t));
 		}
 	}
-	else	// º¯½Å »óÅÂ
+	else	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	{
 		if (bChangeArmor == TRUE)
 		{
@@ -2270,7 +2271,7 @@ void CUIPhotoViewer::CopyPlayer()
 		case 2:CreateBugSub(MODEL_UNICON  ,m_PhotoChar.Object.Position,&m_PhotoChar.Object,&m_PhotoHelper);break;
 		case 3:CreateBugSub(MODEL_PEGASUS, m_PhotoChar.Object.Position,&m_PhotoChar.Object,&m_PhotoHelper);break;
 		case 4:CreateBugSub(MODEL_DARK_HORSE, m_PhotoChar.Object.Position,&m_PhotoChar.Object,&m_PhotoHelper);break;
-		case 37:	//^ Ææ¸± ÆíÁö °ü·Ã
+		case 37:	//^ ï¿½æ¸± ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if(m_PhotoChar.Helper.Option1 == 0x01)
 			{
 				CreateBugSub(MODEL_FENRIR_BLACK, m_PhotoChar.Object.Position, &m_PhotoChar.Object, &m_PhotoHelper);
@@ -3187,7 +3188,7 @@ BOOL CUILetterReadWindow::HandleMessage()
 	case UI_MESSAGE_YNRETURN:
 		if (m_WorkMessage.m_iParam2 == 1)
 		{
-			// ÆíÁö »èÁ¦
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			SendRequestDeleteLetter(m_LetterHead.m_dwLetterID);
 			g_pWindowMgr->SendUIMessage(UI_MESSAGE_CLOSE, GetUIID(), 0);
 		}
@@ -3289,7 +3290,7 @@ bool TestAlphabeticOrder(const char * pszText1, const char * pszText2, BOOL * pb
 		else return false;
 	}
 	if (pbEqual != NULL) *pbEqual = TRUE;
-	return false;	// ¿ÏÀüÈ÷ µ¿ÀÏ
+	return false;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
 bool FriendListSortByID(const GUILDLIST_TEXT & lhs, const GUILDLIST_TEXT & rhs)
@@ -3505,11 +3506,11 @@ BOOL CUIFriendListTabWindow::HandleMessage()
 					}
 				}
 				break;
-			case 4:		// ÆíÁö¾²±â
+			case 4:		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					char temp[MAX_TEXT_LENGTH + 1];
 					sprintf(temp, GlobalText[1071], g_cdwLetterCost);
-					dwUIID = g_pWindowMgr->AddWindow(UIWNDTYPE_WRITELETTER, 100,100,temp);	// "ÆíÁö¾²±â"
+					dwUIID = g_pWindowMgr->AddWindow(UIWNDTYPE_WRITELETTER, 100,100,temp);	// "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"
 					if (dwUIID == 0) break;
 					if (GetCurrentSelectedFriend() != NULL)
 						((CUILetterWriteWindow *)g_pWindowMgr->GetWindow(dwUIID))->SetMailtoText((const char *)GetCurrentSelectedFriend());
@@ -3601,6 +3602,7 @@ void CUIFriendListTabWindow::RefreshPalList()
 
 BOOL CChatRoomSocketList::AddChatRoomSocket(DWORD dwRoomID, DWORD dwWindowUIID, const char * pszIP)
 {
+#ifdef _TODO
 	DWORD dwSocketID = CreateChatRoomSocketID(dwRoomID);
 	if (dwSocketID == -1) return FALSE;
 
@@ -3622,7 +3624,7 @@ BOOL CChatRoomSocketList::AddChatRoomSocket(DWORD dwRoomID, DWORD dwWindowUIID, 
 	}
 
 	m_ChatRoomSocketMap.insert(std::pair<DWORD, CHATROOM_SOCKET *>(dwRoomID, pCRSocket));
-
+#endif
 	return TRUE;
 }
 
@@ -3674,7 +3676,7 @@ void CChatRoomSocketList::ClearChatRoomSocketList()
 DWORD CChatRoomSocketList::CreateChatRoomSocketID(DWORD dwRoomID)
 {
 //	++m_bCurrectCreateID;
-
+#ifdef _TODO
 	int iWhileCount = 0;
 	while (m_bChatRoomSocketStatus[m_bCurrectCreateID] == TRUE)
 	{
@@ -3690,16 +3692,21 @@ DWORD CChatRoomSocketList::CreateChatRoomSocketID(DWORD dwRoomID)
 	m_bChatRoomSocketStatus[m_bCurrectCreateID] = TRUE;
 	m_ChatRoomSocketStatusMap.insert(std::pair < DWORD, DWORD > (m_bCurrectCreateID, dwRoomID));
 	return m_bCurrectCreateID;
+#endif
+	return 0;
 }
 
 DWORD CChatRoomSocketList::GetChatRoomSocketID(DWORD dwSocketID)
 {
+#ifdef _TODO
 	m_ChatRoomSocketStatusMapIter = m_ChatRoomSocketStatusMap.find(dwSocketID);
 	if (m_ChatRoomSocketStatusMapIter == m_ChatRoomSocketStatusMap.end())
 	{
 		return MCI_SEQ_MAPPER;
 	}
 	else return m_ChatRoomSocketStatusMapIter->second;
+#endif
+	return 0;
 }
 
 CHATROOM_SOCKET * CChatRoomSocketList::GetChatRoomSocketData(DWORD dwRoomID)
@@ -3714,6 +3721,7 @@ CHATROOM_SOCKET * CChatRoomSocketList::GetChatRoomSocketData(DWORD dwRoomID)
 
 void CChatRoomSocketList::ProcessSocketMessage(DWORD dwSocketID, WORD wMessage)
 {
+#ifdef _TODO
 	CHATROOM_SOCKET * pChatroomSocket = GetChatRoomSocketData(GetChatRoomSocketID(dwSocketID));
 	if (pChatroomSocket == NULL) return;
 	CWsctlc * pSocketClient = &pChatroomSocket->m_WSClient;
@@ -3738,6 +3746,7 @@ void CChatRoomSocketList::ProcessSocketMessage(DWORD dwSocketID, WORD wMessage)
 		pSocketClient->Close();
 		break;
 	}
+#endif
 }
 
 void CChatRoomSocketList::ProtocolCompile()
@@ -4277,7 +4286,7 @@ BOOL CUILetterBoxTabWindow::HandleMessage()
 					DWORD dwLetterID = GetCurrentSelectedLetter()->m_dwLetterID;
 					if (g_pWindowMgr->LetterReadCheck(dwLetterID) == FALSE)
 					{
-						// Ä³½Ã
+						// Ä³ï¿½ï¿½
 						if (g_pLetterList->GetLetterText(dwLetterID) == NULL)
 						{
 							SendRequestLetterText(dwLetterID);
@@ -5466,6 +5475,7 @@ void CUIFriendMenu::SetNewMailAlert(BOOL bAlert)
 
 DWORD CUIFriendMenu::CheckChatRoomDuplication(const char * pszTargetName)
 {
+#ifdef _TODO
 	for (m_WindowListIter = m_WindowList.begin(); m_WindowListIter != m_WindowList.end(); ++m_WindowListIter)
 	{
 		int iResult;
@@ -5483,6 +5493,7 @@ DWORD CUIFriendMenu::CheckChatRoomDuplication(const char * pszTargetName)
 			return *m_WindowListIter;
 		}
 	}
+#endif
 	return 0;
 }
 

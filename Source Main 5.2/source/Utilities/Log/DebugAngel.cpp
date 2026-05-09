@@ -8,16 +8,19 @@
 
 void WriteDebugInfoStr( char *lpszFileName, char *lpszToWrite)
 {
+#ifdef _TODO
 	HANDLE hFile = CreateFile( lpszFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS,
 								FILE_ATTRIBUTE_NORMAL, NULL);
 	SetFilePointer( hFile, 0, NULL, FILE_END);
 	DWORD dwNumber;
 	WriteFile( hFile, lpszToWrite, strlen( lpszToWrite), &dwNumber, NULL);
 	CloseHandle( hFile);
+#endif
 }
 
 void DebugAngel_Write( char *lpszFileName, ...)
 {
+#ifdef _TODO
 	char lpszBuffer[1024];
 	va_list va;
 	va_start( va, lpszFileName);
@@ -25,10 +28,12 @@ void DebugAngel_Write( char *lpszFileName, ...)
 	wvsprintf( lpszBuffer, lpszFormat, va);
 	WriteDebugInfoStr( lpszFileName, lpszBuffer);
 	va_end( va);
+#endif
 }
 
 void DebugAngel_HexWrite( char *lpszFileName, void *pBuffer, int iSize)
 {
+#ifdef _TODO
 	HANDLE hFile = CreateFile( lpszFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS,
 								FILE_ATTRIBUTE_NORMAL, NULL);
 	SetFilePointer( hFile, 0, NULL, FILE_END);
@@ -41,7 +46,7 @@ void DebugAngel_HexWrite( char *lpszFileName, void *pBuffer, int iSize)
 		lpszStr[0] = '\0';
 		int iShow = min( iSize - i, 16);
 
-		// Hex Ãâ·Â
+		// Hex ï¿½ï¿½ï¿½
 		for ( int j = 0; j < iShow; j++, pbySeek++)
 		{
 			char lpszTemp[16];
@@ -53,4 +58,5 @@ void DebugAngel_HexWrite( char *lpszFileName, void *pBuffer, int iSize)
 	}
 
 	CloseHandle( hFile);
+#endif
 }

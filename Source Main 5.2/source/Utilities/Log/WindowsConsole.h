@@ -8,6 +8,14 @@
 
 #pragma warning(disable : 4786)
 #include <string>
+#ifndef _WIN32
+#ifndef FOREGROUND_BLUE
+#define FOREGROUND_BLUE      0x0001
+#define FOREGROUND_GREEN     0x0002
+#define FOREGROUND_RED       0x0004
+#define FOREGROUND_INTENSITY 0x0008
+#endif
+#endif
 
 namespace leaf {
 
