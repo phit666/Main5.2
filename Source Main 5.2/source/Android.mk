@@ -12,13 +12,12 @@ include $(PREBUILT_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := main
+LOCAL_SHORT_COMMANDS := true
 
 SDL_PATH := ../SDL
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \
-$(LOCAL_PATH)/../SDL2_image \
 $(LOCAL_PATH)/../SDL2_mixer/include \
-$(LOCAL_PATH)/../SDL2_ttf \
 $(LOCAL_PATH)/common \
 $(LOCAL_PATH)/../libevent/include \
 $(LOCAL_PATH)/../libjpeg-turbo/include \
@@ -377,7 +376,7 @@ LOCAL_CPPFLAGS += \
     -Wno-format-security
 
 
-LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf SDL2_image SDL2_mixer event2 curl
+LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer event2 curl
 LOCAL_STATIC_LIBRARIES := jpeg
 
 include $(BUILD_SHARED_LIBRARY)
