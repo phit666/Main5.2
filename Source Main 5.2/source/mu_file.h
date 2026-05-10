@@ -33,6 +33,9 @@ using MU_FILE = SDL_RWops;
 
 inline MU_FILE* MU_fopen(const char* path, const char* mode)
 {
+    char t[100] = { 0 };
+    sprintf(t, "[SDL-DEBUG] MU_fopen %s", path);
+    OutputDebugStringA(t);
     std::string fixed = MU_NormalizePath(path);
     return SDL_RWFromFile(fixed.c_str(), mode);
 }

@@ -1,9 +1,10 @@
 #include "stdafx.h"
-
-//#include "w_nuklear.h"
-
 #define NK_IMPLEMENTATION
+#ifdef _WIN32
+#include "w_nuklear.h"
+#else
 #include "nuklear.h"
+#endif
 #define NK_SDL_GLES2_IMPLEMENTATION
 #include "nuklear_sdl_gles2.h"
 

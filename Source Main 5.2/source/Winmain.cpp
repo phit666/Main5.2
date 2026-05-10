@@ -114,7 +114,9 @@ int       RandomTable[100];
 
 char TextMu[]       = "mu.exe";
 
-//CErrorReport g_ErrorReport;
+#ifdef _WIN32
+CErrorReport g_ErrorReport;
+#endif
 
 BOOL g_bMinimizedEnabled = FALSE;
 int g_iScreenSaverOldValue = 60*15;
@@ -1525,13 +1527,12 @@ int main(int argc, char* argv[])
 	}
 #endif //ENABLE_FULLSCREEN
 
-#ifdef _WIN32
+#ifdef _TODO
 	delete [] pDevmodes;
+#endif
 
 	g_ErrorReport.Write( "> Screen size = %d x %d.\r\n", WindowWidth, WindowHeight);
-
 	g_hInst = hInstance;
-#endif
 
 #ifdef MU_USE_SDL
 

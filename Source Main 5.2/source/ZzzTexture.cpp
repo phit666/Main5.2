@@ -117,6 +117,43 @@ void SaveImage(int HeaderSize,char *Ext,char *filename,BYTE *PakBuffer,int Size)
 	}
 }
 
+void MU_jpeg_sdl_src(j_decompress_ptr cinfo, SDL_RWops* rw)
+{
+	MU_JpegSDLSource* src;
+
+	if (cinfo->src == NULL)
+	{
+		cinfo->src = (jpeg_source_mgr*)
+			(*cinfo->mem->alloc_small)(
+				(j_common_ptr)cinfo,
+				JPOOL_PERMANENT,
+				sizeof(MU_JpegSDLSource)
+				);
+
+		memset(cinfo->src, 0, sizeof(MU_JpegSDLSource)); // important
+	}
+
+	src = (MU_JpegSDLSource*)cinfo->src;
+
+	src->rw = rw;
+
+	src->buffer = (JOCTET*)
+		(*cinfo->mem->alloc_small)(
+			(j_common_ptr)cinfo,
+			JPOOL_PERMANENT,
+			MU_JPEG_SRC_BUF_SIZE * sizeof(JOCTET)
+			);
+
+	src->pub.init_source = MU_JpegInitSource;
+	src->pub.fill_input_buffer = MU_JpegFillInputBuffer;
+	src->pub.skip_input_data = MU_JpegSkipInputData;
+	src->pub.resync_to_restart = jpeg_resync_to_restart;
+	src->pub.term_source = MU_JpegTermSource;
+
+	src->pub.bytes_in_buffer = 0;
+	src->pub.next_input_byte = NULL;
+}
+
 bool OpenJpegBuffer(char *filename,float *BufferFloat)
 {
 	struct jpeg_decompress_struct cinfo;
@@ -150,7 +187,7 @@ bool OpenJpegBuffer(char *filename,float *BufferFloat)
 		SendMessage(g_hWnd,WM_DESTROY,0,0);
 		return false;
 	}
-
+	
 	MU_fseek(infile,24,SEEK_SET);
 	
 	cinfo.err = jpeg_std_error(&jerr.pub);
@@ -162,8 +199,17 @@ bool OpenJpegBuffer(char *filename,float *BufferFloat)
 		return false;
 	}
 	jpeg_create_decompress(&cinfo);
+
+	char t[100] = { 0 };
+	sprintf(t, "[SDL-DEBUG] MU_jpeg_stdio_src %s ...", filename);
+	OutputDebugStringA(t);
+
 	
-	MU_jpeg_stdio_src(&cinfo, infile);
+	MU_jpeg_sdl_src(&cinfo, infile);
+
+	sprintf(t, "[SDL-DEBUG] MU_jpeg_stdio_src %s ...done", filename);
+	OutputDebugStringA(t);
+
 	
 	(void) jpeg_read_header(&cinfo, TRUE);
 	
