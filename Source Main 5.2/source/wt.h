@@ -200,5 +200,10 @@ inline int _ultoa_s(unsigned long value, char* buffer, int radix) {
 }
 
 
+#ifndef strnicmp
+#define strnicmp strncasecmp
+#endif
+
+
 #endif
 #endif //MU_MOBILE_WT_H

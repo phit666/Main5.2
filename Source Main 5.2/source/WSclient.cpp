@@ -76,6 +76,7 @@
 #endif //PBG_ADD_NEWCHAR_MONK_SKILL
 #include "mu_socket.h"
 #include "mu_sdl.h"
+#include "wt.h"
 
 #define MAX_DEBUG_MAX 10
 
@@ -343,7 +344,7 @@ void ReceiveServerList( BYTE *ReceiveBuffer )
 		
 	g_ConsoleDebug->Write(MCD_RECEIVE, "0xF4 [ReceiveServerList]");
 }
-void ReceiveServerConnect(BYTE* ReceiveBuffer) //Recebe informação do ConnectServer sobre a sala e envia a conexão para a sala escolhida
+void ReceiveServerConnect(BYTE* ReceiveBuffer) //Recebe informaï¿½ï¿½o do ConnectServer sobre a sala e envia a conexï¿½o para a sala escolhida
 {
 	LPPRECEIVE_SERVER_ADDRESS Data = (LPPRECEIVE_SERVER_ADDRESS)ReceiveBuffer;
 	char IP[16];
@@ -417,7 +418,8 @@ void ReceiveJoinServer( BYTE *ReceiveBuffer )
 	}
 	
 	g_GuildCache.Reset();
-	
+
+#ifdef _WIN32
 #if defined _DEBUG || defined FOR_WORK
 	if ( Data2->Result == 0x01)
 	{
@@ -432,6 +434,7 @@ void ReceiveJoinServer( BYTE *ReceiveBuffer )
 			#endif
 		}
 	}
+#endif
 #endif
 }
 
@@ -1584,7 +1587,7 @@ void ReceiveChatKey( BYTE *ReceiveBuffer )
 	int Key = ((int)(Data->KeyH)<<8) + Data->KeyL;
 	int Index = FindCharacterIndex(Key);
 	
-	if( Hero->GuildStatus == G_MASTER && !strcmp( CharactersClient[Index].ID, "±æµå ¸¶½ºÅÍ" ) )
+	if( Hero->GuildStatus == G_MASTER && !strcmp( CharactersClient[Index].ID, "ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" ) )
 	{
 		g_pNewUISystem->Show(SEASON3B::INTERFACE_NPCGUILDMASTER);
 		
@@ -3543,7 +3546,7 @@ void ReceiveMagicFinish( BYTE *ReceiveBuffer )
 	case AT_SKILL_BLAST_FREEZE:
 		UnRegisterBuff( eDeBuff_Freeze, o);
 		break;
-        //  ¸ó½ºÅÍ.
+        //  ï¿½ï¿½ï¿½ï¿½.
     case AT_SKILL_MONSTER_MAGIC_DEF:
         SetActionDestroy_Def ( o );
 		UnRegisterBuff( eBuff_Defense, o);
@@ -3980,7 +3983,7 @@ BOOL ReceiveMagic(BYTE *ReceiveBuffer,int Size, BOOL bEncrypted)
 				PlayBuffer(SOUND_SKILL_SWORD4);
 				break;
 				
-			case AT_SKILL_SWORD5://º£±â
+			case AT_SKILL_SWORD5://ï¿½ï¿½ï¿½ï¿½
 				if(sc->SwordCount%2==0)
 				{
 					SetAction(so,PLAYER_ATTACK_SKILL_SWORD1+MagicNumber-AT_SKILL_SWORD1);
@@ -4005,7 +4008,7 @@ BOOL ReceiveMagic(BYTE *ReceiveBuffer,int Size, BOOL bEncrypted)
 				PlayBuffer( SOUND_SKILL_SWORD4 );
 				break;
 				
-			case AT_SKILL_SPEAR:	// Ã¢Âî¸£±â
+			case AT_SKILL_SPEAR:	// Ã¢ï¿½î¸£ï¿½ï¿½
 				if(sc->Helper.Type == MODEL_HELPER+37)
 					SetAction(so, PLAYER_FENRIR_ATTACK_SPEAR);
 				else
@@ -5871,9 +5874,9 @@ BOOL ReceiveTalk(BYTE *ReceiveBuffer, BOOL bEncrypted)
 		g_MixRecipeMgr.SetMixType(SEASON3A::MIXTYPE_GOBLIN_NORMAL);
 		g_pNewUISystem->Show(SEASON3B::INTERFACE_MIXINVENTORY);
 		//BYTE *pbyChaosRate = ( &Data->Value) + 1;
-		//int iDummyRate[6];	// ±¤ÀåÇ¥ È®·üÀ» ¼­¹ö¿¡¼­ ¹ÞÀ¸³ª »ç¿ëÇÏÁö ¾Ê°í ¹ö¸²
+		//int iDummyRate[6];	// ï¿½ï¿½ï¿½ï¿½Ç¥ È®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ï¿½
 		//for ( int i = 0; i < 6; ++i)
-		//	iDummyRate[i] = ( int)pbyChaosRate[i];	// ±¤ÀåÇ¥ È®·üÀ» ¼­¹ö¿¡¼­ ¹ÞÀ¸³ª »ç¿ëÇÏÁö ¾Ê°í ¹ö¸²(½ºÅ©¸³Æ®»ç¿ë)
+		//	iDummyRate[i] = ( int)pbyChaosRate[i];	// ï¿½ï¿½ï¿½ï¿½Ç¥ È®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½ï¿½ï¿½)
 		break;
 		
 	case 4:
@@ -6636,7 +6639,11 @@ void ReceiveGuild( BYTE *ReceiveBuffer )
 	GuildPlayerKey = ((int)(Data->KeyH )<<8) + Data->KeyL;
 	
 	SEASON3B::CNewUICommonMessageBox* pMsgBox;
-	SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGuildRequestMsgBoxLayout), &pMsgBox);
+	//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CGuildRequestMsgBoxLayout), &pMsgBox);
+
+	SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CGuildRequestMsgBoxLayout> container;
+	SEASON3B::CreateMessageBox(container, &pMsgBox);
+
 	pMsgBox->AddMsg(CharactersClient[FindCharacterIndex(GuildPlayerKey)].ID);
 	pMsgBox->AddMsg(GlobalText[429]);
 }
@@ -6995,7 +7002,7 @@ void ReceiveGuildInfo( BYTE *ReceiveBuffer )
 	int Index = g_GuildCache.SetGuildMark( Data->GuildKey, Data->UnionName, Data->GuildName, Data->Mark );
 }
 
-// ±æµåÁ÷Ã¥À» ÀÓ¸í/º¯°æ/ÇØÁ¦ °á°ú
+// ï¿½ï¿½ï¿½ï¿½ï¿½Ã¥ï¿½ï¿½ ï¿½Ó¸ï¿½/ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 void ReceiveGuildAssign( BYTE *ReceiveBuffer )
 {
 	char szTemp[MAX_GLOBAL_TEXT_STRING] = "Invalid GuildAssign";
@@ -7514,7 +7521,9 @@ void ReceiveServerCommand( BYTE *ReceiveBuffer )
 	case 5:
 		{
 			SEASON3B::CDialogMsgBox* pMsgBox = NULL;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDialogMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDialogMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CDialogMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			if(pMsgBox)
 			{
 				pMsgBox->AddMsg(g_DialogScript[Data->Cmd2].m_lpszText);
@@ -7580,13 +7589,19 @@ void ReceiveServerCommand( BYTE *ReceiveBuffer )
 
 			switch(Data->Cmd2)
 			{
-			case 0:
-				SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CSantaTownSantaMsgBoxLayout), &pMsgBox);
+			case 0: {
+				//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CSantaTownSantaMsgBoxLayout), &pMsgBox);
+				SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CSantaTownSantaMsgBoxLayout> container;
+				SEASON3B::CreateMessageBox(container, &pMsgBox);
 				pMsgBox->AddMsg(GlobalText[2588]);
+			}
 				break;
-			case 1:
-				SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CSantaTownSantaMsgBoxLayout), &pMsgBox);
+			case 1: {
+				//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CSantaTownSantaMsgBoxLayout), &pMsgBox);
+				SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CSantaTownSantaMsgBoxLayout> container;
+				SEASON3B::CreateMessageBox(container, &pMsgBox);
 				pMsgBox->AddMsg(GlobalText[2585]);
+			}
 				break;
 			case 2:
 				SEASON3B::CreateOkMessageBox(GlobalText[2587]);
@@ -7688,7 +7703,7 @@ void ReceiveMix( BYTE *ReceiveBuffer )
 				g_pChatListBox->AddText("", szText, SEASON3B::TYPE_ERROR_MESSAGE);
 				break;
 				// 			case SEASON3A::MIXTYPE_TRAINER:
-				// 				unicode::_sprintf(szText, GlobalText[1208]);	// ºÎÈ° ½ÇÆÐ
+				// 				unicode::_sprintf(szText, GlobalText[1208]);	// ï¿½ï¿½È° ï¿½ï¿½ï¿½ï¿½
 				// 				g_pChatListBox->AddText("", szText, SEASON3B::TYPE_ERROR_MESSAGE);
 				// 				break;
 			case SEASON3A::MIXTYPE_OSBOURNE:
@@ -8100,7 +8115,9 @@ void ReceiveEventZoneOpenTime( BYTE *ReceiveBuffer )
 			GlobalText.Add(1155, szOpenTime2);
 			
 			SEASON3B::CNewUICommonMessageBox* pMsgBox = NULL;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CChaosCastleTimeCheckMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CChaosCastleTimeCheckMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CChaosCastleTimeCheckMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			if(pMsgBox)
 			{
 				pMsgBox->AddMsg(GlobalText[1154]);
@@ -8123,7 +8140,9 @@ void ReceiveEventZoneOpenTime( BYTE *ReceiveBuffer )
 			GlobalText.Add(1154, szOpenTime);
 					
 			SEASON3B::CNewUICommonMessageBox* pMsgBox = NULL;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CChaosCastleTimeCheckMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CChaosCastleTimeCheckMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CChaosCastleTimeCheckMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			if(pMsgBox)
 			{
 				pMsgBox->AddMsg(GlobalText[1154]);
@@ -8450,7 +8469,11 @@ void ReceiveDuelResult(BYTE* ReceiveBuffer)
 	g_pChatListBox->AddText("", szMessage, SEASON3B::TYPE_SYSTEM_MESSAGE);
 
 	SEASON3B::CDuelResultMsgBox* lpMsgBox = NULL;
-	SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDuelResultMsgBoxLayout), &lpMsgBox);
+	//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDuelResultMsgBoxLayout), &lpMsgBox);
+
+	SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CDuelResultMsgBoxLayout> container;
+	SEASON3B::CreateMessageBox(container, &lpMsgBox);
+
 	if(lpMsgBox)
 	{
 		lpMsgBox->SetIDs(Data->szWinner, Data->szLoser);
@@ -8832,7 +8855,7 @@ void ReceiveFriendList(BYTE* ReceiveBuffer)
 	g_pFriendList->Sort(1);
 	g_pWindowMgr->RefreshMainWndPalList();
 	
-	// Ã¤ÆÃ ¼­¹ö »ì¾Æ³²
+	// Ã¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ³ï¿½
 	g_pWindowMgr->SetServerEnable(TRUE);
 	if (g_iChatInputType == 0) SendRequestChangeState(2);
 	
@@ -9099,7 +9122,7 @@ void ReceiveLetterText(BYTE* ReceiveBuffer)
 	pWindow->SetLetter(pLetter, szText);
 	g_pWindowMgr->SetLetterReadWindow(pLetter->m_dwLetterID, dwUIID);
 	
-	if (strnicmp(pLetter->m_szID, "webzen", MAX_ID_SIZE) == 0)
+	if (strnicmp(pLetter->m_szID, "kakacute", MAX_ID_SIZE) == 0)
 	{
 		pWindow->m_Photo.SetWebzenMail(TRUE);
 	}
@@ -10742,7 +10765,9 @@ void ReceiveCrownSwitchState ( BYTE* ReceiveBuffer )
 			unicode::t_char strText[256];
 			
 			SEASON3B::CProgressMsgBox* pMsgBox = NULL;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCrownSwitchOtherPushLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CCrownSwitchOtherPushLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CCrownSwitchOtherPushLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			if(pMsgBox)
 			{
 				if(pCha != NULL && pCha->ID != NULL)
@@ -10781,7 +10806,9 @@ void ReceiveCrownRegist ( BYTE* ReceiveBuffer )
     case 0:
 		{
 			SEASON3B::CProgressMsgBox* pMsgBox = NULL;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CSealRegisterStartLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CSealRegisterStartLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CSealRegisterStartLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			if(pMsgBox)
 			{
 				unicode::t_char strText[256];
@@ -11587,10 +11614,11 @@ void RecevieRaklionUserMonsterCount(BYTE* ReceiveBuffer)
 
 void ReceiveCheckSumRequest( BYTE *ReceiveBuffer)
 {
+#ifdef _TODO
 	LPPHEADER_DEFAULT_WORD Data = (LPPHEADER_DEFAULT_WORD)ReceiveBuffer;
 	DWORD dwCheckSum = GetCheckSum( Data->Value);
 	SendCheckSum( dwCheckSum );	
-	
+#endif
 	g_ConsoleDebug->Write(MCD_RECEIVE, "0x03 [ReceiveCheckSumRequest]");
 }
 
@@ -11852,7 +11880,9 @@ bool ReceiveDoppelGangerState(BYTE* ReceiveBuffer)
 			g_pNewUISystem->Show(SEASON3B::INTERFACE_DOPPELGANGER_FRAME);
 
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CDoppelGangerMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2763], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 			pMsgBox->AddMsg(" ");
 			pMsgBox->AddMsg(GlobalText[2764], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
@@ -11915,7 +11945,9 @@ bool ReceiveDoppelGangerResult(BYTE* ReceiveBuffer)
 			g_pDoppelGangerFrame->SetRemainTime(0);
 
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CDoppelGangerMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2769], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 			pMsgBox->AddMsg(" ");
 			pMsgBox->AddMsg(GlobalText[2770], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);

@@ -4,13 +4,14 @@
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
-
+#ifdef _WIN32
 #include <DbgHelp.h>
-
+#endif
 typedef bool (*LPCALLBACK) (_EXCEPTION_POINTERS*);
 
 namespace Crash
 {
+#ifdef _WIN32
 	BOOL Install(
 		LPCALLBACK lpfnCallbackBefore,
 		LPCALLBACK lpfnCallbackAfter,
@@ -29,8 +30,10 @@ namespace Crash
 		LPCTSTR szDumpfile = NULL,
 		bool bWriteCrashLog = false);
 	void Uninstall();
+
 	BOOL AddFile(LPCTSTR szFilename);
 	LONG HandleException(PVOID pExceptionAddress, DWORD dwExceptionCode);
 	LONG HandleExceptionWithInfo(PEXCEPTION_POINTERS pExInfo);
+#endif
 }
 #endif;

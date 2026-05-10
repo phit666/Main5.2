@@ -6,7 +6,9 @@
 #define WIN32_EXTRA_LEAN
 
 #include <locale.h>
+#ifdef _WIN32
 #include <zmouse.h>
+#endif
 #include "UIWindows.h"
 #include "UIManager.h"
 #include "ZzzOpenglUtil.h"
@@ -23,7 +25,9 @@
 #include "DSPlaySound.h"
 #include "wsclientinline.h"
 #include "Resource.h"
+#ifdef _WIN32
 #include <imm.h>
+#endif
 #include "zzzpath.h"
 #include "Nprotect.h"
 #include "Local.h"
@@ -55,16 +59,16 @@
 #include "w_MapHeaders.h"
 
 #include "w_PetProcess.h"
-
+#ifdef _WIN32
 #include <ThemidaInclude.h>
-
+#endif
 #include "MultiLanguage.h"
 
 #include "mu_sdl.h"
 #include "mu_socket.h"
 #include "mu_gles2_matrix.h"
 #include "wt.h"
-
+#include "wzAudio.h"
 
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
@@ -124,8 +128,10 @@ BOOL g_bUseWindowMode = TRUE;
 
 char Mp3FileName[256];
 
+#ifdef _WIN32
 #pragma comment(lib, "wzAudio.lib")
 #include <wzAudio.h>
+#endif
 
 void StopMp3(char *Name, BOOL bEnforce)
 {
@@ -208,10 +214,17 @@ GLvoid KillGLWindow(GLvoid)
 		g_hDC=NULL;
 	}
 #endif
+
+#ifndef _WIN32
+	g_bUseWindowMode = FALSE;
+#endif
+
 #if (defined WINDOWMODE)
 	if (g_bUseWindowMode == FALSE)
 	{
+#ifdef _WIN32
 		ChangeDisplaySettings(NULL,0);
+#endif
 		ShowCursor(TRUE);
 	}
 #else
@@ -270,6 +283,7 @@ HANDLE g_hMainExe = INVALID_HANDLE_VALUE;
 
 BOOL OpenMainExe( void)
 {
+#ifdef _WIN32
 #ifdef _DEBUG
 	return ( TRUE);
 #endif
@@ -280,11 +294,15 @@ BOOL OpenMainExe( void)
 	g_hMainExe = CreateFile( ( char*)lpszFile, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL, 0);
 	
 	return ( INVALID_HANDLE_VALUE != g_hMainExe);
+#endif
+	return 0;
 }
 
 void CloseMainExe( void)
 {
+#ifdef _WIN32
 	CloseHandle( g_hMainExe);
+#endif
 }
 
 WORD DecryptCheckSumKey( WORD wSource)
@@ -327,6 +345,7 @@ DWORD GenerateCheckSum( BYTE *pbyBuffer, DWORD dwSize, WORD wKey)
 
 DWORD GetCheckSum( WORD wKey)
 {
+#ifdef _TODO
 	wKey = DecryptCheckSumKey( wKey);
 
 	char lpszFile[MAX_PATH];
@@ -349,11 +368,14 @@ DWORD GetCheckSum( WORD wKey)
 	delete [] pbyBuffer;
 	
 	return (dwCheckSum);
+#endif
+	return 0;
 }
 
 
 BOOL GetFileVersion( char *lpszFileName, WORD *pwVersion)
 {
+#ifdef _TODO
 	DWORD dwHandle;
 	DWORD dwLen = GetFileVersionInfoSize( lpszFileName, &dwHandle);
 	if ( dwLen <= 0)
@@ -382,6 +404,7 @@ BOOL GetFileVersion( char *lpszFileName, WORD *pwVersion)
 	pwVersion[3] = LOWORD( pffi->dwFileVersionLS);
 
 	delete [] pbyData;
+#endif
 	return ( TRUE);
 }
 
@@ -389,13 +412,14 @@ extern PATH     *path;
 
 void DestroyWindow()
 {
+#ifdef _WIN32
 	//. save volume level
 	leaf::CRegKey regkey;
 	regkey.SetKey(leaf::CRegKey::_HKEY_CURRENT_USER, "SOFTWARE\\Webzen\\Mu\\Config");
 	regkey.WriteDword("VolumeLevel", g_pOption->GetVolumeLevel());
-
+#endif
 	CUIMng::Instance().Release();
-
+#ifdef _WIN32
 #ifdef MOVIE_DIRECTSHOW
 	if(g_pMovieScene)
 	{
@@ -415,7 +439,7 @@ void DestroyWindow()
 
 	if(g_hFixFont)
 		::DeleteObject((HGDIOBJ)g_hFixFont);
-	
+#endif
 	ReleaseCharacters();
 
     if ( path!=NULL )
@@ -477,10 +501,12 @@ void DestroyWindow()
 	BoostRest( g_petProcess );
 
 	g_ErrorReport.Write( "Destroy" );
-	 
+
+#ifdef _WIN32
 	HWND shWnd = FindWindow(NULL, "MuPlayer");
 	if(shWnd)
 		SendMessage(shWnd, WM_DESTROY, 0, 0);
+#endif
 }
 void DestroySound()
 {
@@ -508,6 +534,7 @@ void MainScene(HDC hDC);
 
 LONG FAR PASCAL WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
+#ifdef _WIN32
     switch (msg)
     {
 	case WM_SYSKEYDOWN:
@@ -903,11 +930,13 @@ bool CreateOpenglWindow()
 	SetForegroundWindow(g_hWnd);
 	SetFocus(g_hWnd);
 #endif
+#endif
 	return true;
 }
 
 HWND StartWindow(HINSTANCE hCurrentInst,int nCmdShow)
 {
+#ifdef _WIN32
     char *windowName = "MU";
 
     WNDCLASS wndClass;
@@ -1026,6 +1055,8 @@ HWND StartWindow(HINSTANCE hCurrentInst,int nCmdShow)
 #endif //ENABLE_FULLSCREEN
 	
     return hWnd;
+#endif
+	return 0;
 }
 
 char m_ID[11];
@@ -1038,10 +1069,11 @@ int	m_nColorDepth;
 int	g_iRenderTextType = 0;
 
 char g_aszMLSelection[MAX_LANGUAGE_NAME_LENGTH] = {'\0'};
-std::string g_strSelectedML = "";
+std::string g_strSelectedML = "ENG";
 
 BOOL OpenInitFile()
 {
+#ifdef _TODO
 	//char szTemp[50];
 	char szIniFilePath[256+20]="";
 	char szCurrentDir[256];
@@ -1090,7 +1122,7 @@ BOOL OpenInitFile()
 	}
 
 //#ifdef _DEBUG
-
+#endif
 	m_ID[0] = '\0';
 	m_SoundOnOff = 1;
 	m_MusicOnOff = 1;
@@ -1216,6 +1248,7 @@ BOOL Util_CheckOption( char *lpszCommandLine, unsigned char cOption, char *lpszS
 
 BOOL UpdateFile( char *lpszOld, char *lpszNew)
 {
+#ifdef _WIN32
 	SetFileAttributes(lpszOld, FILE_ATTRIBUTE_NORMAL);
 	SetFileAttributes(lpszNew, FILE_ATTRIBUTE_NORMAL);
 
@@ -1228,13 +1261,17 @@ BOOL UpdateFile( char *lpszOld, char *lpszNew)
 		}
 	}
 	g_ErrorReport.Write("%s to %s CopyFile Error : %d\r\n", lpszNew, lpszOld, GetLastError());
+#endif
 	return ( FALSE);
 }
 
+#ifdef _WIN32
 #include <tlhelp32.h>
+#endif
 
 BOOL KillExeProcess( char *lpszExe)
 {
+#ifdef _WIN32
 	HANDLE hProcessSnap = NULL; 
     BOOL bRet = FALSE; 
     PROCESSENTRY32 pe32 = { 0 }; 
@@ -1277,8 +1314,11 @@ BOOL KillExeProcess( char *lpszExe)
     CloseHandle (hProcessSnap);
 
 	return bRet;
+#endif
+	return 0;
 }
 
+#ifdef _WIN32
 char g_lpszCmdURL[50];
 BOOL GetConnectServerInfo( PSTR szCmdLine, char *lpszURL, WORD *pwPort)
 {
@@ -1313,7 +1353,7 @@ BOOL GetConnectServerInfo( PSTR szCmdLine, char *lpszURL, WORD *pwPort)
 
 	return ( TRUE);
 }
-
+#endif
 
 extern int TimeRemain;
 BOOL g_bInactiveTimeChecked = FALSE;
@@ -1355,6 +1395,7 @@ int main(int argc, char* argv[])
 
 	char lpszExeVersion[256] = "unknown";
 
+#ifdef _WIN32
 	char *lpszCommandLine = GetCommandLine();
 	char lpszFile[MAX_PATH];
 	WORD wVersion[4] = { 0,};
@@ -1375,17 +1416,17 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-
+#endif
 	//OutputDebugStringA("[SDL-DEBUG] g_ErrorReport.Write");
 
 	g_ErrorReport.Write( "\r\n");
 	g_ErrorReport.WriteLogBegin();
 	g_ErrorReport.AddSeparator();
-	g_ErrorReport.Write( "Mu online %s (%s) executed. (%d.%d.%d.%d)\r\n", lpszExeVersion, "Eng", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
+	//g_ErrorReport.Write( "Mu online %s (%s) executed. (%d.%d.%d.%d)\r\n", lpszExeVersion, "Eng", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
 
 	//OutputDebugStringA("[SDL-DEBUG] g_ConsoleDebug->Write");
 
-	g_ConsoleDebug->Write(MCD_NORMAL, "Mu Online (Version: %d.%d.%d.%d)", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
+	//g_ConsoleDebug->Write(MCD_NORMAL, "Mu Online (Version: %d.%d.%d.%d)", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
 
 	g_ErrorReport.WriteCurrentTime();
 	ER_SystemInfo si;
@@ -1440,6 +1481,7 @@ int main(int argc, char* argv[])
 	if (g_iChatInputType == 1)
 		ShowCursor(FALSE);
 
+#ifdef _TODO
 	g_ErrorReport.Write( "> Enum display settings.\r\n");
 	DEVMODE DevMode;
 	DEVMODE* pDevmodes;
@@ -1462,6 +1504,9 @@ int main(int argc, char* argv[])
 			dwBitsPerPel = 32; break;
 		}
 	}
+#else
+	DWORD dwBitsPerPel = 32;
+#endif
 
 #ifdef ENABLE_FULLSCREEN
 #if defined USER_WINDOW_MODE || (defined WINDOWMODE)
@@ -1480,12 +1525,13 @@ int main(int argc, char* argv[])
 	}
 #endif //ENABLE_FULLSCREEN
 
+#ifdef _WIN32
 	delete [] pDevmodes;
 
 	g_ErrorReport.Write( "> Screen size = %d x %d.\r\n", WindowWidth, WindowHeight);
 
 	g_hInst = hInstance;
-
+#endif
 
 #ifdef MU_USE_SDL
 
@@ -1574,7 +1620,7 @@ int main(int argc, char* argv[])
 		SetEffectVolumeLevel(g_pOption->GetVolumeLevel());
 	}
 
-#ifndef MU_USE_SDL
+#ifdef _TODO
 	SetTimer(g_hWnd, HACK_TIMER, 20*1000, NULL);
 #endif
 
@@ -1644,13 +1690,17 @@ int main(int argc, char* argv[])
 		g_pSinglePasswdInputBox->SetFont(g_hFont);
 
 		g_bIMEBlock = FALSE;
+
+#ifdef _WIN32
 		HIMC  hIMC = ImmGetContext(g_hWnd);
 		ImmSetConversionStatus(hIMC, IME_CMODE_ALPHANUMERIC, IME_SMODE_NONE );
 		ImmReleaseContext(g_hWnd, hIMC);
 		SaveIMEStatus();
+#endif
 		g_bIMEBlock = TRUE;
 	}
 #if (defined WINDOWMODE)
+#ifdef _WIN32
 	if (g_bUseWindowMode == FALSE)
 	{
 		int nOldVal;
@@ -1658,6 +1708,7 @@ int main(int argc, char* argv[])
 		SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &g_iScreenSaverOldValue, 0);
 		SystemParametersInfo(SPI_SETSCREENSAVETIMEOUT, 300*60, NULL, 0);
 	}
+#endif
 #else
 #ifdef NDEBUG
 #ifndef FOR_WORK
