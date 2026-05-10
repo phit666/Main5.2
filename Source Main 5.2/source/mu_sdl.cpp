@@ -1,8 +1,12 @@
 #include "stdafx.h"
+
+//#include "w_nuklear.h"
+
 #define NK_IMPLEMENTATION
-#include "w_nuklear.h"
+#include "nuklear.h"
 #define NK_SDL_GLES2_IMPLEMENTATION
 #include "nuklear_sdl_gles2.h"
+
 #include "mu_sdl.h"
 #include "WSclient.h"
 #include "wsctlc.h"

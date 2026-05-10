@@ -17,9 +17,10 @@
 #include "UIControls.h"
 #include "NewUISystem.h"
 #include "SkillManager.h"
+#include "wt.h"
 
-extern	char TextList[30][100];
-extern	int  TextListColor[30];
+//extern	char TextList[30][100];
+//extern	int  TextListColor[30];
 extern	int  TextBold[30];
 extern float g_fScreenRate_x;
 extern float g_fScreenRate_y;

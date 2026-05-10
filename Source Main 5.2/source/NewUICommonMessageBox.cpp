@@ -22,12 +22,14 @@
 #include "GambleSystem.h"
 #include "CharacterManager.h"
 #include "SkillManager.h"
+#include "wt.h"
+
+extern int g_iCancelSkillTarget;
 
 using namespace SEASON3B;
 
 extern int DoBreakUpGuildAction_New( POPUP_RESULT Result );
-extern float g_fScreenRate_x;
-extern float g_fScreenRate_y;
+
 extern int DeleteGuildIndex;
 extern char DeleteID[];
 extern int DeleteIndex,AppointStatus;
@@ -1605,7 +1607,7 @@ int SEASON3B::CFenrirRepairMsgBox::GetTargetIndex()
 
 bool SEASON3B::CInfinityArrowCancelMsgBoxLayout::SetLayout()
 {
-	extern int g_iCancelSkillTarget;
+
 	CNewUICommonMessageBox* pMsgBox = GetMsgBox();
 	if(0 == pMsgBox)
 		return false;
@@ -1624,7 +1626,7 @@ bool SEASON3B::CInfinityArrowCancelMsgBoxLayout::SetLayout()
 
 CALLBACK_RESULT SEASON3B::CInfinityArrowCancelMsgBoxLayout::OkBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
-	extern int g_iCancelSkillTarget;
+	//extern int g_iCancelSkillTarget;
 	SendRequestCancelMagic(g_iCancelSkillTarget, HeroKey);
 	g_iCancelSkillTarget = 0;
 	
@@ -1636,7 +1638,7 @@ CALLBACK_RESULT SEASON3B::CInfinityArrowCancelMsgBoxLayout::OkBtnDown(class CNew
 
 CALLBACK_RESULT SEASON3B::CInfinityArrowCancelMsgBoxLayout::CancelBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
-	extern int g_iCancelSkillTarget;
+	//extern int g_iCancelSkillTarget;
 	g_iCancelSkillTarget = 0;
 
 	PlayBuffer(SOUND_CLICK01);
@@ -1647,7 +1649,7 @@ CALLBACK_RESULT SEASON3B::CInfinityArrowCancelMsgBoxLayout::CancelBtnDown(class 
 
 bool SEASON3B::CBuffSwellOfMPCancelMsgBoxLayOut::SetLayout()
 {
-	extern int g_iCancelSkillTarget;
+	//extern int g_iCancelSkillTarget;
 	CNewUICommonMessageBox* pMsgBox = GetMsgBox();
 	if(0 == pMsgBox)
 		return false;
@@ -1668,7 +1670,7 @@ bool SEASON3B::CBuffSwellOfMPCancelMsgBoxLayOut::SetLayout()
 
 CALLBACK_RESULT SEASON3B::CBuffSwellOfMPCancelMsgBoxLayOut::OkBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
-	extern int g_iCancelSkillTarget;
+	//extern int g_iCancelSkillTarget;
 	SendRequestCancelMagic(g_iCancelSkillTarget, HeroKey);
 	g_iCancelSkillTarget = 0;
 	
@@ -1680,7 +1682,7 @@ CALLBACK_RESULT SEASON3B::CBuffSwellOfMPCancelMsgBoxLayOut::OkBtnDown(class CNew
 
 CALLBACK_RESULT SEASON3B::CBuffSwellOfMPCancelMsgBoxLayOut::CancelBtnDown(class CNewUIMessageBoxBase* pOwner, const leaf::xstreambuf& xParam)
 {
-	extern int g_iCancelSkillTarget;
+	//extern int g_iCancelSkillTarget;
 	g_iCancelSkillTarget = 0;
 
 	PlayBuffer(SOUND_CLICK01);

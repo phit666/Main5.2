@@ -6,7 +6,9 @@
 #include "NewUISystem.h"
 #include "ZzzInventory.h"
 #include "DSPlaySound.h"
+#include "wt.h"
 
+extern int TextBold[30];
 
 using namespace SEASON3B;
 
@@ -96,9 +98,9 @@ bool SEASON3B::CNewUIHelpWindow::Render()
 	EnableAlphaTest();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-	extern char TextList[30][100];
-	extern int TextListColor[30];
-	extern int TextBold[30];
+	//extern char TextList[30][100];
+	//extern int TextListColor[30];
+	//extern int TextBold[30];
 	
 	if(m_iIndex == 0)
 	{

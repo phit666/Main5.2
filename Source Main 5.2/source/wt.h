@@ -190,3 +190,12 @@ typedef struct {
 
 #endif
 #endif //MU_MOBILE_WT_H
+
+
+extern int TextNum;
+extern char TextList[30][100];
+extern int TextListColor[30];
+extern int  TextBold[30];
+//extern int g_iItemInfo[12][17];
+extern float g_fScreenRate_x;
+extern float g_fScreenRate_y;

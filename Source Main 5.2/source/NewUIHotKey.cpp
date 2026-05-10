@@ -21,6 +21,8 @@
 #include "GameShop/InGameShopSystem.h"
 #endif // KJH_ADD_INGAMESHOP_UI_SYSTEM
 
+extern int SelectedCharacter;
+
 using namespace SEASON3B;
 
 SEASON3B::CNewUIHotKey::CNewUIHotKey() : m_pNewUIMng(NULL) , m_bStateGameOver(false)
@@ -55,7 +57,7 @@ void SEASON3B::CNewUIHotKey::Release()
 
 bool SEASON3B::CNewUIHotKey::UpdateMouseEvent()
 {
-	extern int SelectedCharacter;
+
 	
 	if(g_isCharacterBuff((&Hero->Object), eBuff_DuelWatch))
 	{

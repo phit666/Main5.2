@@ -24,13 +24,14 @@
 #include "NewUIInventoryCtrl.h"
 #include "NewUIMyInventory.h"
 #include "MapManager.h"
+#include "wt.h"
 
 extern float g_fScreenRate_x;
 extern float g_fScreenRate_y;
 
-extern int TextNum;
-extern char TextList[30][100];
-extern int  TextListColor[30];
+//extern int TextNum;
+//extern char TextList[30][100];
+//extern int  TextListColor[30];
 extern char* g_lpszMp3[NUM_MUSIC];
 
 using namespace SEASON3A;

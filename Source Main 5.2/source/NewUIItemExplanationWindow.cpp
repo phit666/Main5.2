@@ -8,6 +8,10 @@
 #include "DSPlaySound.h"
 #include "ZzzInventory.h"
 #include "CSItemOption.h"
+#include "ZzzInterface.h"
+#include "wt.h"
+
+extern int g_iItemInfo[12][17];
 
 using namespace SEASON3B;
 
@@ -88,12 +92,12 @@ bool SEASON3B::CNewUIItemExplanationWindow::Render()
 	EnableAlphaTest();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-	extern int ItemHelp;
-	extern char TextList[30][100];
-	extern int TextListColor[30];
-	extern int TextBold[30];
-	extern int TextNum;
-	extern int g_iItemInfo[12][17];
+	//extern int ItemHelp;
+	//extern char TextList[30][100];
+	//extern int TextListColor[30];
+	//extern int TextBold[30];
+	//extern int TextNum;
+	//extern int g_iItemInfo[12][17];
 	
 	int iInfoWidth = 0;
 	int iLabelHeight = 0;

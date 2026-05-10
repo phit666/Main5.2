@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "ErrorReport.h"
 
-#ifdef __ANDROID__
-
 CErrorReport g_ErrorReport;
+
+#ifdef __ANDROID__
 
 CErrorReport::CErrorReport() {}
 CErrorReport::~CErrorReport() {}

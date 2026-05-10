@@ -3,8 +3,12 @@
 
 #ifdef _WIN32
 #define CURL_STATICLIB
-#endif
 #include <curl/curl.h>
+#else
+extern "C" {
+#include <curl/curl.h>
+}
+#endif
 
 #include <algorithm>
 #include <cstdio>

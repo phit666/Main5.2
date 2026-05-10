@@ -22,10 +22,12 @@
 #include "w_CursedTemple.h"
 #include "MapManager.h"
 #include "SkillManager.h"
+#include "wt.h"
 
-extern int TextNum;
-extern char TextList[30][100];
-extern int  TextListColor[30];
+
+//extern int TextNum;
+//extern char TextList[30][100];
+//extern int  TextListColor[30];
 
 using namespace SEASON3B;
 

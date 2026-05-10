@@ -114,7 +114,7 @@ int       RandomTable[100];
 
 char TextMu[]       = "mu.exe";
 
-CErrorReport g_ErrorReport;
+//CErrorReport g_ErrorReport;
 
 BOOL g_bMinimizedEnabled = FALSE;
 int g_iScreenSaverOldValue = 60*15;

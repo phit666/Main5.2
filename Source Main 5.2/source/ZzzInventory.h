@@ -79,8 +79,8 @@ extern int AllRepairGold;
 //////////////////////////////////////////////////////////////////////////
 // text ฐüทร
 //////////////////////////////////////////////////////////////////////////
-extern char TextList[30][100];
-extern int TextListColor[30];
+//extern char TextList[30][100];
+//extern int TextListColor[30];
 extern int TextBold[30];
 extern SIZE Size[30];
 

@@ -2447,9 +2447,9 @@ BOOL CUIPhotoViewer::DoMouseAction()
 	return TRUE;
 }
 
-extern int TextNum;
-extern char TextList[30][100];
-extern int  TextListColor[30];
+//extern int TextNum;
+//extern char TextList[30][100];
+//extern int  TextListColor[30];
 extern int  TextBold[30];
 extern SIZE Size[30];
 

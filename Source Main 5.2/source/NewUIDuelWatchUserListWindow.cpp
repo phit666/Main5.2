@@ -6,6 +6,8 @@
 #include "NewUISystem.h"
 #include "DuelMgr.h"
 
+extern float g_fScreenRate_y;
+
 using namespace SEASON3B;
 
 CNewUIDuelWatchUserListWindow::CNewUIDuelWatchUserListWindow()
@@ -87,7 +89,7 @@ bool CNewUIDuelWatchUserListWindow::Render()
 	
 	RenderFrame();
 	
-	extern float g_fScreenRate_y;
+
 
 	SIZE TextSize;
 

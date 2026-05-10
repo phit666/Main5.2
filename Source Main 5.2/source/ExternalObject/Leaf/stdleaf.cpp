@@ -213,6 +213,19 @@ void leaf::GetTimeString(std::string& str)
 	str = szTime;
 }
 
+const char* leaf::FormatString(const char* pFormat, ...)
+{
+	static char buf[8][2048];
+	static DWORD index = 0;
+
+	va_list marker;
+	va_start(marker, pFormat);
+	vsprintf(buf[index&7], pFormat, marker);
+	va_end(marker);
+
+	return ((const char*)buf[index++ & 7]);
+}
+
 #else
 
 // GetTimeString

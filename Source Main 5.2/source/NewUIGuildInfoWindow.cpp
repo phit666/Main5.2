@@ -22,7 +22,7 @@ int	DeleteIndex = 0;
 int AppointStatus = 0;
 char DeleteID[100];
 
-extern CUIPopup* g_pUIPopup;
+//extern CUIPopup* g_pUIPopup;
 extern MARK_t GuildMark[MAX_MARKS];
 
 using namespace SEASON3B;

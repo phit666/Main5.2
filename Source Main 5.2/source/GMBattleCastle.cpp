@@ -21,14 +21,15 @@
 #include "GIPetManager.h"
 #include "BoneManager.h"
 #include "GMBattleCastle.h"
+#include "wt.h"
 
 extern  int     g_iTotalObj;
 extern  int     WaterTextureNumber;
 extern  char*   g_lpszMp3[NUM_MUSIC];
 
-extern int TextNum;
-extern char TextList[30][100];
-extern int  TextListColor[30];
+//extern int TextNum;
+//extern char TextList[30][100];
+//extern int  TextListColor[30];
 extern int  TextBold[30];
 extern SIZE Size[30];
 

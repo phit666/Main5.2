@@ -21,13 +21,14 @@
 #include "UIManager.h"
 #include "DuelMgr.h"
 #include "MapManager.h"
+#include "wt.h"
 
 extern bool g_PetEnableDuel;
 
 extern  int     MoveSceneFrame;
 extern  float   WorldTime;
-extern	char    TextList[30][100];
-extern	int     TextListColor[30];
+//extern	char    TextList[30][100];
+//extern	int     TextListColor[30];
 extern	int     TextBold[30];
 extern  float   g_fScreenRate_x;
 extern  float   g_fScreenRate_y;

@@ -7,9 +7,9 @@
 
 #pragma warning(disable : 4786)
 #include <string>
-
+#ifdef _WIN32
 #pragma comment(lib, "Version.lib")
-
+#endif
 #define _CALLSTACK_DUMP leaf::CCallStackDump
 
 /* 

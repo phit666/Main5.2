@@ -1,13 +1,5 @@
 LOCAL_PATH := $(call my-dir)
 
-# ===== libcurl (PREBUILT) =====
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := curl
-LOCAL_SRC_FILES := ../curl/$(TARGET_ARCH_ABI)/libcurl.so
-
-include $(PREBUILT_SHARED_LIBRARY)
-
 # ===== Your app =====
 include $(CLEAR_VARS)
 
@@ -273,7 +265,6 @@ LOCAL_SRC_FILES := \
     ShadowVolume.cpp \
     SideHair.cpp \
     SimpleModulus.cpp \
-    mu_gles2_matrix.cpp \
     SkillEffectMgr.cpp \
     SkillInfo.cpp \
     SkillManager.cpp \
@@ -380,3 +371,5 @@ LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer event2 curl
 LOCAL_STATIC_LIBRARIES := jpeg
 
 include $(BUILD_SHARED_LIBRARY)
+
+$(call import-module,curl)

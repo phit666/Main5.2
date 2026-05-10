@@ -16,8 +16,10 @@
 #include "wsclientinline.h"
 #include "DSPlaySound.h"
 #include "UIGateKeeper.h"
+#include "wt.h"
+#include "UIManager.h"
 
-extern CUIGateKeeper*		g_pUIGateKeeper;
+//extern CUIGateKeeper*		g_pUIGateKeeper;
 
 using namespace SEASON3B;
 

@@ -20,10 +20,11 @@
 #include "MapManager.h"
 #include "CharacterManager.h"
 #include "SkillManager.h"
+#include "wt.h"
 
 extern  int  WaterTextureNumber;
-extern	char TextList[30][100];
-extern  int  TextListColor[30];
+//extern	char TextList[30][100];
+//extern  int  TextListColor[30];
 extern	int  TextBold[30];
 
 static  CSWaterTerrain* g_pCSWaterTerrain = NULL;

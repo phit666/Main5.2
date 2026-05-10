@@ -2316,6 +2316,9 @@
     <ClInclude Include="source\nuklear_sdl_gles2.h">
       <Filter>MU\Client\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\wt.h">
+      <Filter>MU\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="script\Mu_Chs.py">

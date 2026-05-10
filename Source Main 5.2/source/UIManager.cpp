@@ -29,6 +29,9 @@
 #include "NewUICustomMessageBox.h"
 #include "NewUINPCShop.h"
 #include "MixMgr.h"
+#include "wt.h"
+#include "UIManager.h"
+
 
 extern int g_iKeyPadEnable;
 extern int g_iChatInputType;

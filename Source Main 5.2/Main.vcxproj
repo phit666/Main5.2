@@ -1011,6 +1011,7 @@
     <ClInclude Include="source\wsclientinline.h" />
     <ClInclude Include="source\wsctlc.h" />
     <ClInclude Include="source\wsctlc_addon.h" />
+    <ClInclude Include="source\wt.h" />
     <ClInclude Include="source\w_BaseMap.h" />
     <ClInclude Include="source\w_BasePet.h" />
     <ClInclude Include="source\w_Buff.h" />

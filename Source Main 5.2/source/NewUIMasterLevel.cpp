@@ -14,6 +14,7 @@
 #include "CSitemOption.h"
 #include "CharacterManager.h"
 #include "SkillManager.h"
+#include "wt.h"
 
 MASTER_LEVEL_DATA		m_MasterLevel[MAX_MASTER];
 BYTE					Master_Skill_Data[9][5];
@@ -21,8 +22,8 @@ int						JobPoint[4] = {0,0,0,0};
 char Need_Point = 0;
 int	 In_Skill = 0;
 using namespace SEASON3B;
-extern char TextList[30][100];
-extern int  TextListColor[30];
+//extern char TextList[30][100];
+//extern int  TextListColor[30];
 extern int  TextBold[30];
 extern SIZE Size[30];
 

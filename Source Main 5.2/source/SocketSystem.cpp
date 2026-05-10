@@ -7,6 +7,7 @@
 #include "WSclient.h"
 #include "UIControls.h"
 #include "CharacterManager.h"
+#include "wt.h"
 
 using namespace SEASON4A;
 
@@ -266,7 +267,7 @@ int CSocketItemMgr::AttachToolTipForSocketItem(const ITEM* pItem, int iTextNum)
 		}
 		else
 		{
-			assert(!"¼ÒÄÏ ÀÎµ¦½º ¿¡·¯");
+			assert(!"ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½");
 		}
 
 		sprintf(TextList[iTextNum], GlobalText[2655], i + 1, szOptionText);

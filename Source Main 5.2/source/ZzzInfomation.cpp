@@ -2376,7 +2376,8 @@ bool IsRequireEquipItem(ITEM* pItem)
 	
 	int iDecNeedStrength = 0, iDecNeedDex = 0;
 
-	extern JewelHarmonyInfo*   g_pUIJewelHarmonyinfo;
+	//extern JewelHarmonyInfo*   g_pUIJewelHarmonyinfo;
+
 	if( iItemLevel >= pItem->Jewel_Of_Harmony_OptionLevel )
 	{
 		StrengthenCapability SC;

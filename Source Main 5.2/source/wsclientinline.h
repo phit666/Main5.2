@@ -9,7 +9,7 @@
 #include "WSclient.h"
 #include "SocketSystem.h"
 #include "ItemAddOptioninfo.h"
-extern ItemAddOptioninfo*			g_pItemAddOptioninfo;
+//extern ItemAddOptioninfo*			g_pItemAddOptioninfo;
 #ifdef _DEBUG
 #define SAVE_PACKET
 #define PACKET_SAVE_FILE	"PacketList.txt"
@@ -19,6 +19,7 @@ extern ItemAddOptioninfo*			g_pItemAddOptioninfo;
 #include "NewUISystem.h" 
 #include "ProtocolSend.h" 
 #include "Utilities\Log\DebugAngel.h"
+//#include "UIManager.h"
 
 
 #define PACKET_MOVE         0xD4
