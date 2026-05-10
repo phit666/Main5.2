@@ -1,4 +1,7 @@
 #include "stdafx.h"
+
+#ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM
+
 #include "mu_wininet_curl_compat.h"
 
 #ifdef _WIN32
@@ -606,3 +609,4 @@ DWORD GetLastError(void)
 }
 #endif
 } // extern "C"
+#endif

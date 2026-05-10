@@ -13,7 +13,7 @@ $(LOCAL_PATH)/../SDL2_mixer/include \
 $(LOCAL_PATH)/common \
 $(LOCAL_PATH)/../libevent/include \
 $(LOCAL_PATH)/../libjpeg-turbo/include \
-$(LOCAL_PATH)/../curl/include \
+$(LOCAL_PATH)/../curl/$(TARGET_ARCH_ABI)/include \
 $(LOCAL_PATH)/../glm \
 $(LOCAL_PATH)
 
@@ -366,10 +366,7 @@ LOCAL_CPPFLAGS += \
     -Wno-error=format-security \
     -Wno-format-security
 
-
-LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer event2 curl
-LOCAL_STATIC_LIBRARIES := jpeg
+LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer event2
+LOCAL_STATIC_LIBRARIES := jpeg curl
 
 include $(BUILD_SHARED_LIBRARY)
-
-$(call import-module,curl)

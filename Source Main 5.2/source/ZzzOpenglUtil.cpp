@@ -941,7 +941,7 @@ void SetDisableMultisample()
 // render util
 ///////////////////////////////////////////////////////////////////////////////
 
-inline void TEXCOORD(float* c, float u, float v)
+void TEXCOORD(float* c, float u, float v)
 {
 	c[0] = u;
 	c[1] = v;
