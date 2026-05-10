@@ -50,6 +50,7 @@ CWsctlc::~CWsctlc()
 BOOL CWsctlc::Startup()
 {
 #if MU_USE_LIBEVENT == 0
+#ifdef _WIN32
 	WORD wVersionRequested;
 	WSADATA wsaData;
 	int err;
@@ -76,6 +77,7 @@ BOOL CWsctlc::Startup()
 	m_socket = NULL;
 	m_iMaxSockets = wsaData.iMaxSockets;	
 	LogPrintOn();
+#endif
 #endif
 	return TRUE;
 }
@@ -491,7 +493,7 @@ void CWsctlc::LogHexPrintS( BYTE *buf, int size)
 		}		
 		fprintf(m_logfp, "S 0x%02x %d\n", buf[2], buf[3]);
 	} 
-	// юс╫ц╥н ╦╥ю╫ else fprintf(m_logfp, "S 0x%02x %d\n", buf[3], buf[4]);
+	// О©╫с╫ц╥О©╫ О©╫О©╫О©╫О©╫ else fprintf(m_logfp, "S 0x%02x %d\n", buf[3], buf[4]);
 
 	//fprintf(m_logfp, "S ");
 	//for( int n=0; n<size; n++) fprintf(m_logfp, "%02x ", buf[n]);

@@ -67,6 +67,7 @@
 #include "MapManager.h"
 #include "mu_sdl.h"
 #include "mu_gles2_matrix.h"
+#include "wt.h"
 
 extern CUITextInputBox * g_pSingleTextInputBox;
 extern CUITextInputBox * g_pSinglePasswdInputBox;
@@ -267,8 +268,8 @@ bool CheckAbuseNameFilter(char *Text)
 bool CheckName()
 {
     if( CheckAbuseNameFilter(InputText[0]) || CheckAbuseFilter(InputText[0]) ||
-		FindText(InputText[0]," ") || FindText(InputText[0],"¡¡") ||
-		FindText(InputText[0],".") || FindText(InputText[0],"¡¤") || FindText(InputText[0],"¡­") ||
+		FindText(InputText[0]," ") || FindText(InputText[0],"ï¿½ï¿½") ||
+		FindText(InputText[0],".") || FindText(InputText[0],"ï¿½ï¿½") || FindText(InputText[0],"ï¿½ï¿½") ||
 		FindText(InputText[0],"Webzen") || FindText(InputText[0],"WebZen") || FindText(InputText[0],"webzen") ||  FindText(InputText[0],"WEBZEN") ||
 		FindText(InputText[0],GlobalText[457]) || FindText(InputText[0],GlobalText[458]))
 		return true;
@@ -929,6 +930,7 @@ void CreateCharacterScene()
 		g_pChatListBox->AddText("", "", SEASON3B::TYPE_WHISPER_MESSAGE);
 	}
 
+#ifdef _WIN32
 	HIMC hIMC = ImmGetContext(g_hWnd);
     DWORD Conversion, Sentence;
 
@@ -942,6 +944,7 @@ void CreateCharacterScene()
 	SaveIMEStatus();
 	ImmReleaseContext(g_hWnd, hIMC);
 	g_bIMEBlock = TRUE;
+#endif
 
     g_ErrorReport.Write( "> Character scene init success.\r\n");
 }
@@ -973,6 +976,7 @@ void NewMoveCharacterScene()
 
     MoveCamera();
 
+#ifndef MU_USE_SDL
 #if defined _DEBUG || defined FOR_WORK
 	char lpszTemp[256];
 	if (::Util_CheckOption(::GetCommandLine(), 'c', lpszTemp))
@@ -980,6 +984,7 @@ void NewMoveCharacterScene()
 		SelectedHero = ::atoi(lpszTemp);
 		::StartGame();
 	}
+#endif
 #endif
 
 	CInput& rInput = CInput::Instance();

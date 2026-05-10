@@ -10829,7 +10829,9 @@ void ReceiveCrownRegist ( BYTE* ReceiveBuffer )
     case 2:
 		{
 			SEASON3B::CProgressMsgBox* pMsgBox = NULL;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CSealRegisterFailLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CSealRegisterFailLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CSealRegisterFailLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			if(pMsgBox)
 			{
 				unicode::t_char strText[256];
@@ -11961,14 +11963,18 @@ bool ReceiveDoppelGangerResult(BYTE* ReceiveBuffer)
 	case 1:
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CDoppelGangerMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2766], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 		}
 		break;
 	case 2:
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CDoppelGangerMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CDoppelGangerMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2767], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 			pMsgBox->AddMsg(" ");
 			pMsgBox->AddMsg(GlobalText[2768], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
@@ -12044,7 +12050,9 @@ bool ReceiveEnterEmpireGuardianEvent(BYTE* ReceiveBuffer)
 	case 1:
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CEmpireGuardianMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2798], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 			pMsgBox->AddMsg(" ");
 			unicode::t_char szText[256] = {NULL, };
@@ -12054,25 +12062,33 @@ bool ReceiveEnterEmpireGuardianEvent(BYTE* ReceiveBuffer)
 	case 2:
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CEmpireGuardianMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2839], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 		}break;
 	case 3:
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CEmpireGuardianMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2841], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 		}break;
 	case 4:
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CEmpireGuardianMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2842], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 		}break;
 	case 5:
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CEmpireGuardianMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2843], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 		}break;
 
@@ -12108,7 +12124,9 @@ bool ReceiveResultEmpireGuardian(BYTE* ReceiveBuffer)
 	case 0:
 		{
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CEmpireGuardianMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			pMsgBox->AddMsg(GlobalText[2803], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 			pMsgBox->AddMsg(GlobalText[2804], RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
 		}break;
@@ -12117,7 +12135,9 @@ bool ReceiveResultEmpireGuardian(BYTE* ReceiveBuffer)
 			int day = g_pEmpireGuardianTimer->GetDay();
 			int zone = g_pEmpireGuardianTimer->GetZone();
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CEmpireGuardianMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			unicode::t_char szText[256] = {NULL, };
 			sprintf(szText, GlobalText[2801], day);
 			pMsgBox->AddMsg(szText, RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);
@@ -12128,7 +12148,9 @@ bool ReceiveResultEmpireGuardian(BYTE* ReceiveBuffer)
 		{
 			int day = g_pEmpireGuardianTimer->GetDay();
 			SEASON3B::CNewUICommonMessageBox* pMsgBox;
-			SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			//SEASON3B::CreateMessageBox(MSGBOX_LAYOUT_CLASS(SEASON3B::CEmpireGuardianMsgBoxLayout), &pMsgBox);
+			SEASON3B::TMsgBoxLayoutContainer<SEASON3B::CEmpireGuardianMsgBoxLayout> container;
+			SEASON3B::CreateMessageBox(container, &pMsgBox);
 			unicode::t_char szText[256] = {NULL, };
 			sprintf(szText, GlobalText[2801], day);
 			pMsgBox->AddMsg(szText, RGBA(255, 255, 255, 255), SEASON3B::MSGBOX_FONT_NORMAL);

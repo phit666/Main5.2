@@ -521,6 +521,64 @@ short GetAsyncKeyState_SDL(int vKey) {
 
     return 0;
 }
+
+BOOL TextOutW(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString){
+    if (nk_begin(g_nk_ctx, "Canvas", nk_rect(0, 0, WindowWidth, WindowHeight), NK_WINDOW_NO_SCROLLBAR)) {
+        struct nk_command_buffer *canvas = nk_window_get_canvas(g_nk_ctx);
+        //struct nk_user_font *font = g_nk_ctx->style.font;
+        struct nk_rect text_rect = nk_rect(nXStart, nYStart, 200, 20);
+        nk_draw_text(canvas, text_rect, "Hello", 5, g_nk_ctx->style.font,
+                     nk_rgb(255,255,255), nk_rgba(0,0,0,0));
+    }
+    nk_end(g_nk_ctx);
+    return 1;
+}
+
+bool GetTextExtentPoint32W(HDC hdc, LPCWSTR text, int len, SIZE *lpsz) {
+    if (!g_nk_ctx || !text || !lpsz) return false;
+
+    const struct nk_user_font *font = g_nk_ctx->style.font; // Currently selected font
+
+    // Calculate width using Nuklear's internal font callback
+    lpsz->cx = (long)font->width(font->userdata, font->height, reinterpret_cast<const char *>(text), len);
+
+    // Height is constant for the font in Nuklear
+    lpsz->cy = (long)font->height;
+
+    return true;
+}
+
+#include <algorithm>
+
+// Android NDK replacement for Windows IntersectRect
+bool IntersectRect(RECT* lprcDst, const RECT* lprcSrc1, const RECT* lprcSrc2) {
+    if (!lprcDst || !lprcSrc1 || !lprcSrc2) return false;
+
+    // Convert Windows RECT (L,T,R,B) to SDL_Rect (X,Y,W,H)
+    SDL_Rect s1 = { (int)lprcSrc1->left, (int)lprcSrc1->top,
+                    (int)(lprcSrc1->right - lprcSrc1->left),
+                    (int)(lprcSrc1->bottom - lprcSrc1->top) };
+
+    SDL_Rect s2 = { (int)lprcSrc2->left, (int)lprcSrc2->top,
+                    (int)(lprcSrc2->right - lprcSrc2->left),
+                    (int)(lprcSrc2->bottom - lprcSrc2->top) };
+
+    SDL_Rect res;
+
+    if (SDL_IntersectRect(&s1, &s2, &res)) {
+        // Convert back to Windows RECT format
+        lprcDst->left   = res.x;
+        lprcDst->top    = res.y;
+        lprcDst->right  = res.x + res.w;
+        lprcDst->bottom = res.y + res.h;
+        return true;
+    }
+
+    // Windows behavior: clear the rect if no intersection
+    lprcDst->left = lprcDst->top = lprcDst->right = lprcDst->bottom = 0;
+    return false;
+}
+
 #endif
 
 

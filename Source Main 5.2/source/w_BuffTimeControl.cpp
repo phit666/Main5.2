@@ -6,6 +6,7 @@
 #include "UIManager.h"
 #include "ItemAddOptioninfo.h"
 #include "w_BuffTimeControl.h"
+#include "wt.h"
 
 BuffTimeControlPtr BuffTimeControl::Make()
 {
@@ -259,7 +260,9 @@ bool BuffTimeControl::CheckBuffTime( DWORD type )
 
 bool BuffTimeControl::HandleWindowMessage( UINT message, WPARAM wParam, LPARAM lParam, LRESULT& result )
 {
-	if( message == WM_TIMER ) 
+#ifdef _WIN32
+	if( message == WM_TIMER )
+#endif
 	{
 		if( wParam != eBuffTime_None && wParam >= eBuffTime_Hellowin )
 		{
@@ -270,5 +273,6 @@ bool BuffTimeControl::HandleWindowMessage( UINT message, WPARAM wParam, LPARAM l
 			return true;
 		}
 	}
+
 	return false;
 }

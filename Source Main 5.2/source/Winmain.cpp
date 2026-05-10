@@ -1805,6 +1805,7 @@ int main(int argc, char* argv[])
 		g_pChatRoomSocketList->ProtocolCompile();
 #endif
 
+
 		//SDL_Delay(1);
 	}
 
@@ -2044,6 +2045,16 @@ void MU_ProcessSDLEvents()
 						}
 						break;
 
+					case (WM_DESTROY + eBuffTime_Count):
+						Destroy = true;
+						gSDLRunning = false;
+						break;
+
+				}
+
+				if( g_BuffSystem ) {
+					LRESULT result;
+					TheBuffStateSystem().HandleWindowMessage( 0, e.user.code, 0, result );
 				}
 
 				break;

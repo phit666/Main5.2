@@ -50,6 +50,7 @@
 #include "CharacterManager.h"
 #include "SkillManager.h"
 #include "mu_sdl.h"
+#include "wt.h"
 
 extern CUITextInputBox * g_pSingleTextInputBox;
 extern int g_iChatInputType;
@@ -140,7 +141,7 @@ static  int iStateNum = 4;
 
 extern bool Teleport;
 
-extern float g_fScreenRate_x;	// ¡Ø
+extern float g_fScreenRate_x;	// ï¿½ï¿½
 extern float g_fScreenRate_y;
 
 #ifdef _PVP_ADD_MOVE_SCROLL
@@ -1482,16 +1483,16 @@ int GuildListStartY;
 int SommonTable[]={2,7,14,8,9,41};
 
 char ChaosEventName[][100] = {
-	"È÷µÅ© °íÇâ ¿©Çà±Ç",
-	"ÆæÆ¼¾ö4 ÄÄÇ»ÅÍ",
-	"µðÁöÅ»Ä«¸Þ¶ó",
-	"·ÎÁöÅØ ¹«¼± ¸¶¿ì½º+Å°º¸µå ¼¼Æ®",
-	"256M ·¥",
-    "6°³¿ ÀâÁö ±¸µ¶±Ç",
-	"¹®È­»óÇ°±Ç(¸¸¿ø)",
-	"¹Â ¸Ó±×ÄÅ",
-	"¹Â T¼ÅÃ÷",
-	"¹Â 10½Ã°£ ¹«·áÀÌ¿ë±Ç"
+	"ï¿½ï¿½ï¿½Å© ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½",
+	"ï¿½ï¿½Æ¼ï¿½ï¿½4 ï¿½ï¿½Ç»ï¿½ï¿½",
+	"ï¿½ï¿½ï¿½ï¿½Å»Ä«ï¿½Þ¶ï¿½",
+	"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ì½º+Å°ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®",
+	"256M ï¿½ï¿½",
+    "6ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+	"ï¿½ï¿½È­ï¿½ï¿½Ç°ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½)",
+	"ï¿½ï¿½ ï¿½Ó±ï¿½ï¿½ï¿½",
+	"ï¿½ï¿½ Tï¿½ï¿½ï¿½ï¿½",
+	"ï¿½ï¿½ 10ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì¿ï¿½ï¿½"
 };
 
 WORD calcMaxDurability ( const ITEM* ip, ITEM_ATTRIBUTE *p, int Level )
@@ -4249,24 +4250,24 @@ void RenderItemInfo(int sx,int sy,ITEM *ip,bool Sell, int Inventype, bool bItemT
 #ifdef LEM_ADD_LUCKYITEM
 	else if( ip->Type == ITEM_POTION+160 )
 	{
-		// ¿¬ÀåÀÇ º¸¼®
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		sprintf(TextList[TextNum],GlobalText[3305]);
 		TextListColor[TextNum] = TEXT_COLOR_WHITE;TextBold[TextNum] = false;TextNum++;
 	}
 	else if( ip->Type == ITEM_POTION+161 )
 	{
-		// »ó½ÂÀÇ º¸¼®
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		sprintf(TextList[TextNum],GlobalText[2209]);
 		TextListColor[TextNum] = TEXT_COLOR_WHITE;TextBold[TextNum] = false;TextNum++;
 	}
 #endif // LEM_ADD_LUCKYITEM
-	else if ((ip->Type>=ITEM_WING+3 && ip->Type<=ITEM_WING+6) || ip->Type==ITEM_WING+42) //³¯°³
+	else if ((ip->Type>=ITEM_WING+3 && ip->Type<=ITEM_WING+6) || ip->Type==ITEM_WING+42) //ï¿½ï¿½ï¿½ï¿½
     {
-		sprintf(TextList[TextNum],GlobalText[577],32+Level);  //  µ¥¹ÌÁö ¸î%Áõ°¡.
+		sprintf(TextList[TextNum],GlobalText[577],32+Level);  //  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½%ï¿½ï¿½ï¿½ï¿½.
 		TextListColor[TextNum] = TEXT_COLOR_WHITE;TextBold[TextNum] = false;TextNum++;
-		sprintf(TextList[TextNum],GlobalText[578],25+Level*2);  //  µ¥¹ÌÁö ¸î%Èí¼ö.
+		sprintf(TextList[TextNum],GlobalText[578],25+Level*2);  //  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½%ï¿½ï¿½ï¿½.
 		TextListColor[TextNum] = TEXT_COLOR_WHITE;TextBold[TextNum] = false;TextNum++;
-		sprintf(TextList[TextNum],GlobalText[579]);             //  ÀÌµ¿ ¼Óµµ Çâ»ó.
+		sprintf(TextList[TextNum],GlobalText[579]);             //  ï¿½Ìµï¿½ ï¿½Óµï¿½ ï¿½ï¿½ï¿½.
 		TextListColor[TextNum] = TEXT_COLOR_WHITE;TextBold[TextNum] = false;TextNum++;
     }
 	else if ((ip->Type>=ITEM_WING+36 && ip->Type<=ITEM_WING+40) || ip->Type==ITEM_WING+43
@@ -4526,11 +4527,11 @@ void RenderItemInfo(int sx,int sy,ITEM *ip,bool Sell, int Inventype, bool bItemT
 #ifdef PBG_MOD_NEWCHAR_MONK_WING_2
 	else if(ip->Type==ITEM_WING+49 || ip->Type==ITEM_HELPER+30)
 	{
-		// ¸ÁÅä °ü·Ã ¿É¼Çº¯°æ
-		sprintf(TextList[TextNum],GlobalText[577],20+Level*2);  //  µ¥¹ÌÁö ¸î%Áõ°¡
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½É¼Çºï¿½ï¿½ï¿½
+		sprintf(TextList[TextNum],GlobalText[577],20+Level*2);  //  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½%ï¿½ï¿½ï¿½ï¿½
 		TextListColor[TextNum] = TEXT_COLOR_WHITE;TextBold[TextNum] = false;TextNum++;
 		int _iDamage = (ip->Type==ITEM_WING+49) ? 10+Level*2 : 10+Level;
-		sprintf(TextList[TextNum],GlobalText[578],_iDamage);  //  µ¥¹ÌÁö ¸î%Èí¼ö
+		sprintf(TextList[TextNum],GlobalText[578],_iDamage);  //  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½%ï¿½ï¿½ï¿½
 		TextListColor[TextNum] = TEXT_COLOR_WHITE;TextBold[TextNum] = false;TextNum++;
 	}
 #endif //PBG_MOD_NEWCHAR_MONK_WING_2
@@ -4908,7 +4909,7 @@ void RenderItemInfo(int sx,int sy,ITEM *ip,bool Sell, int Inventype, bool bItemT
 		}
 	}
 
-	if(ip->RequireVitality && bRequireStat ) //  ¿ä±¸Ã¼·Â.
+	if(ip->RequireVitality && bRequireStat ) //  ï¿½ä±¸Ã¼ï¿½ï¿½.
 	{
 		sprintf(TextList[TextNum],GlobalText[1930],ip->RequireVitality);
 
@@ -5525,7 +5526,7 @@ void RenderItemInfo(int sx,int sy,ITEM *ip,bool Sell, int Inventype, bool bItemT
 				TextBold[TextNum] = false;
 				TextNum++;
 				break;
-			case ITEM_HELPER+133:	// °ñµç¸ÞÀÌÇÃÂü
+			case ITEM_HELPER+133:	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				sprintf(TextList[TextNum], GlobalText[3134], 150);
 				TextListColor[TextNum] = TEXT_COLOR_BLUE;
 				TextBold[TextNum] = false;
@@ -8235,7 +8236,7 @@ bool IsStoreBan(ITEM* pItem)
 sItemAct Set_ItemActOption( int _nIndex, int _nOption )
 {
 	sItemAct	sItem;
-	// eITEM_PERSONALSHOP = °³ÀÎ»óÁ¡, eITEM_STORE = Ã¢°í, eITEM_TRADE = °Å·¡, eITEM_DROP = ¹ö¸®±â, eITEM_SELL = ÆÇ¸Å, eITEM_REPAIR = ¼ö¸®
+	// eITEM_PERSONALSHOP = ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½, eITEM_STORE = Ã¢ï¿½ï¿½, eITEM_TRADE = ï¿½Å·ï¿½, eITEM_DROP = ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, eITEM_SELL = ï¿½Ç¸ï¿½, eITEM_REPAIR = ï¿½ï¿½ï¿½ï¿½
 	int	nItemOption[][eITEM_END]	= { 0, 1, 1, 0, 0, 0,
 										0, 0, 0, 0, 1, 0,
 		-1 };
@@ -8277,7 +8278,7 @@ bool Check_ItemAction( ITEM* _pItem, ITEMSETOPTION _eAction, bool _bType )
 		}
 	}
 	
-	// µî·ÏµÇÁö ¾ÊÀº ¾ÆÀÌÅÛÀº ¹«½Ã.
+	// ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	return false;
 }
 
@@ -10400,33 +10401,33 @@ void RenderObjectScreen(int Type,int ItemLevel,int Option1,int ExtOption,vec3_t 
 			Scale = 0.0013f;
 		}
 #ifdef LJH_ADD_ITEMS_EQUIPPED_FROM_INVENTORY_SYSTEM	
-		else if( Type == MODEL_HELPER+128 )		// ¸ÅÁ¶°¢»ó
+		else if( Type == MODEL_HELPER+128 )		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			Scale = 0.0035f;
 		}
-		else if( Type == MODEL_HELPER+129 )		// ¾çÁ¶°¢»ó
+		else if( Type == MODEL_HELPER+129 )		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			Scale = 0.0035f;
 		}
-		else if( Type == MODEL_HELPER+134 )		// ÆíÀÚ
+		else if( Type == MODEL_HELPER+134 )		// ï¿½ï¿½ï¿½ï¿½
 		{
 			Scale = 0.0033f;
 		}
 #endif	//LJH_ADD_ITEMS_EQUIPPED_FROM_INVENTORY_SYSTEM
 #ifdef LJH_ADD_ITEMS_EQUIPPED_FROM_INVENTORY_SYSTEM_PART_2
-		else if( Type == MODEL_HELPER+130 )		// ¿ÀÅ©Âü
+		else if( Type == MODEL_HELPER+130 )		// ï¿½ï¿½Å©ï¿½ï¿½
 		{
 			Scale = 0.0032f;
 		}
-		else if( Type == MODEL_HELPER+131 )		// ¸ÞÀÌÇÃÂü
+		else if( Type == MODEL_HELPER+131 )		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			Scale = 0.0033f;
 		}
-		else if( Type == MODEL_HELPER+132 )		// °ñµç¿ÀÅ©Âü
+		else if( Type == MODEL_HELPER+132 )		// ï¿½ï¿½ï¿½ï¿½Å©ï¿½ï¿½
 		{
 			Scale = 0.0025f;
 		}
-		else if( Type == MODEL_HELPER+133 )		// °ñµç¸ÞÀÌÇÃÂü
+		else if( Type == MODEL_HELPER+133 )		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			Scale = 0.0033f;
 		}
@@ -10561,8 +10562,8 @@ void RenderObjectScreen(int Type,int ItemLevel,int Option1,int ExtOption,vec3_t 
 			Scale = 0.0039f;
 		}
 #endif //PBG_ADD_NEWCHAR_MONK_ITEM
-#ifdef LEM_ADD_LUCKYITEM	// ·°Å°¾ÆÀÌÅÛ ÀÎº¥Åä¸® ½ºÄÉÀÏ ¼³Á¤ [lem_2010.9.7]
-		// LEM_TSET  »ó½ÂÀÇ º¸¼®, ¿¬ÀåÀÇ º¸¼® ½ºÄÉÀÏ[lem_2010.9.7]
+#ifdef LEM_ADD_LUCKYITEM	// ï¿½ï¿½Å°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ï¿½ä¸® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ [lem_2010.9.7]
+		// LEM_TSET  ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[lem_2010.9.7]
 		else if(Type >= MODEL_HELPER+135 && Type <= MODEL_HELPER+145)
 		{
 			Scale = 0.001f;
@@ -10976,7 +10977,7 @@ void RenderItem3D(float sx,float sy,float Width,float Height,int Type,int Level,
 	vec3_t Position;
 	CreateScreenVector((int)(sx),(int)(sy),Position, false);
 	//RenderObjectScreen(Type+MODEL_ITEM,Level,Option1,Position,Success,PickUp);
-	if ( Type==ITEM_POTION+11 && ( Level>>3) == 1)	// ¼ºÅºÀÇº°
+	if ( Type==ITEM_POTION+11 && ( Level>>3) == 1)	// ï¿½ï¿½Åºï¿½Çºï¿½
 	{
 		RenderObjectScreen(MODEL_EVENT+4,Level,Option1,ExtOption,Position,Success,PickUp);
 	}
@@ -11791,17 +11792,17 @@ void CreateCastleMark ( int Type, BYTE* buffer, bool blend )
 		case 1 :MarkColor[i] = (255<<24)+(  0<<16)+(  0<<8)+(  0);break;
 		case 2 :MarkColor[i] = (255<<24)+(128<<16)+(128<<8)+(128);break;
 		case 3 :MarkColor[i] = (255<<24)+(255<<16)+(255<<8)+(255);break;
-		case 4 :MarkColor[i] = (255<<24)+(  0<<16)+(  0<<8)+(255);break;//»¡
+		case 4 :MarkColor[i] = (255<<24)+(  0<<16)+(  0<<8)+(255);break;//ï¿½ï¿½
 		case 5 :MarkColor[i] = (255<<24)+(  0<<16)+(128<<8)+(255);break;//
-		case 6 :MarkColor[i] = (255<<24)+(  0<<16)+(255<<8)+(255);break;//³ë
+		case 6 :MarkColor[i] = (255<<24)+(  0<<16)+(255<<8)+(255);break;//ï¿½ï¿½
 		case 7 :MarkColor[i] = (255<<24)+(  0<<16)+(255<<8)+(128);break;//
-		case 8 :MarkColor[i] = (255<<24)+(  0<<16)+(255<<8)+(  0);break;//ÃÊ
+		case 8 :MarkColor[i] = (255<<24)+(  0<<16)+(255<<8)+(  0);break;//ï¿½ï¿½
 		case 9 :MarkColor[i] = (255<<24)+(128<<16)+(255<<8)+(  0);break;//
 		case 10:MarkColor[i] = (255<<24)+(255<<16)+(255<<8)+(  0);break;//Ã»
 		case 11:MarkColor[i] = (255<<24)+(255<<16)+(128<<8)+(  0);break;//
-		case 12:MarkColor[i] = (255<<24)+(255<<16)+(  0<<8)+(  0);break;//ÆÄ
+		case 12:MarkColor[i] = (255<<24)+(255<<16)+(  0<<8)+(  0);break;//ï¿½ï¿½
 		case 13:MarkColor[i] = (255<<24)+(255<<16)+(  0<<8)+(128);break;//
-		case 14:MarkColor[i] = (255<<24)+(255<<16)+(  0<<8)+(255);break;//º¸
+		case 14:MarkColor[i] = (255<<24)+(255<<16)+(  0<<8)+(255);break;//ï¿½ï¿½
 		case 15:MarkColor[i] = (255<<24)+(128<<16)+(  0<<8)+(255);break;//
 		}
 	}

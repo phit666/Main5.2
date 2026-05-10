@@ -15,6 +15,10 @@
 #include <wchar.h>
 #include <string.h>
 
+#include "_define.h"
+#include "_enum.h"
+#include "stdafx.h"
+
 /**
  * Android NDK wrapper for Windows _mbclen.
  * Returns the length in bytes of the multibyte character.
@@ -511,13 +515,40 @@ inline ULONGLONG GetTickCount64()
 // Dummy window/message API
 // ======================================================
 
-inline LRESULT SendMessage(HWND, UINT, WPARAM, LPARAM)
+inline LRESULT SendMessage(HWND, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    return 0;
+    SDL_Event event;
+    SDL_zero(event);
+
+    // We use SDL_USEREVENT as the base for Windows-style messages
+    event.type = SDL_USEREVENT;
+    event.user.code = Msg + eBuffTime_Count;    // e.g., WM_DESTROY
+    event.user.data1 = (void*)wParam;
+    event.user.data2 = (void*)lParam;
+
+    // SDL_PushEvent returns 1 on success
+    if (SDL_PushEvent(&event) == 1) {
+        return 0; // Success
+    }
+
 }
 
-inline BOOL PostMessage(HWND, UINT, WPARAM, LPARAM)
+inline BOOL PostMessage(HWND, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
+    SDL_Event event;
+    SDL_zero(event);
+
+    // We use SDL_USEREVENT as the base for Windows-style messages
+    event.type = SDL_USEREVENT;
+    event.user.code = Msg + eBuffTime_Count;    // e.g., WM_DESTROY
+    event.user.data1 = (void*)wParam;
+    event.user.data2 = (void*)lParam;
+
+    // SDL_PushEvent returns 1 on success
+    if (SDL_PushEvent(&event) == 1) {
+        return 0; // Success
+    }
+
     return TRUE;
 }
 
@@ -1507,5 +1538,73 @@ inline int _mbclen(const unsigned char* s) {
 #define VK_DOWN   AKEYCODE_DPAD_DOWN
 #define CP_ACP    0
 #endif
+
+
+inline nk_color RGB(int r, int g, int b){
+    return nk_rgb(r,g,b);
+}
+
+inline void SetBkColor(HDC hdc, nk_color color) {
+    g_nk_ctx->style.window.fixed_background = nk_style_item_color(color);
+}
+
+inline void SetTextColor(HDC hdc, nk_color color) {
+    g_nk_ctx->style.text.color = color;
+}
+
+#define IME_CMODE_ALPHANUMERIC NULL
+#define IME_SMODE_NONE NULL
+
+
+// Simple NDK wrapper for MultiByteToWideChar
+inline int MultiByteToWideChar(
+        uint32_t CodePage,    // Ignored or used to setlocale()
+        uint32_t dwFlags,     // Typically ignored
+        const char* lpMBStr,
+        int cbMB,
+        wchar_t* lpWCStr,
+        int cchWC)
+{
+    if (cbMB == 0) return 0;
+
+    // If cchWC is 0, return the required size
+    if (cchWC == 0) {
+        return mbstowcs(NULL, lpMBStr, 0);
+    }
+
+    // Perform the actual conversion
+    size_t result = mbstowcs(lpWCStr, lpMBStr, cchWC);
+
+    if (result == (size_t)-1) return 0; // Conversion failed
+    return (int)result;
+}
+
+inline int WideCharToMultiByte(
+        uint32_t CodePage,       // Ignored (Android defaults to UTF-8)
+        uint32_t dwFlags,        // Ignored
+        const wchar_t* lpWCStr,
+        int cchWC,               // Number of chars in input (-1 for null-terminated)
+        char* lpMBStr,
+        int cbMB,                // Size of output buffer
+        const char* lpDefChar,   // Ignored
+        bool* lpUsedDefChar)     // Ignored
+{
+    if (lpWCStr == nullptr) return 0;
+
+    // If cbMB is 0, return the required buffer size
+    if (cbMB == 0) {
+        return (int)wcstombs(NULL, lpWCStr, 0);
+    }
+
+    size_t result = wcstombs(lpMBStr, lpWCStr, cbMB);
+
+    if (result == (size_t)-1) return 0; // Conversion error
+    return (int)result;
+}
+
+bool IntersectRect(RECT* lprcDst, const RECT* lprcSrc1, const RECT* lprcSrc2);
+bool GetTextExtentPoint32W(HDC hdc, LPCWSTR text, int len, SIZE *lpsz);
+BOOL TextOutW(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString);
+
 
 #endif

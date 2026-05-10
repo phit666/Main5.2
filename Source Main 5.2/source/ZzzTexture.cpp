@@ -247,11 +247,13 @@ void PopUpErrorCheckMsgBox(const char* szErrorMsg, bool bForceDestroy)
 	}
 	else
 	{
+#ifdef _TODO
 		int iResult = MessageBox(g_hWnd, szMsg, "ErrorCheckBox", MB_YESNO|MB_ICONERROR);
 		if(IDYES == iResult)
 		{
 			return;
 		}
+#endif
 	}
 
 	#ifdef NEW_PROTOCOL_SYSTEM
@@ -263,5 +265,7 @@ void PopUpErrorCheckMsgBox(const char* szErrorMsg, bool bForceDestroy)
 	DestroySound();
 	DestroyWindow();
 	CloseMainExe();
+#ifdef _WIN32
 	ExitProcess(0);
+#endif
 }

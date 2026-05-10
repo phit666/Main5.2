@@ -11,7 +11,8 @@
 #include "w_PetProcess.h"
 #include "ReadScript.h"
 #include "./Utilities/Log/ErrorReport.h"
-
+#include "mu_sdl.h"
+#include "wt.h"
 
 /*static BYTE bBuxCode[3] = {0xfc,0xcf,0xab};
 static void BuxConvert(BYTE *Buffer,int Size)
@@ -189,7 +190,7 @@ bool PetProcess::LoadData()
 	int _ver;
 	int _array;
 
-	FILE *fp = fopen(FileName, "rb");
+	MU_FILE *fp = MU_fopen(FileName, "rb");
 	if(fp == NULL)
 	{
 		char Text[256];
@@ -201,8 +202,8 @@ bool PetProcess::LoadData()
 		return FALSE;
 	}
 
-	fread( &_ver, sizeof(int), 1, fp );
-	fread( &_array, sizeof(int), 1, fp );
+	MU_fread( &_ver, sizeof(int), 1, fp );
+	MU_fread( &_array, sizeof(int), 1, fp );
 
 	int _type;
 	int _blendMesh;
@@ -212,15 +213,15 @@ bool PetProcess::LoadData()
 	float *_speed = new float[_array];
 
 	int _listSize = 0;
-	fread( &_listSize, sizeof(DWORD), 1, fp );
+	MU_fread( &_listSize, sizeof(DWORD), 1, fp );
 
 	int Size = sizeof(int) + sizeof(int) + sizeof(float) + sizeof(int) + ((sizeof(int) + sizeof(float)) * _array);
 	BYTE *Buffer = new BYTE [Size*_listSize];
 
-	fread( Buffer,Size*_listSize,1,fp );
+	MU_fread( Buffer,Size*_listSize,1,fp );
 
 	DWORD dwCheckSum;
-	fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+	MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
 
 	if ( dwCheckSum != GenerateCheckSum2( Buffer, Size*_listSize, 0x7F1D))
 	{

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Terrain °ü·Ã ÇÔ¼ö
+// Terrain ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
@@ -25,7 +25,8 @@
 #include "./Utilities/Log/muConsoleDebug.h"
 #include "w_MapHeaders.h"
 #include "CameraMove.h"
-
+#include "mu_sdl.h"
+#include "wt.h"
 
 //-------------------------------------------------------------------------------------------------------------
 
@@ -713,13 +714,13 @@ bool OpenTerrainHeightNew(const char* strFilename)
     strcat(FileName,NewFileName);
 	strcat(FileName,"OZB");
 
-	FILE* fp = fopen(FileName, "rb");
-	fseek(fp, 0, SEEK_END);
-	int iBytes = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+	MU_FILE* fp = MU_fopen(FileName, "rb");
+	MU_fseek(fp, 0, SEEK_END);
+	int iBytes = MU_ftell(fp);
+	MU_fseek(fp, 0, SEEK_SET);
 	BYTE *pbyData = new BYTE[iBytes];
-	fread(pbyData, 1, iBytes, fp);
-	fclose(fp);
+	MU_fread(pbyData, 1, iBytes, fp);
+	MU_fclose(fp);
 
 	DWORD dwCurPos = 0;
 	dwCurPos += 4;

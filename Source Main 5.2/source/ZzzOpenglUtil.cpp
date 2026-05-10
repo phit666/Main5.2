@@ -54,7 +54,9 @@ static GLboolean attr_enabled[3] = { GL_FALSE, GL_FALSE, GL_FALSE };
 
 void OpenExploper(char* Name, char* para)
 {
+#ifdef _WIN32
 	ShellExecute(NULL, "open", Name, para, "", SW_SHOW);
+#endif
 }
 
 bool CheckID_HistoryDay(char* Name, WORD day)
