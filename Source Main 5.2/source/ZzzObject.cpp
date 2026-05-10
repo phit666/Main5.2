@@ -45,6 +45,7 @@
 #ifdef PBG_ADD_NEWCHAR_MONK
 #include "MonkSystem.h"
 #endif //PBG_ADD_NEWCHAR_MONK
+#include "wt.h"
 
 extern vec3_t VertexTransform[MAX_MESH][MAX_VERTICES];
 extern vec3_t LightTransform[MAX_MESH][MAX_VERTICES];
@@ -4975,7 +4976,7 @@ void DeleteObjectTile(int x,int y)
 
 int OpenObjects(char *FileName)
 {
-    FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp == NULL)
 	{
 		char Text[256];
@@ -4984,12 +4985,12 @@ int OpenObjects(char *FileName)
 		SendMessage(g_hWnd,WM_DESTROY,0,0);
 		return ( -1);
 	}
-	fseek(fp,0,SEEK_END);
-	int EncBytes = ftell(fp);
-	fseek(fp,0,SEEK_SET);
+	MU_fseek(fp,0,SEEK_END);
+	int EncBytes = MU_ftell(fp);
+	MU_fseek(fp,0,SEEK_SET);
     unsigned char *EncData = new unsigned char[EncBytes];
-	fread(EncData,1,EncBytes,fp);
-	fclose(fp);
+	MU_fread(EncData,1,EncBytes,fp);
+	//MU_fclose(fp);
 
 	unsigned char *Data = EncData;
 	int DataBytes = EncBytes;
@@ -5012,13 +5013,13 @@ int OpenObjects(char *FileName)
 	}
 	delete [] Data;
 
-	fclose(fp);
+	MU_fclose(fp);
     return iMapNumber;
 }
 
 int OpenObjectsEnc(char *FileName)
 {
-    FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp == NULL)
 	{
 		char Text[256];
@@ -5027,12 +5028,12 @@ int OpenObjectsEnc(char *FileName)
 		SendMessage(g_hWnd,WM_DESTROY,0,0);
 		return ( -1);
 	}
-	fseek(fp,0,SEEK_END);
-	int EncBytes = ftell(fp);
-	fseek(fp,0,SEEK_SET);
+	MU_fseek(fp,0,SEEK_END);
+	int EncBytes = MU_ftell(fp);
+	MU_fseek(fp,0,SEEK_SET);
     unsigned char *EncData = new unsigned char[EncBytes];
-	fread(EncData,1,EncBytes,fp);
-	fclose(fp);
+	MU_fread(EncData,1,EncBytes,fp);
+	//MU_fclose(fp);
 
 	int DataBytes = MapFileDecrypt(NULL,EncData,EncBytes);
 	unsigned char *Data = new unsigned char[DataBytes];
@@ -5056,20 +5057,20 @@ int OpenObjectsEnc(char *FileName)
 	}
 	delete [] Data;
 
-	fclose(fp);
+	MU_fclose(fp);
     return iMapNumber;
 }
 
 bool SaveObjects(char *FileName, int iMapNumber)
 {
-	FILE *fp = fopen(FileName,"wb");
+	MU_FILE *fp = MU_fopen(FileName,"wb");
 	
 	short ObjectCount = 0;
 	int CounterPoint = 3;
 	BYTE Version = 0;
-    fwrite(&Version,sizeof(BYTE),1,fp);
-	fwrite(&iMapNumber,1,1,fp);
-	fseek(fp,4,SEEK_SET);
+	MU_fwrite(&Version,sizeof(BYTE),1,fp);
+	MU_fwrite(&iMapNumber,1,1,fp);
+	MU_fseek(fp,4,SEEK_SET);
 	for(int i=0;i<16;i++)
 	{
 		for(int j=0;j<16;j++)
@@ -5082,10 +5083,10 @@ bool SaveObjects(char *FileName, int iMapNumber)
 				{
 					if(o->Live)
 					{
-						fwrite(&o->Type   ,2             ,1,fp);
-						fwrite(o->Position,sizeof(vec3_t),1,fp);
-						fwrite(o->Angle   ,sizeof(vec3_t),1,fp);
-						fwrite(&o->Scale  ,sizeof(float ),1,fp);
+						MU_fwrite(&o->Type   ,2             ,1,fp);
+						MU_fwrite(o->Position,sizeof(vec3_t),1,fp);
+						MU_fwrite(o->Angle   ,sizeof(vec3_t),1,fp);
+						MU_fwrite(&o->Scale  ,sizeof(float ),1,fp);
 					}
     				ObjectCount++;
 					if(o->Next == NULL) break;
@@ -5095,30 +5096,30 @@ bool SaveObjects(char *FileName, int iMapNumber)
 			}
 		}
 	}
-	int EndPoint = ftell(fp);
-	fseek(fp,2,SEEK_SET);
-	fwrite(&ObjectCount,2,1,fp);
-	fseek(fp,EndPoint,SEEK_SET);
+	int EndPoint = MU_ftell(fp);
+	MU_fseek(fp,2,SEEK_SET);
+	MU_fwrite(&ObjectCount,2,1,fp);
+	MU_fseek(fp,EndPoint,SEEK_SET);
 
-	fclose(fp);
+	MU_fclose(fp);
 
 	{
-		fp = fopen(FileName,"rb");
-		fseek(fp,0,SEEK_END);
-		int EncBytes = ftell(fp);
-		fseek(fp,0,SEEK_SET);
+		fp = MU_fopen(FileName,"rb");
+		MU_fseek(fp,0,SEEK_END);
+		int EncBytes = MU_ftell(fp);
+		MU_fseek(fp,0,SEEK_SET);
 		unsigned char *EncData = new unsigned char[EncBytes];
-		fread(EncData,1,EncBytes,fp);
-		fclose(fp);
+		MU_fread(EncData,1,EncBytes,fp);
+		MU_fclose(fp);
 
 		int DataBytes = MapFileEncrypt( NULL, EncData, EncBytes);
 		unsigned char *Data = new unsigned char[DataBytes];
 		MapFileEncrypt( Data, EncData, EncBytes);
 		delete [] EncData;
 
-		fp = fopen(FileName,"wb");
-		fwrite( Data, DataBytes, 1, fp);
-		fclose( fp);
+		fp = MU_fopen(FileName,"wb");
+		MU_fwrite( Data, DataBytes, 1, fp);
+		MU_fclose( fp);
 		delete [] Data;
 	}
     return true;
@@ -5126,8 +5127,8 @@ bool SaveObjects(char *FileName, int iMapNumber)
 
 void SaveTrapObjects(char *FileName)
 {
-	FILE *fp = fopen(FileName,"wt");
-    fprintf(fp,"0\n");
+	MU_FILE *fp = MU_fopen(FileName,"wt");
+	MU_fprintf(fp,"0\n");
 	for(int i=0;i<16;i++)
 	{
 		for(int j=0;j<16;j++)
@@ -5149,7 +5150,7 @@ void SaveTrapObjects(char *FileName)
 						case 51:Type = 102;break;
 						case 25:Type = 103;break;
 						}
-						fprintf(fp,"%4d %4d 0 %4d %4d %4d\n",Type,gMapManager.WorldActive,(BYTE)(o->Position[0]/TERRAIN_SCALE),(BYTE)(o->Position[1]/TERRAIN_SCALE),(BYTE)((o->Angle[2]+22.5f)/360.f*8.f+1.f)%8);
+						MU_fprintf(fp,"%4d %4d 0 %4d %4d %4d\n",Type,gMapManager.WorldActive,(BYTE)(o->Position[0]/TERRAIN_SCALE),(BYTE)(o->Position[1]/TERRAIN_SCALE),(BYTE)((o->Angle[2]+22.5f)/360.f*8.f+1.f)%8);
 					}
 					if(o->Next == NULL) break;
 					o = o->Next;
@@ -5158,8 +5159,8 @@ void SaveTrapObjects(char *FileName)
 			}
 		}
 	}
-    fprintf(fp,"end\n");
-	fclose(fp);
+	MU_fprintf(fp,"end\n");
+	MU_fclose(fp);
 }
 
 OBJECT  g_CloudsLow;

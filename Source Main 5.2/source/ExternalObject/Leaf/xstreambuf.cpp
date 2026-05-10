@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "xstreambuf.h"
+#include "mu_file.h"
+#include "wt.h"
 
 using namespace leaf;
 
@@ -138,19 +140,19 @@ xfstreambuf::~xfstreambuf()
 
 bool xfstreambuf::load(const std::string& filename) 
 {
-	FILE* fp = NULL;
-	fp = fopen(filename.data(), "rb");
+	MU_FILE* fp = NULL;
+	fp = MU_fopen(filename.data(), "rb");
 	if(fp) {
-		fseek(fp, 0, SEEK_END);
-		unsigned int size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
+		MU_fseek(fp, 0, SEEK_END);
+		unsigned int size = MU_ftell(fp);
+		MU_fseek(fp, 0, SEEK_SET);
 		
 		char* temp = new char[size];
-		fread(temp, 1, size, fp);
+		MU_fread(temp, 1, size, fp);
 		write(temp, size);
 		delete [] temp;
 		
-		fclose(fp);
+		MU_fclose(fp);
 		
 		return true;
 	}
@@ -158,11 +160,11 @@ bool xfstreambuf::load(const std::string& filename)
 }
 bool xfstreambuf::save(const std::string& filename) 
 {
-	FILE* fp = NULL;
-	fp = fopen(filename.data(), "wb");
+	MU_FILE* fp = NULL;
+	fp = MU_fopen(filename.data(), "wb");
 	if(fp) {
-		fwrite(data(), 1, size(), fp);
-		fclose(fp);
+		MU_fwrite(data(), 1, size(), fp);
+		MU_fclose(fp);
 		
 		return true;
 	}

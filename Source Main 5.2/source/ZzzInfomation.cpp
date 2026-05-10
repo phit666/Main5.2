@@ -22,6 +22,7 @@
 #include "NewUISystem.h"
 #include "CharacterManager.h"
 #include "SkillManager.h"
+#include "wt.h"
 
 CLASS_ATTRIBUTE     ClassAttribute[MAX_CLASS];
 MONSTER_SCRIPT      MonsterScript [MAX_MONSTER];
@@ -49,7 +50,7 @@ CGlobalText GlobalText;
 
 void SaveTextFile(char *FileName)
 {
-	FILE *fp = fopen(FileName,"wb");
+	MU_FILE *fp = MU_fopen(FileName,"wb");
 	
 	int Size = MAX_GLOBAL_TEXT_STRING;
 	BYTE *Buffer = new BYTE [Size];
@@ -57,10 +58,10 @@ void SaveTextFile(char *FileName)
 	{
 		memcpy(Buffer,GlobalText[i],Size);
 		BuxConvert(Buffer,Size);
-		fwrite(Buffer,Size,1,fp);
+		MU_fwrite(Buffer,Size,1,fp);
 	}
 	delete [] Buffer;
-	fclose(fp);
+	MU_fclose(fp);
 }
 
 char AbuseFilter[MAX_FILTERS][20];
@@ -70,7 +71,7 @@ int  AbuseNameFilterNumber = 0;
 
 void OpenFilterFile(char *FileName)
 {
-	FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp == NULL)
 	{
 		char Text[256];
@@ -83,10 +84,10 @@ void OpenFilterFile(char *FileName)
 
 	int Size = 20;
 	BYTE *Buffer = new BYTE [Size*MAX_FILTERS];
-	fread(Buffer,Size*MAX_FILTERS,1,fp);
+	MU_fread(Buffer,Size*MAX_FILTERS,1,fp);
 	DWORD dwCheckSum;
-	fread(&dwCheckSum,sizeof ( DWORD),1,fp);
-	fclose(fp);
+	MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+	//MU_fclose(fp);
 
 	{
 		BYTE *pSeek = Buffer;
@@ -104,12 +105,12 @@ void OpenFilterFile(char *FileName)
 	}
 
 	delete [] Buffer;
-	fclose(fp);
+	MU_fclose(fp);
 }
 
 void OpenNameFilterFile(char *FileName)
 {
-	FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp == NULL)
 	{
 		char Text[256];
@@ -122,11 +123,11 @@ void OpenNameFilterFile(char *FileName)
 	int Size = 20;
 	BYTE *Buffer = new BYTE [Size*MAX_NAMEFILTERS];
 	
-	fread(Buffer,Size*MAX_NAMEFILTERS,1,fp);
+	MU_fread(Buffer,Size*MAX_NAMEFILTERS,1,fp);
 	
 	DWORD dwCheckSum;
-	fread(&dwCheckSum,sizeof ( DWORD),1,fp);
-	fclose(fp);
+	MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+	MU_fclose(fp);
 	if ( dwCheckSum != GenerateCheckSum2( Buffer, Size*MAX_NAMEFILTERS, 0x2BC1))
 	{
 		char Text[256];
@@ -159,19 +160,19 @@ void OpenNameFilterFile(char *FileName)
 
 void OpenGateScript(char *FileName)
 {
-	FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp != NULL)
 	{
 		int Size = sizeof(GATE_ATTRIBUTE);
 		BYTE *Buffer = new BYTE [Size];
 		for(int i=0;i<MAX_GATES;i++)
 		{
-			fread(Buffer,Size,1,fp);
+			MU_fread(Buffer,Size,1,fp);
             BuxConvert(Buffer,Size);
 			memcpy(&GateAttribute[i],Buffer,Size);
 		}
 		delete [] Buffer;
-		fclose(fp);
+		MU_fclose(fp);
 	}
 	else
 	{
@@ -188,16 +189,16 @@ void OpenMonsterSkillScript(char *FileName)
 {
 	memset(MonsterSkill, -1, sizeof(Script_Skill));
 
-	FILE *fp = fopen(FileName, "rb");
+	MU_FILE *fp = MU_fopen(FileName, "rb");
 	if(fp != NULL)
 	{
 		int Size = (sizeof(Script_Skill) + sizeof(int));
 		BYTE *Buffer = new BYTE [Size];
 		int FileCount = 0;
-		fread(&FileCount,sizeof(int),1,fp);
+		MU_fread(&FileCount,sizeof(int),1,fp);
 		for(int i=0;i<FileCount;i++)
 		{
-			fread(Buffer,Size,1,fp);
+			MU_fread(Buffer,Size,1,fp);
             BuxConvert(Buffer,Size);
 			int dummy = -1;
 			int Seek = 0;
@@ -208,7 +209,7 @@ void OpenMonsterSkillScript(char *FileName)
 			memcpy(&MonsterSkill[dummy].Slot,Buffer + Seek,sizeof(int));
 		}
 		delete [] Buffer;
-		fclose(fp);
+		MU_fclose(fp);
 	}
 	else
 	{
@@ -222,7 +223,7 @@ void OpenMonsterSkillScript(char *FileName)
 
 void OpenNpcScript(char *FileName)
 {
-	if((SMDFile=fopen(FileName,"rb")) == NULL)
+	if((SMDFile= MU_fopen(FileName,"rb")) == NULL)
 	{
 		char Text[256];
     	sprintf(Text,"%s - File not exist.",FileName);
@@ -246,22 +247,22 @@ void OpenNpcScript(char *FileName)
 			Token = (*GetToken)();Dir = (int)TokenNumber;
 		}
 	}
-	fclose(SMDFile);
+	MU_fclose(SMDFile);
 }
 
 void OpenSkillScript(char *FileName)
 {
-	FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp != NULL)
 	{
 		int Size = sizeof(SKILL_ATTRIBUTE);
 		// 읽기
 		BYTE *Buffer = new BYTE [Size*MAX_SKILLS];
-		fread(Buffer,Size*MAX_SKILLS,1,fp);
+		MU_fread(Buffer,Size*MAX_SKILLS,1,fp);
 		// crc 체크
 		DWORD dwCheckSum;
-		fread(&dwCheckSum,sizeof ( DWORD),1,fp);
-		fclose(fp);
+		MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+		MU_fclose(fp);
 		if ( dwCheckSum != GenerateCheckSum2( Buffer, Size*MAX_SKILLS, 0x5A18))
 		{
 			char Text[256];
@@ -350,7 +351,7 @@ DIALOG_SCRIPT g_DialogScript[MAX_DIALOG];
 
 void OpenDialogFile(char *FileName)
 {
-	FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp == NULL)
 	{
 		char Text[256];
@@ -364,12 +365,12 @@ void OpenDialogFile(char *FileName)
 	BYTE *Buffer = new BYTE [Size];
 	for(int i=0;i<MAX_DIALOG;i++)
 	{
-		fread(Buffer,Size,1,fp);
+		MU_fread(Buffer,Size,1,fp);
 		BuxConvert(Buffer,Size);
 		memcpy(&g_DialogScript[i],Buffer,Size);
 	}
 	delete [] Buffer;
-	fclose(fp);
+	MU_fclose(fp);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -385,16 +386,16 @@ int ConvertItemType(BYTE *Item)
 
 void OpenItemScript(char *FileName)
 {
-	FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp != NULL)
 	{
 		int Size = sizeof(ITEM_ATTRIBUTE);
 		BYTE *Buffer = new BYTE [Size*MAX_ITEM];
-		fread(Buffer,Size*MAX_ITEM,1,fp);
+		MU_fread(Buffer,Size*MAX_ITEM,1,fp);
 		// crc
 		DWORD dwCheckSum;
-		fread(&dwCheckSum,sizeof ( DWORD),1,fp);
-		fclose(fp);
+		MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+		MU_fclose(fp);
 		if ( dwCheckSum != GenerateCheckSum2( Buffer, Size*MAX_ITEM, 0xE2F1))
 		{
 			char Text[256];
@@ -427,15 +428,15 @@ void OpenItemScript(char *FileName)
 
 void PrintItem(char *FileName)
 {
-	FILE *fp = fopen(FileName,"wt");
-    fprintf(fp,"                이름  최소공격력 최대공격력 방어력 방어율 필요힘 필요민첩 필요에너지\n");
+	MU_FILE *fp = MU_fopen(FileName,"wt");
+	MU_fprintf(fp,"                이름  최소공격력 최대공격력 방어력 방어율 필요힘 필요민첩 필요에너지\n");
 	//fprintf(fp,"                이름    카오스성공확률\n");
 	bool Excellent = true;
 	for(int i=0;i<16*MAX_ITEM_INDEX;i++)
 	{
 		if ( ( i & 0x1FF) == 0)
 		{
-			fprintf(fp, "------------------------------------------------------------------------------------------------------\n");
+			MU_fprintf(fp, "------------------------------------------------------------------------------------------------------\n");
 		}
         ITEM_ATTRIBUTE *p = &ItemAttribute[i];
 		if(p->Name[0] != NULL)
@@ -529,16 +530,16 @@ void PrintItem(char *FileName)
 				ItemValue( &ip, 0);
 
 				if(j==0)
-     				fprintf(fp,"%20s %8d %8d %8d %8d %8d %8d %8d %8d %8d\n",p->Name,DamageMin,DamageMax,Defense, SuccessfulBlocking,RequireStrength,RequireDexterity,RequireEnergy,p->WeaponSpeed,ItemValue(&ip));
+					MU_fprintf(fp,"%20s %8d %8d %8d %8d %8d %8d %8d %8d %8d\n",p->Name,DamageMin,DamageMax,Defense, SuccessfulBlocking,RequireStrength,RequireDexterity,RequireEnergy,p->WeaponSpeed,ItemValue(&ip));
      				//fprintf(fp,"%20s %4d%%",p->Name, iRate);
 				else
-     				fprintf(fp,"%17s +%d %8d %8d %8d %8d %8d %8d %8d %8d %8d\n","",Level,DamageMin,DamageMax,Defense,SuccessfulBlocking,RequireStrength,RequireDexterity,RequireEnergy,p->WeaponSpeed,ItemValue(&ip));
+					MU_fprintf(fp,"%17s +%d %8d %8d %8d %8d %8d %8d %8d %8d %8d\n","",Level,DamageMin,DamageMax,Defense,SuccessfulBlocking,RequireStrength,RequireDexterity,RequireEnergy,p->WeaponSpeed,ItemValue(&ip));
 					//fprintf(fp,"%4d%%<+%d>",iRate,Level);
 			}
-			fprintf(fp, "\n");
+			MU_fprintf(fp, "\n");
 		}
 	}
-	fclose(fp);
+	MU_fclose(fp);
 }
 
 BYTE getSkillIndexByBook ( int Type )
@@ -2489,7 +2490,7 @@ int MonsterKey = 0;
 
 void OpenMonsterScript(char *FileName)
 {
-	if((SMDFile=fopen(FileName,"rb")) == NULL)	return;
+	if((SMDFile= MU_fopen(FileName,"rb")) == NULL)	return;
 	SMDToken Token;
 	while(true)
 	{
@@ -2503,7 +2504,7 @@ void OpenMonsterScript(char *FileName)
 		//Token = (*GetToken)();m->Level = (int)TokenNumber;
 		//for(int i=0;i<23;i++) Token = (*GetToken)();
 	}
-	fclose(SMDFile);
+	MU_fclose(SMDFile);
 }
 
 char*   getMonsterName ( int type )

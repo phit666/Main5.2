@@ -42,7 +42,7 @@
 #ifdef PBG_ADD_NEWCHAR_MONK
 #include "MonkSystem.h"
 #endif //PBG_ADD_NEWCHAR_MONK
-
+#include "wt.h"
 
 ///////////////////////////////////////////
 extern BOOL g_bUseChatListBox;
@@ -4777,23 +4777,23 @@ void OpenFont()
 
 void SaveMacro(char *FileName)
 {
-	FILE *fp = fopen(FileName,"wt");
+	MU_FILE *fp = MU_fopen(FileName,"wt");
 	for(int i=0;i<10;i++)
 	{
-		fprintf(fp,"%s\n",MacroText[i]);
+		MU_fprintf(fp,"%s\n",MacroText[i]);
 	}
-	fclose(fp);
+	MU_fclose(fp);
 }
 
 void OpenMacro(char *FileName)
 {
-	FILE *fp = fopen(FileName,"rt");
+	MU_FILE *fp = MU_fopen(FileName,"rt");
 	if(fp == NULL) return;
 	for(int i=0;i<10;i++)
 	{
-		fscanf(fp,"%s",MacroText[i]);
+		MU_fscanf(fp,"%s",MacroText[i]);
 	}
-	fclose(fp);
+	MU_fclose(fp);
 }
 
 void SaveOptions()

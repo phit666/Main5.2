@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 #include "MoveCommandData.h"
+#include "mu_file.h"
+#include "wt.h"
 
 using namespace SEASON3B;
 
@@ -23,20 +25,20 @@ CMoveCommandData* CMoveCommandData::GetInstance()
 
 bool CMoveCommandData::Create(const std::string& filename)
 {
-	FILE* fp = fopen ( filename.c_str(), "rb" );
+	MU_FILE* fp = MU_fopen ( filename.c_str(), "rb" );
 	if(fp == NULL) return false;
 
 	int count = 0;
-	fread(&count, sizeof(int), 1, fp);
+	MU_fread(&count, sizeof(int), 1, fp);
 	
 	for(int i=0; i<count; i++)
 	{		
 		MOVEINFODATA* pMoveInfoData = new MOVEINFODATA;
-		fread(&(pMoveInfoData->_ReqInfo), sizeof(MOVEREQINFO), 1, fp);
+		MU_fread(&(pMoveInfoData->_ReqInfo), sizeof(MOVEREQINFO), 1, fp);
 		::BuxConvert((BYTE*)&(pMoveInfoData->_ReqInfo), sizeof(MOVEREQINFO));	
 		m_listMoveInfoData.push_back(pMoveInfoData);
 	}
-	fclose(fp);
+	MU_fclose(fp);
 
 	return true;
 }

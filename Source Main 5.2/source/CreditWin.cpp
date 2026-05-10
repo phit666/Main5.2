@@ -317,7 +317,7 @@ void CCreditWin::AnimationIllust(double dDeltaTick)
 
 void CCreditWin::LoadText()
 {
-	FILE *fp = ::fopen(CRW_DATA_FILE, "rb");
+	MU_FILE *fp = MU_fopen(CRW_DATA_FILE, "rb");
 	if (fp == NULL)
 	{
 		char szMessage[256];
@@ -329,10 +329,10 @@ void CCreditWin::LoadText()
 	}
 
 	int nSize = sizeof(SCreditItem) * CRW_ITEM_MAX;
-	::fread(m_aCredit, nSize, 1, fp);
+	MU_fread(m_aCredit, nSize, 1, fp);
 	::BuxConvert((BYTE*)m_aCredit, nSize);
 
-	::fclose(fp);
+	MU_fclose(fp);
 }
 
 void CCreditWin::SetTextIndex()

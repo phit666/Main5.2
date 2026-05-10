@@ -67,16 +67,16 @@ bool CheckID_HistoryDay(char* Name, WORD day)
 		WORD date;
 	}dayHistory;
 
-	FILE* fp;
+	MU_FILE* fp;
 	dayHistory days[100];
 	int   count = 0;
 	WORD  num = 0;
 	bool  sameName = false;
 	bool  update = true;
 
-	if ((fp = fopen("dconfig.ini", "rb")) != NULL)
+	if ((fp = MU_fopen("dconfig.ini", "rb")) != NULL)
 	{
-		fread(&num, sizeof(WORD), 1, fp);
+		MU_fread(&num, sizeof(WORD), 1, fp);
 
 		if (num > 100)
 		{
@@ -86,8 +86,8 @@ bool CheckID_HistoryDay(char* Name, WORD day)
 		{
 			for (int i = 0; i < num; ++i)
 			{
-				fread(days[i].ID, sizeof(char), MAX_ID_SIZE + 1, fp);
-				fread(&days[i].date, sizeof(WORD), 1, fp);
+				MU_fread(days[i].ID, sizeof(char), MAX_ID_SIZE + 1, fp);
+				MU_fread(&days[i].date, sizeof(WORD), 1, fp);
 
 				if (!strcmp(days[i].ID, Name))
 				{
@@ -102,7 +102,7 @@ bool CheckID_HistoryDay(char* Name, WORD day)
 				count++;
 			}
 		}
-		fclose(fp);
+		MU_fclose(fp);
 	}
 
 	if (update)
@@ -115,16 +115,16 @@ bool CheckID_HistoryDay(char* Name, WORD day)
 			num++;
 		}
 
-		fp = fopen("dconfig.ini", "wb");
+		fp = MU_fopen("dconfig.ini", "wb");
 
-		fwrite(&num, sizeof(WORD), 1, fp);
+		MU_fwrite(&num, sizeof(WORD), 1, fp);
 		for (int i = 0; i < num; ++i)
 		{
-			fwrite(days[i].ID, sizeof(char), MAX_ID_SIZE + 1, fp);
-			fwrite(&days[i].date, sizeof(WORD), 1, fp);
+			MU_fwrite(days[i].ID, sizeof(char), MAX_ID_SIZE + 1, fp);
+			MU_fwrite(&days[i].date, sizeof(WORD), 1, fp);
 		}
 
-		fclose(fp);
+		MU_fclose(fp);
 	}
 
 	//    showShoppingMall = update;

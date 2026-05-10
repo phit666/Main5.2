@@ -20,6 +20,7 @@
 #include "CameraMove.h"
 #include "mu_sdl.h"
 #include "mu_gles2_matrix.h"
+#include "wt.h"
 
 //BMD Models[MAX_MODELS];
 BMD *Models;
@@ -2138,17 +2139,17 @@ bool BMD::Open(char *DirName,char *ModelFileName)
 	char ModelName[64];
 	strcpy(ModelName,DirName);
 	strcat(ModelName,ModelFileName);
-    FILE *fp = fopen(ModelName,"rb");
+	MU_FILE *fp = MU_fopen(ModelName,"rb");
 	if(fp == NULL)
 	{
 		return false;
 	}
-	fseek(fp,0,SEEK_END);
-	int DataBytes = ftell(fp);
-	fseek(fp,0,SEEK_SET);
+	MU_fseek(fp,0,SEEK_END);
+	int DataBytes = MU_ftell(fp);
+	MU_fseek(fp,0,SEEK_SET);
     unsigned char *Data = new unsigned char[DataBytes];
-	fread(Data,1,DataBytes,fp);
-	fclose(fp);
+	MU_fread(Data,1,DataBytes,fp);
+	MU_fclose(fp);
 
 	int Size;
 	int DataPtr = 3;
@@ -2266,64 +2267,64 @@ bool BMD::Save(char *DirName,char *ModelFileName)
 	char ModelName[64];
 	strcpy(ModelName,DirName);
 	strcat(ModelName,ModelFileName);
-    FILE *fp = fopen(ModelName,"wb");
+	MU_FILE *fp = MU_fopen(ModelName,"wb");
     if(fp == NULL) return false;
-	putc('B',fp);
-	putc('M',fp);
-	putc('D',fp);
-	fwrite(&Version   ,1,1,fp);
-	fwrite(Name       ,32,1,fp);
-	fwrite(&NumMeshs  ,2,1,fp);
-	fwrite(&NumBones  ,2,1,fp);
-	fwrite(&NumActions,2,1,fp);
+	MU_putc('B',fp);
+	MU_putc('M',fp);
+	MU_putc('D',fp);
+	MU_fwrite(&Version   ,1,1,fp);
+	MU_fwrite(Name       ,32,1,fp);
+	MU_fwrite(&NumMeshs  ,2,1,fp);
+	MU_fwrite(&NumBones  ,2,1,fp);
+	MU_fwrite(&NumActions,2,1,fp);
 	int i;
 	for(i=0;i<NumMeshs;i++)
 	{
        	Mesh_t *m = &Meshs[i];
-		fwrite(&m->NumVertices     ,2,1,fp);
-		fwrite(&m->NumNormals      ,2,1,fp);
-		fwrite(&m->NumTexCoords    ,2,1,fp);
-		fwrite(&m->NumTriangles    ,2,1,fp);
-		fwrite(&m->Texture         ,2,1,fp);
+		MU_fwrite(&m->NumVertices     ,2,1,fp);
+		MU_fwrite(&m->NumNormals      ,2,1,fp);
+		MU_fwrite(&m->NumTexCoords    ,2,1,fp);
+		MU_fwrite(&m->NumTriangles    ,2,1,fp);
+		MU_fwrite(&m->Texture         ,2,1,fp);
 		//fwrite(&m->NumCommandBytes ,4,1,fp);
-		fwrite(m->Vertices ,m->NumVertices *sizeof(Vertex_t  ),1,fp);
-		fwrite(m->Normals  ,m->NumNormals  *sizeof(Normal_t  ),1,fp);
-		fwrite(m->TexCoords,m->NumTexCoords*sizeof(TexCoord_t),1,fp);
+		MU_fwrite(m->Vertices ,m->NumVertices *sizeof(Vertex_t  ),1,fp);
+		MU_fwrite(m->Normals  ,m->NumNormals  *sizeof(Normal_t  ),1,fp);
+		MU_fwrite(m->TexCoords,m->NumTexCoords*sizeof(TexCoord_t),1,fp);
 		//fwrite(m->Triangles,m->NumTriangles*sizeof(Triangle_t),1,fp);
 		for(int j=0;j<m->NumTriangles;j++)
 		{
-	       	fwrite(&m->Triangles[j],sizeof(Triangle_t2),1,fp);
+			MU_fwrite(&m->Triangles[j],sizeof(Triangle_t2),1,fp);
 		}
 		//fwrite(m->Commands ,m->NumCommandBytes                ,1,fp);
-		fwrite(Textures[i].FileName,32,1,fp);
+		MU_fwrite(Textures[i].FileName,32,1,fp);
 	}
 	for(i=0;i<NumActions;i++)
 	{
        	Action_t *a = &Actions[i];
-     	fwrite(&a->NumAnimationKeys,2,1,fp);
-     	fwrite(&a->LockPositions,1,1,fp);
+		MU_fwrite(&a->NumAnimationKeys,2,1,fp);
+		MU_fwrite(&a->LockPositions,1,1,fp);
      	if(a->LockPositions)
 		{
-			fwrite(a->Positions,a->NumAnimationKeys*sizeof(vec3_t),1,fp);
+			MU_fwrite(a->Positions,a->NumAnimationKeys*sizeof(vec3_t),1,fp);
 		}
 	}
 	for(i=0;i<NumBones;i++)
 	{
        	Bone_t *b = &Bones[i];
-		fwrite(&b->Dummy,1,1,fp);
+		MU_fwrite(&b->Dummy,1,1,fp);
 		if(!b->Dummy)
 		{
-			fwrite(b->Name,32,1,fp);
-			fwrite(&b->Parent,2,1,fp);
+			MU_fwrite(b->Name,32,1,fp);
+			MU_fwrite(&b->Parent,2,1,fp);
 			for(int j=0;j<NumActions;j++)
 			{
 				BoneMatrix_t *bm = &b->BoneMatrixes[j];
-				fwrite(bm->Position,Actions[j].NumAnimationKeys*sizeof(vec3_t),1,fp);
-				fwrite(bm->Rotation,Actions[j].NumAnimationKeys*sizeof(vec3_t),1,fp);
+				MU_fwrite(bm->Position,Actions[j].NumAnimationKeys*sizeof(vec3_t),1,fp);
+				MU_fwrite(bm->Rotation,Actions[j].NumAnimationKeys*sizeof(vec3_t),1,fp);
 			}
 		}
 	}
-	fclose(fp);
+	MU_fclose(fp);
     return true;
 }
 
@@ -2345,19 +2346,19 @@ bool BMD::Open2(char *DirName,char *ModelFileName, bool bReAlloc)
 	char ModelName[64];
 	strcpy(ModelName,DirName);
 	strcat(ModelName,ModelFileName);
-    FILE *fp = fopen(ModelName,"rb");
+	MU_FILE *fp = MU_fopen(ModelName,"rb");
 	if(fp == NULL)
 	{
 		m_bCompletedAlloc = false;
 		return false;
 	}
 
-	fseek(fp,0,SEEK_END);
-	int DataBytes = ftell(fp);
-	fseek(fp,0,SEEK_SET);
+	MU_fseek(fp,0,SEEK_END);
+	int DataBytes = MU_ftell(fp);
+	MU_fseek(fp,0,SEEK_SET);
     unsigned char *Data = new unsigned char[DataBytes];
-	fread(Data,1,DataBytes,fp);
-	fclose(fp);
+	MU_fread(Data,1,DataBytes,fp);
+	MU_fclose(fp);
 
 	int Size;
 	int DataPtr = 3;
@@ -2491,13 +2492,13 @@ bool BMD::Save2(char *DirName,char *ModelFileName)
 	char ModelName[64];
 	strcpy(ModelName,DirName);
 	strcat(ModelName,ModelFileName);
-    FILE *fp = fopen(ModelName,"wb");
+	MU_FILE *fp = MU_fopen(ModelName,"wb");
     if(fp == NULL) return false;
-	putc('B',fp);
-	putc('M',fp);
-	putc('D',fp);
+	MU_putc('B',fp);
+	MU_putc('M',fp);
+	MU_putc('D',fp);
 	Version = 12;
-	fwrite(&Version   ,1,1,fp);
+	MU_fwrite(&Version   ,1,1,fp);
 
 	BYTE *pbyBuffer = new BYTE [1024*1024];
 	BYTE *pbyCur = pbyBuffer;
@@ -2557,9 +2558,9 @@ bool BMD::Save2(char *DirName,char *ModelFileName)
 	long lEncSize = MapFileEncrypt( NULL, pbyBuffer, lSize);
 	BYTE *pbyEnc = new BYTE [lEncSize];
 	MapFileEncrypt( pbyEnc, pbyBuffer, lSize);
-	fwrite(&lEncSize, sizeof ( long), 1, fp);
-	fwrite(pbyEnc, lEncSize, 1, fp);
-	fclose(fp);
+	MU_fwrite(&lEncSize, sizeof ( long), 1, fp);
+	MU_fwrite(pbyEnc, lEncSize, 1, fp);
+	MU_fclose(fp);
 	delete [] pbyBuffer;
 	delete [] pbyEnc;
     return true;

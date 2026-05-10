@@ -17,6 +17,7 @@
 #include "UIControls.h"
 #include "NewUISystem.h"
 #include "SkillManager.h"
+#include "mu_file.h"
 #include "wt.h"
 
 //extern	char TextList[30][100];
@@ -50,16 +51,16 @@ bool CSItemOption::OpenItemSetScript ( bool bTestServer )
 
 bool	CSItemOption::OpenItemSetType ( const char* filename )
 {
-	FILE* fp = fopen ( filename, "rb" );
+	MU_FILE* fp = MU_fopen ( filename, "rb" );
 	if(fp != NULL)
 	{
 		int Size = sizeof(ITEM_SET_TYPE);
 		BYTE *Buffer = new BYTE [Size*MAX_ITEM];
-		fread(Buffer,Size*MAX_ITEM,1,fp);
+		MU_fread(Buffer,Size*MAX_ITEM,1,fp);
 
 		DWORD dwCheckSum;
-		fread(&dwCheckSum,sizeof ( DWORD),1,fp);
-		fclose(fp);
+		MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+		MU_fclose(fp);
 
 		if ( dwCheckSum != GenerateCheckSum2( Buffer, Size*MAX_ITEM, 0xE5F1))
 		{
@@ -96,16 +97,16 @@ bool	CSItemOption::OpenItemSetType ( const char* filename )
 
 bool CSItemOption::OpenItemSetOption ( const char* filename )
 {
-	FILE* fp = fopen ( filename, "rb" );
+	MU_FILE* fp = MU_fopen ( filename, "rb" );
 	if(fp != NULL)
 	{
 		int Size = sizeof(ITEM_SET_OPTION);
 		BYTE *Buffer = new BYTE [Size*MAX_SET_OPTION];
-		fread(Buffer,Size*MAX_SET_OPTION,1,fp);
+		MU_fread(Buffer,Size*MAX_SET_OPTION,1,fp);
 
 		DWORD dwCheckSum;
-		fread(&dwCheckSum,sizeof ( DWORD),1,fp);
-		fclose(fp);
+		MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+		MU_fclose(fp);
 
 		if ( dwCheckSum != GenerateCheckSum2( Buffer, Size*MAX_SET_OPTION, 0xA2F1))
 		{

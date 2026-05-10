@@ -593,7 +593,7 @@ void CSocketItemMgr::CalcSocketStatusBonus()
 
 void CSocketItemMgr::OpenSocketItemScript(const unicode::t_char * szFileName)
 {
-	FILE *fp = fopen(szFileName,"rb");
+	MU_FILE *fp = MU_fopen(szFileName,"rb");
 	if(fp == NULL)
 	{
 		unicode::t_char Text[256];
@@ -609,12 +609,12 @@ void CSocketItemMgr::OpenSocketItemScript(const unicode::t_char * szFileName)
 	{
 		for (int i = 0; i < MAX_SOCKET_OPTION; ++i)
 		{
-			fread(&m_SocketOptionInfo[j][i], iSize, 1, fp);
+			MU_fread(&m_SocketOptionInfo[j][i], iSize, 1, fp);
 			BuxConvert((BYTE*)&m_SocketOptionInfo[j][i], iSize);
 		}
 	}
 
-	fclose(fp); 
+	MU_fclose(fp);
 
 	for (int i = 0; i < MAX_SOCKET_OPTION; ++i)
 	{

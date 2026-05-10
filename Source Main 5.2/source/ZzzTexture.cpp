@@ -9,6 +9,8 @@
 #include "DSPlaySound.h"
 #include "Jpeglib.h"
 #include "ProtocolSend.h"
+#include "mu_file.h"
+#include "wt.h"
 
 CGlobalBitmap Bitmaps;
 
@@ -31,20 +33,20 @@ bool WriteJpeg(char *filename,int Width,int Height,unsigned char *Buffer,int qua
 {
 	struct jpeg_compress_struct cinfo;
 	struct jpeg_error_mgr jerr;
-	FILE * outfile;
+	MU_FILE * outfile;
 	JSAMPROW row_pointer[1];	
 	int row_stride;	
 	
 	cinfo.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&cinfo);
 	
-	if ((outfile = fopen(filename, "wb")) == NULL)
+	if ((outfile = MU_fopen(filename, "wb")) == NULL)
 	{
 		//fprintf(stderr, "can't open %s\n", filename);
 		//exit(1);
 		return FALSE;
 	}
-	jpeg_stdio_dest(&cinfo, outfile);
+	MU_jpeg_stdio_dest(&cinfo, outfile);
 	
 	cinfo.image_width = Width; 
 	cinfo.image_height = Height;
@@ -62,7 +64,7 @@ bool WriteJpeg(char *filename,int Width,int Height,unsigned char *Buffer,int qua
 	}
 	
 	jpeg_finish_compress(&cinfo);
-	fclose(outfile);
+	MU_fclose(outfile);
 	jpeg_destroy_compress(&cinfo);
 	return TRUE;
 }
@@ -74,17 +76,17 @@ void SaveImage(int HeaderSize,char *Ext,char *filename,BYTE *PakBuffer,int Size)
 		char OpenFileName[256];
 		strcpy(OpenFileName,"Data2\\");
 		strcat(OpenFileName,filename);
-		FILE *fp = fopen(OpenFileName,"rb");
+		MU_FILE *fp = MU_fopen(OpenFileName,"rb");
 		if(fp == NULL)
 		{
 			return;
 		}
-		fseek(fp,0,SEEK_END);
-		Size = ftell(fp);
-		fseek(fp,0,SEEK_SET);
+		MU_fseek(fp,0,SEEK_END);
+		Size = MU_ftell(fp);
+		MU_fseek(fp,0,SEEK_SET);
 		PakBuffer = new unsigned char [Size];
-		fread(PakBuffer,1,Size,fp);
-		fclose(fp);
+		MU_fread(PakBuffer,1,Size,fp);
+		MU_fclose(fp);
 	}
 
 	char Header[24];
@@ -103,11 +105,11 @@ void SaveImage(int HeaderSize,char *Ext,char *filename,BYTE *PakBuffer,int Size)
 	char SaveFileName[256];
 	strcpy(SaveFileName,"Data\\");
 	strcat(SaveFileName,NewFileName);
-	FILE *fp = fopen(SaveFileName,"wb");
+	MU_FILE *fp = MU_fopen(SaveFileName,"wb");
 	if(fp == NULL) return;
-	fwrite(Header,1,HeaderSize,fp);
-	fwrite(PakBuffer,1,Size,fp);
-	fclose(fp);
+	MU_fwrite(Header,1,HeaderSize,fp);
+	MU_fwrite(PakBuffer,1,Size,fp);
+	MU_fclose(fp);
 
 	if(PakBuffer==NULL || Size==0)
 	{
@@ -119,7 +121,7 @@ bool OpenJpegBuffer(char *filename,float *BufferFloat)
 {
 	struct jpeg_decompress_struct cinfo;
 	struct my_error_mgr jerr;
-	FILE * infile;		
+	MU_FILE * infile;		
 	JSAMPARRAY buffer;	
 	int row_stride;	
 	
@@ -138,7 +140,7 @@ bool OpenJpegBuffer(char *filename,float *BufferFloat)
     strcat(FileName,NewFileName);
 	strcat(FileName,"OZJ");
 
-	if((infile = fopen(FileName, "rb")) == NULL) 
+	if((infile = MU_fopen(FileName, "rb")) == NULL)
 	{
 		char Text[256];
     	sprintf(Text,"%s - File not exist.",FileName);
@@ -149,19 +151,19 @@ bool OpenJpegBuffer(char *filename,float *BufferFloat)
 		return false;
 	}
 
-	fseek(infile,24,SEEK_SET);
+	MU_fseek(infile,24,SEEK_SET);
 	
 	cinfo.err = jpeg_std_error(&jerr.pub);
 	jerr.pub.error_exit = my_error_exit;
 	if (setjmp(jerr.setjmp_buffer)) 
 	{
 		jpeg_destroy_decompress(&cinfo);
-		fclose(infile);
+		MU_fclose(infile);
 		return false;
 	}
 	jpeg_create_decompress(&cinfo);
 	
-	jpeg_stdio_src(&cinfo, infile);
+	MU_jpeg_stdio_src(&cinfo, infile);
 	
 	(void) jpeg_read_header(&cinfo, TRUE);
 	
@@ -190,7 +192,7 @@ bool OpenJpegBuffer(char *filename,float *BufferFloat)
 	
 	(void) jpeg_finish_decompress(&cinfo);
 	jpeg_destroy_decompress(&cinfo);
-	fclose(infile);
+	MU_fclose(infile);
 	return true;
 }
 

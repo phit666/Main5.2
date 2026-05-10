@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "ServerListManager.h"
 #include "./Utilities/Log/ErrorReport.h"
+#include "mu_file.h"
+#include "wt.h"
 
 CServerListManager::CServerListManager()
 {
@@ -46,7 +48,7 @@ void CServerListManager::BuxConvert(BYTE* pbyBuffer, int nSize)
 
 void CServerListManager::LoadServerListScript()
 {
-	FILE* fp = ::fopen("Data\\Local\\ServerList.bmd", "rb");
+	MU_FILE* fp = ::MU_fopen("Data\\Local\\ServerList.bmd", "rb");
 
 	if (fp == NULL)
 	{
@@ -76,10 +78,10 @@ typedef struct _SERVER_GROUP_INFO
 	SServerGroupInfo sServerGroupInfo;
 	int i;
 
-	while (0 != ::fread(&sServerGroupScript, nSize, 1, fp))
+	while (0 != MU_fread(&sServerGroupScript, nSize, 1, fp))
 	{
 		::BuxConvert((BYTE*)&sServerGroupScript, nSize);
-		::fread(szDescript, sServerGroupScript.m_nDescriptLen, 1, fp);
+		MU_fread(szDescript, sServerGroupScript.m_nDescriptLen, 1, fp);
 		::BuxConvert((BYTE*)szDescript, sServerGroupScript.m_nDescriptLen);
 		::strncpy(sServerGroupInfo.m_szName, sServerGroupScript.m_szName,SLM_MAX_SERVER_NAME_LENGTH);
 		sServerGroupInfo.m_byPos = sServerGroupScript.m_byPos;
@@ -91,7 +93,7 @@ typedef struct _SERVER_GROUP_INFO
 		m_mapServerListScript.insert(std::make_pair(sServerGroupScript.m_wIndex, sServerGroupInfo));
 	}
 	
-	::fclose(fp);
+	MU_fclose(fp);
 }
 
 const SServerGroupInfo* CServerListManager::GetServerGroupInfoInScript(WORD wServerGroupIndex)

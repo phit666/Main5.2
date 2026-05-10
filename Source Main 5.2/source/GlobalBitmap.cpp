@@ -1056,19 +1056,19 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 	std::string filename_ozt;
 	ExchangeExt(filename, "OZT", filename_ozt);
 
-	FILE* fp = fopen(filename_ozt.c_str(), "rb");
+	MU_FILE* fp = MU_fopen(filename_ozt.c_str(), "rb");
 	if (fp == NULL)
 	{
 		return false;
 	}
 
-	fseek(fp, 0, SEEK_END);
-	int Size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+	MU_fseek(fp, 0, SEEK_END);
+	int Size = MU_ftell(fp);
+	MU_fseek(fp, 0, SEEK_SET);
 
 	unsigned char* PakBuffer = new unsigned char[Size];
-	fread(PakBuffer, 1, Size, fp);
-	fclose(fp);
+	MU_fread(PakBuffer, 1, Size, fp);
+	MU_fclose(fp);
 
 	int index = 12;
 	index += 4;
@@ -1227,27 +1227,27 @@ bool CGlobalBitmap::Convert_Format(const unicode::t_string& filename)
 
 bool CGlobalBitmap::Save_Image(const unicode::t_string& src, const unicode::t_string& dest, int cDumpHeader)
 {
-	FILE* fp = fopen(src.c_str(), "rb");
+	MU_FILE* fp = MU_fopen(src.c_str(), "rb");
 	if(fp == NULL) 
 	{
 		return false;
 	}
 	
-	fseek(fp, 0, SEEK_END);
-	int size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+	MU_fseek(fp, 0, SEEK_END);
+	int size = MU_ftell(fp);
+	MU_fseek(fp, 0, SEEK_SET);
 	
 	char* pTempBuf = new char[size];
-	fread(pTempBuf, 1, size, fp);
-	fclose(fp);
+	MU_fread(pTempBuf, 1, size, fp);
+	MU_fclose(fp);
 	
-	fp = fopen(dest.c_str(), "wb");
+	fp = MU_fopen(dest.c_str(), "wb");
 	if(fp == NULL) 
 		return false;
 	
-	fwrite(pTempBuf, 1, cDumpHeader, fp);
-	fwrite(pTempBuf, 1, size, fp);
-	fclose(fp);
+	MU_fwrite(pTempBuf, 1, cDumpHeader, fp);
+	MU_fwrite(pTempBuf, 1, size, fp);
+	MU_fclose(fp);
 	
 	delete [] pTempBuf;
 	

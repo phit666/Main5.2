@@ -4702,7 +4702,7 @@ void CSlideHelpMgr::OpenSlideTextFile(const char * szFileName)
 		}
 	}
 	
-	FILE *fp = fopen(szFileName,"rb");
+	MU_FILE *fp = MU_fopen(szFileName,"rb");
 	if(fp == NULL)
 	{
 		char Text[256];
@@ -4714,9 +4714,9 @@ void CSlideHelpMgr::OpenSlideTextFile(const char * szFileName)
 	}
 
 	SLIDEHELP SlideHelp;
-	fread(&SlideHelp, sizeof(SLIDEHELP), 1, fp);
+	MU_fread(&SlideHelp, sizeof(SLIDEHELP), 1, fp);
 	BuxConvert((BYTE*)&SlideHelp, sizeof(SLIDEHELP));
-	fclose(fp);
+	MU_fclose(fp);
 
 	SetCreateDelay(SlideHelp.iCreateDelay);
 	m_fHelpSlideSpeed = SlideHelp.fSpeed;

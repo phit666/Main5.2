@@ -88,12 +88,12 @@ public:
 
 	bool Load(const std::string& strFilePath, DWORD dwLoadDisposition)
 	{
-		FILE* fp = fopen(strFilePath.c_str(), "rb");
+		MU_FILE* fp = MU_fopen(strFilePath.c_str(), "rb");
 		if(NULL == fp)
 			return false;
 
 		GLOBALTEXT_HEADER GTHeader;
-		fread(&GTHeader, sizeof(GLOBALTEXT_HEADER), 1, fp);
+		MU_fread(&GTHeader, sizeof(GLOBALTEXT_HEADER), 1, fp);
 
 		if(GTHeader.wSignature != 0x5447)
 			return false;
@@ -101,10 +101,10 @@ public:
 		for(int i=0; i<(int)(GTHeader.dwNumberOfText); i++)
 		{
 			GLOBALTEXT_STRING_HEADER GTStringHeader;
-			fread(&GTStringHeader, sizeof(GLOBALTEXT_STRING_HEADER), 1, fp);
+			MU_fread(&GTStringHeader, sizeof(GLOBALTEXT_STRING_HEADER), 1, fp);
 
 			T* pStringBuffer = new T[GTStringHeader.dwSizeOfString+1];
-			fread(pStringBuffer, sizeof(T), GTStringHeader.dwSizeOfString, fp);
+			MU_fread(pStringBuffer, sizeof(T), GTStringHeader.dwSizeOfString, fp);
 
 			if( CheckLoadDisposition(GTStringHeader.dwKey, dwLoadDisposition) || GTStringHeader.dwKey < MAX_NUMBER_OF_TEXTS)
 			{
@@ -115,26 +115,26 @@ public:
 
 			delete [] pStringBuffer;	
 		}
-		fclose(fp);
+		MU_fclose(fp);
 		return true;
 	}
 	bool Save(const std::string& strFilePath)
 	{
-		FILE* fp = fopen(strFilePath.c_str(), "wb");
+		MU_FILE* fp = MU_fopen(strFilePath.c_str(), "wb");
 		if(NULL == fp)
 			return false;
 
 		GLOBALTEXT_HEADER GTHeader;
 		GTHeader.wSignature = 0x5447;
 		GTHeader.dwNumberOfText = m_StringSet.GetCount();
-		fwrite(&GTHeader, sizeof(GLOBALTEXT_HEADER), 1, fp);
+		MU_fwrite(&GTHeader, sizeof(GLOBALTEXT_HEADER), 1, fp);
 
 		for(int i=0; i<GTHeader.dwNumberOfText; i++)
 		{
 			int key = m_StringSet.GetKey(i);
 			if(-1 == key)
 			{
-				fclose(fp);
+				MU_fclose(fp);
 				return false;
 			}
 			
@@ -142,17 +142,17 @@ public:
 			GTStringHeader.dwKey = key;
 			GTStringHeader.dwSizeOfString = m_StringSet.FindObj(key).size();
 
-			fwrite(&GTStringHeader, sizeof(GLOBALTEXT_STRING_HEADER), 1, fp);
+			MU_fwrite(&GTStringHeader, sizeof(GLOBALTEXT_STRING_HEADER), 1, fp);
 			
 			T* pStringBuffer = new T[GTStringHeader.dwSizeOfString];
 			memcpy(pStringBuffer, m_StringSet[key], sizeof(T)*GTStringHeader.dwSizeOfString);
 			
 			BuxConvert(pStringBuffer, sizeof(T)*GTStringHeader.dwSizeOfString);		//. encoding
-			fwrite(pStringBuffer, sizeof(T), GTStringHeader.dwSizeOfString, fp);
+			MU_fwrite(pStringBuffer, sizeof(T), GTStringHeader.dwSizeOfString, fp);
 			
 			delete [] pStringBuffer;
 		}
-		fclose(fp);
+		MU_fclose(fp);
 		return true;
 	}
 

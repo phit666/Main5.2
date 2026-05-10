@@ -824,16 +824,16 @@ void SEASON3B::CNewUIMasterLevel::Render_Text()
 void SEASON3B::CNewUIMasterLevel::OpenMasterLevel ( const char* filename )
 {
 //	MASTER_LEVEL_DATA		m_MasterLevel[MAX_MASTER];
-	FILE* fp = fopen ( filename, "rb" );
+	MU_FILE* fp = MU_fopen ( filename, "rb" );
 	if(fp != NULL)
 	{
 		int Size = sizeof(MASTER_LEVEL_DATA);
 		BYTE *Buffer = new BYTE [Size*MAX_MASTER + 45];
-		fread(Buffer,(Size*MAX_MASTER) + 45,1,fp);
+		MU_fread(Buffer,(Size*MAX_MASTER) + 45,1,fp);
 
 		DWORD dwCheckSum;
-		fread(&dwCheckSum,sizeof ( DWORD),1,fp);
-		fclose(fp);
+		MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+		MU_fclose(fp);
 
 		if ( dwCheckSum != GenerateCheckSum2( Buffer, (Size*MAX_MASTER) + 45, 0x2BC1))
 		{

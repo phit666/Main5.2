@@ -212,7 +212,7 @@ void SEASON3B::CNewUIMiniMap::LoadImages(const char* Filename)
 	char Fname[300]; 
 	int i = 0;
 	sprintf(Fname,"Data\\%s\\mini_map.ozt",Filename);
-	FILE *pFile = fopen(Fname,"rb");
+	MU_FILE *pFile = MU_fopen(Fname,"rb");
 	
 	if(pFile == NULL)
 	{
@@ -222,7 +222,7 @@ void SEASON3B::CNewUIMiniMap::LoadImages(const char* Filename)
 	else
 	{
 		m_bSuccess = true;
-		fclose(pFile);
+		MU_fclose(pFile);
 		sprintf(Fname,"%s\\mini_map.tga",Filename);
 		LoadBitmap(Fname, IMAGE_MINIMAP_INTERFACE, GL_LINEAR);
 	}
@@ -234,17 +234,17 @@ void SEASON3B::CNewUIMiniMap::LoadImages(const char* Filename)
 		m_Mini_Map_Data[i].Kind = 0;
 	}
 
-	FILE* fp = fopen ( Fname, "rb" );
+	MU_FILE* fp = MU_fopen ( Fname, "rb" );
 
 	if(fp != NULL)
 	{
 		int Size = sizeof(MINI_MAP);
 		BYTE *Buffer = new BYTE [Size*MAX_MINI_MAP_DATA + 45];
-		fread(Buffer,(Size*MAX_MINI_MAP_DATA) + 45,1,fp);
+		MU_fread(Buffer,(Size*MAX_MINI_MAP_DATA) + 45,1,fp);
 
 		DWORD dwCheckSum;
-		fread(&dwCheckSum,sizeof ( DWORD),1,fp);
-		fclose(fp);
+		MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+		MU_fclose(fp);
 
 		if ( dwCheckSum != GenerateCheckSum2( Buffer, (Size*MAX_MINI_MAP_DATA) + 45, 0x2BC1))
 		{

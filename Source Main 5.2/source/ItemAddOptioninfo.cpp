@@ -41,14 +41,14 @@ ItemAddOptioninfo::~ItemAddOptioninfo()
 
 const bool ItemAddOptioninfo::OpenItemAddOptionInfoFile( const std::string& filename )
 {
-	FILE *fp = ::fopen( filename.c_str(), "rb" );
+	MU_FILE *fp = ::MU_fopen( filename.c_str(), "rb" );
 	if ( fp != NULL )
 	{
 		int nSize = sizeof(ITEM_ADD_OPTION) * MAX_ITEM;
 
-		::fread(m_ItemAddOption, nSize, 1, fp);
+		::MU_fread(m_ItemAddOption, nSize, 1, fp);
 		::BuxConvert((BYTE*)m_ItemAddOption, nSize);
-		::fclose(fp);
+		::MU_fclose(fp);
 
 		return true;
 	}

@@ -119,7 +119,7 @@ static void BuxConvert(BYTE *Buffer,int Size)
 
 int OpenTerrainAttribute(char *FileName)
 {
-	FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp == NULL)
 	{
 		char Text[256];
@@ -135,11 +135,11 @@ int OpenTerrainAttribute(char *FileName)
 	BYTE Width;
 	BYTE Height;
 
-	fseek(fp,0,SEEK_END);
-	int EncBytes = ftell(fp);	//
-	fseek(fp,0,SEEK_SET);
+	MU_fseek(fp,0,SEEK_END);
+	int EncBytes = MU_ftell(fp);	//
+	MU_fseek(fp,0,SEEK_SET);
 	unsigned char *EncData = new unsigned char [EncBytes];
-	fread( EncData, EncBytes, 1, fp);
+	MU_fread( EncData, EncBytes, 1, fp);
 
 	int iSize = MapFileDecrypt( NULL, EncData, EncBytes);	//
 	unsigned char *byBuffer = new unsigned char[iSize];		//
@@ -214,24 +214,24 @@ int OpenTerrainAttribute(char *FileName)
 		return ( -1);
 	}
 
-	fclose(fp);
+	MU_fclose(fp);
     return iMap;
 }
 
 bool SaveTerrainAttribute(char *FileName, int iMap)
 {
-	FILE *fp = fopen(FileName,"wb");
+	MU_FILE *fp = MU_fopen(FileName,"wb");
 
 	BYTE Version = 0;
 	BYTE Width   = 255;
 	BYTE Height  = 255;
- 	fwrite(&Version,1,1,fp);
-	fwrite(&iMap,1,1,fp);
- 	fwrite(&Width,1,1,fp);
- 	fwrite(&Height,1,1,fp);
- 	fwrite(TerrainWall,TERRAIN_SIZE*TERRAIN_SIZE,1,fp);
+	MU_fwrite(&Version,1,1,fp);
+	MU_fwrite(&iMap,1,1,fp);
+	MU_fwrite(&Width,1,1,fp);
+	MU_fwrite(&Height,1,1,fp);
+	MU_fwrite(TerrainWall,TERRAIN_SIZE*TERRAIN_SIZE,1,fp);
 
-	fclose(fp);
+	MU_fclose(fp);
     return true;
 }
 
@@ -297,17 +297,17 @@ int OpenTerrainMapping(char *FileName)	//
 {
     InitTerrainMappingLayer();
 
-    FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
 	if(fp == NULL)
 	{
 		return ( -1);
 	}
-	fseek(fp,0,SEEK_END);
-	int EncBytes = ftell(fp);	//
-	fseek(fp,0,SEEK_SET);
+	MU_fseek(fp,0,SEEK_END);
+	int EncBytes = MU_ftell(fp);	//
+	MU_fseek(fp,0,SEEK_SET);
     unsigned char *EncData = new unsigned char[EncBytes];	//
-	fread(EncData,1,EncBytes,fp);	//
-	fclose(fp);
+	MU_fread(EncData,1,EncBytes,fp);	//
+	MU_fclose(fp);
 
 	int DataBytes = MapFileDecrypt( NULL, EncData, EncBytes);	//
 	unsigned char *Data = new unsigned char[DataBytes];		//
@@ -327,7 +327,7 @@ int OpenTerrainMapping(char *FileName)	//
 	}
 	delete [] Data;
 	
-	fclose(fp);
+	MU_fclose(fp);
 
     TerrainGrassEnable = true;
 
@@ -345,17 +345,17 @@ int OpenTerrainMapping(char *FileName)	//
 
 bool SaveTerrainMapping(char *FileName, int iMapNumber)	//
 {
-	FILE *fp = fopen(FileName,"wb");
+	MU_FILE *fp = MU_fopen(FileName,"wb");
 
 	BYTE Version = 0;
- 	fwrite(&Version,1,1,fp);
-	fwrite(&iMapNumber,1,1,fp);	//
- 	fwrite(TerrainMappingLayer1,TERRAIN_SIZE*TERRAIN_SIZE,1,fp);
- 	fwrite(TerrainMappingLayer2,TERRAIN_SIZE*TERRAIN_SIZE,1,fp);
+	MU_fwrite(&Version,1,1,fp);
+	MU_fwrite(&iMapNumber,1,1,fp);	//
+	MU_fwrite(TerrainMappingLayer1,TERRAIN_SIZE*TERRAIN_SIZE,1,fp);
+	MU_fwrite(TerrainMappingLayer2,TERRAIN_SIZE*TERRAIN_SIZE,1,fp);
 	for(int i=0;i<TERRAIN_SIZE*TERRAIN_SIZE;i++)
 	{
 		unsigned char Alpha = (unsigned char)(TerrainMappingAlpha[i]*255.f);
-		fwrite(&Alpha,1,1,fp);
+		MU_fwrite(&Alpha,1,1,fp);
 	}
 	/*
 #ifndef BATTLE_CASTLE
@@ -372,29 +372,29 @@ bool SaveTerrainMapping(char *FileName, int iMapNumber)	//
 	}
 #endif// BATTLE_CASTLE
 */
-	fclose(fp);
+	MU_fclose(fp);
 
 	{
-		fp = fopen(FileName,"rb");
+		fp = MU_fopen(FileName,"rb");
 		if(fp == NULL)
 		{
 			return ( false);
 		}
-		fseek(fp,0,SEEK_END);
-		int EncBytes = ftell(fp);	//
-		fseek(fp,0,SEEK_SET);
+		MU_fseek(fp,0,SEEK_END);
+		int EncBytes = MU_ftell(fp);	//
+		MU_fseek(fp,0,SEEK_SET);
 		unsigned char *EncData = new unsigned char[EncBytes];	//
-		fread(EncData,1,EncBytes,fp);	//
-		fclose(fp);
+		MU_fread(EncData,1,EncBytes,fp);	//
+		MU_fclose(fp);
 
 		int DataBytes = MapFileEncrypt( NULL, EncData, EncBytes);	//
 		unsigned char *Data = new unsigned char[DataBytes];		//
 		MapFileEncrypt( Data, EncData, EncBytes);	//
 		delete [] EncData;		//
 
-		fp = fopen(FileName,"wb");
-		fwrite( Data, DataBytes, 1, fp);
-		fclose( fp);
+		fp = MU_fopen(FileName,"wb");
+		MU_fwrite( Data, DataBytes, 1, fp);
+		MU_fclose( fp);
 		delete [] Data;
 	}
     return true;
@@ -632,7 +632,7 @@ bool OpenTerrainHeight(char *filename)
     strcat(FileName,NewFileName);
 	strcat(FileName,"OZB");
 	
-    FILE *fp = fopen(FileName,"rb");
+	MU_FILE *fp = MU_fopen(FileName,"rb");
     if(fp == NULL)
 	{
 		char Text[256];
@@ -643,12 +643,12 @@ bool OpenTerrainHeight(char *filename)
 		SendMessage(g_hWnd,WM_DESTROY,0,0);
 		return false;
 	}
-	fseek(fp,4,SEEK_SET);
+	MU_fseek(fp,4,SEEK_SET);
 	int Index = 1080;
 	int Size = 256*256+Index;
 	unsigned char *Buffer = new unsigned char [Size];
-   	fread(Buffer,1,Size,fp);
-	fclose(fp);
+	MU_fread(Buffer,1,Size,fp);
+	MU_fclose(fp);
 	memcpy(BMPHeader,Buffer,Index);
 
     for(int i=0;i<256;i++)
@@ -689,13 +689,13 @@ void SaveTerrainHeight(char *name)
 		}
 	}
 
-    FILE *fp = fopen(name,"wb");
-	fwrite(BMPHeader,1080,1,fp);
+	MU_FILE *fp = MU_fopen(name,"wb");
+	MU_fwrite(BMPHeader,1080,1,fp);
 
-	for(int i=0;i<256;i++) fwrite(Buffer+(255-i)*256,256,1,fp);
+	for(int i=0;i<256;i++) MU_fwrite(Buffer+(255-i)*256,256,1,fp);
 
 	SAFE_DELETE_ARRAY(Buffer);
-	fclose(fp);
+	MU_fclose(fp);
 }
 
 bool OpenTerrainHeightNew(const char* strFilename)

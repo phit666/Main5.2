@@ -9,6 +9,7 @@
 #ifdef _WIN32
 #include <crtdbg.h>
 #endif
+#include "mu_file.h"
 #include "wt.h"
 
 #define	QM_NPCDIALOGUE_FILE			"Data\\Local\\NPCDialogue.bmd"
@@ -38,7 +39,7 @@ void CQuestMng::LoadQuestScript()
 
 void CQuestMng::LoadNPCDialogueScript()
 {
-	FILE* fp = ::fopen(QM_NPCDIALOGUE_FILE, "rb");
+	MU_FILE* fp = MU_fopen(QM_NPCDIALOGUE_FILE, "rb");
 	if (fp == NULL)
 	{
 		char szMessage[256];
@@ -54,7 +55,7 @@ void CQuestMng::LoadNPCDialogueScript()
 	DWORD dwIndex = 0;
 	SNPCDialogue sNPCDialogue;
 
-	while (0 != ::fread(abyBuffer, nSize, 1, fp))
+	while (0 != MU_fread(abyBuffer, nSize, 1, fp))
 	{
 		::BuxConvert(abyBuffer, nSize);
 
@@ -64,12 +65,12 @@ void CQuestMng::LoadNPCDialogueScript()
 		m_mapNPCDialogue.insert(std::make_pair(dwIndex, sNPCDialogue));
 	}
 	
-	::fclose(fp);
+	MU_fclose(fp);
 }
 
 void CQuestMng::LoadQuestProgressScript()
 {
-	FILE* fp = ::fopen(QM_QUESTPROGRESS_FILE, "rb");
+	MU_FILE* fp = MU_fopen(QM_QUESTPROGRESS_FILE, "rb");
 	if (fp == NULL)
 	{
 		char szMessage[256];
@@ -85,7 +86,7 @@ void CQuestMng::LoadQuestProgressScript()
 	DWORD dwIndex = 0;
 	SQuestProgress sQuestProgress;
 
-	while (0 != ::fread(abyBuffer, nSize, 1, fp))
+	while (0 != MU_fread(abyBuffer, nSize, 1, fp))
 	{
 		::BuxConvert(abyBuffer, nSize);
 
@@ -95,12 +96,12 @@ void CQuestMng::LoadQuestProgressScript()
 		m_mapQuestProgress.insert(std::make_pair(dwIndex, sQuestProgress));
 	}
 	
-	::fclose(fp);
+	MU_fclose(fp);
 }
 
 void CQuestMng::LoadQuestWordsScript()
 {
-	FILE* fp = ::fopen(QM_QUESTWORDS_FILE, "rb");
+	MU_FILE* fp = MU_fopen(QM_QUESTWORDS_FILE, "rb");
 	if (fp == NULL)
 	{
 		char szMessage[256];
@@ -124,17 +125,17 @@ void CQuestMng::LoadQuestWordsScript()
 	char szWords[1024];
 	std::string	strWords;
 	
-	while (0 != ::fread(&sQuestWordsHeader, nSize, 1, fp))
+	while (0 != MU_fread(&sQuestWordsHeader, nSize, 1, fp))
 	{
 		::BuxConvert((BYTE*)&sQuestWordsHeader, nSize);
 
-		::fread(szWords, sQuestWordsHeader.m_nWordsLen, 1, fp);
+		MU_fread(szWords, sQuestWordsHeader.m_nWordsLen, 1, fp);
 		::BuxConvert((BYTE*)szWords, sQuestWordsHeader.m_nWordsLen);
 		strWords = szWords;
 		m_mapQuestWords.insert(std::make_pair(sQuestWordsHeader.m_nIndex, strWords));
 	}
 	
-	::fclose(fp);
+	MU_fclose(fp);
 }
 
 void CQuestMng::SetQuestRequestReward(BYTE* pbyRequestRewardPacket)

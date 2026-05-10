@@ -227,7 +227,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)source\;$(SolutionDir)dependencies\include;$(SolutionDir)dependencies\include\asio</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MU_USE_SDL_AUDIO=1;MU_USE_SDL=1;USE_LIBEVENT=1;WIN32;NDEBUG;_WINDOWS;_FOREIGN_NDEBUG;_LANGUAGE_FOREIGN;_LANGUAGE_ENG;LDS_PATCH_GLOBAL_100520;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_MU_SDL_FILE=1;MU_USE_SDL_AUDIO=1;MU_USE_SDL=1;USE_LIBEVENT=1;WIN32;NDEBUG;_WINDOWS;_FOREIGN_NDEBUG;_LANGUAGE_FOREIGN;_LANGUAGE_ENG;LDS_PATCH_GLOBAL_100520;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <RuntimeTypeInfo>
       </RuntimeTypeInfo>

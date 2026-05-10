@@ -7,6 +7,7 @@
 #include "UIJewelHarmony.h"
 #include "SocketSystem.h"
 #include "SkillManager.h"
+#include "wt.h"
 
 using namespace SEASON3A;
 
@@ -1111,7 +1112,7 @@ void CMixRecipeMgr::OpenRecipeFile(const unicode::t_char * szFileName)
 		m_MixRecipe[j].Reset();
 	}
 
-	FILE *fp = fopen(szFileName,"rb");
+	MU_FILE *fp = MU_fopen(szFileName,"rb");
 	if(fp == NULL)
 	{
 		unicode::t_char Text[256];
@@ -1124,31 +1125,31 @@ void CMixRecipeMgr::OpenRecipeFile(const unicode::t_char * szFileName)
 
 	int iNumMixRecipes[MAX_MIX_TYPES];
 	int iSize = sizeof(int) * MAX_MIX_TYPES;
-	fread(iNumMixRecipes, iSize, 1, fp);
+	MU_fread(iNumMixRecipes, iSize, 1, fp);
 	BuxConvert((BYTE*)iNumMixRecipes, iSize);
 
 	iSize = sizeof(MIX_RECIPE);
 	for (j = 0; j < MAX_MIX_TYPES; ++j)
 	{
-		if (feof(fp) || iNumMixRecipes[j] > 1000)
+		if (MU_feof(fp) || iNumMixRecipes[j] > 1000)
 		{
 			unicode::t_char Text[256];
     		unicode::_sprintf(Text,"%s - Version not matched.",szFileName);
 			g_ErrorReport.Write( Text);
 			MessageBox(g_hWnd,Text,NULL,MB_OK);
 			SendMessage(g_hWnd,WM_DESTROY,0,0);
-			fclose(fp);
+			MU_fclose(fp);
 			exit(0);
 		}
 		for (i = 0; i < iNumMixRecipes[j]; ++i)
 		{
 			MIX_RECIPE * pMixRecipe = new MIX_RECIPE;
-			fread(pMixRecipe, iSize, 1, fp);
+			MU_fread(pMixRecipe, iSize, 1, fp);
 			BuxConvert((BYTE*)pMixRecipe, iSize);
 			m_MixRecipe[j].AddRecipe(pMixRecipe);
 		}
 	}
-	fclose(fp);
+	MU_fclose(fp);
 }
 
 int CMixRecipeMgr::GetMixInventoryType()

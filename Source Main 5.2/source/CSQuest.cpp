@@ -123,7 +123,7 @@ int CSQuest::GetEventCount(BYTE byType)
 
 bool CSQuest::OpenQuestScript ( char* filename )
 {
-	FILE* fp = fopen ( filename, "rb" );
+	MU_FILE* fp = MU_fopen ( filename, "rb" );
 	if ( fp==NULL )                
 	{
 		char Text[256];
@@ -137,12 +137,12 @@ bool CSQuest::OpenQuestScript ( char* filename )
 	BYTE*   Buffer  = new BYTE [Size];
 	for ( int i=0; i<MAX_QUESTS; i++ )
 	{
-		fread ( Buffer, Size, 1, fp );
+		MU_fread ( Buffer, Size, 1, fp );
 		BuxConvert ( Buffer, Size );
 		memcpy ( &m_Quest[i], Buffer, Size );
 	}
 	SAFE_DELETE_ARRAY(Buffer);
-	fclose ( fp );
+	MU_fclose ( fp );
 
 	return  TRUE;
 }

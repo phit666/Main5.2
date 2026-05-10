@@ -87,14 +87,14 @@ JewelHarmonyInfo::~JewelHarmonyInfo()
 
 const bool JewelHarmonyInfo::OpenJewelHarmonyInfoFile( const std::string& filename )
 {
-	FILE *fp = ::fopen( filename.c_str(), "rb" );
+	MU_FILE *fp = ::MU_fopen( filename.c_str(), "rb" );
 	if ( fp != NULL )
 	{
 		int nSize = sizeof(HARMONYJEWELOPTION) * MAXHARMONYJEWELOPTIONTYPE * MAXHARMONYJEWELOPTIONINDEX;
 
-		::fread(m_OptionData, nSize, 1, fp);
+		::MU_fread(m_OptionData, nSize, 1, fp);
 		::BuxConvert((BYTE*)m_OptionData, nSize);
-		::fclose(fp);
+		::MU_fclose(fp);
 
 		return true;
 	}

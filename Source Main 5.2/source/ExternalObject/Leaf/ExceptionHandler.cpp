@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ExceptionHandler.h"
 #include "checkintegrity.h"
+#include "mu_file.h"
+#include "wt.h"
 
 #ifdef __ANDROID__
 
@@ -104,7 +106,7 @@ bool CExceptionHandler::SaveDmpFile(const std::string& filename, CONTEXT* pConte
 	if(pContext == NULL)
 		return false;
 	
-	FILE* fd = fopen(filename.c_str(), "wb");
+	MU_FILE* fd = MU_fopen(filename.c_str(), "wb");
 	if(fd == NULL) return false;
 	
 	DMPFILEHEADER DmpHeader;
@@ -155,16 +157,16 @@ bool CExceptionHandler::SaveDmpFile(const std::string& filename, CONTEXT* pConte
 	DmpHeader.CallStackDepth = CallStackDmp.GetStackDepth();
 	
 	//. Write header
-	fwrite(&DmpHeader, sizeof(DMPFILEHEADER), 1, fd);
+	MU_fwrite(&DmpHeader, sizeof(DMPFILEHEADER), 1, fd);
 	
 	//. Write image file infomation
 	if(DmpHeader.ProcessInfo.IsExistFixedFileInfo)
-		fwrite(&ImageFileInfo, sizeof(VS_FIXEDFILEINFO), 1, fd);
+		MU_fwrite(&ImageFileInfo, sizeof(VS_FIXEDFILEINFO), 1, fd);
 	
 	//. Write modules infomation
 	for(int i=0; i<(int)DmpHeader.ProcessInfo.NumOfModules; i++) 
 	{
-		fwrite(&ModuleInfo[i], sizeof(DMPMODULEINFO), 1, fd);
+		MU_fwrite(&ModuleInfo[i], sizeof(DMPMODULEINFO), 1, fd);
 	}
 	
 	//. Write callstack infomation
@@ -178,9 +180,9 @@ bool CExceptionHandler::SaveDmpFile(const std::string& filename, CONTEXT* pConte
 		CallStackDmp.GetParameter(j, pdwParameter, 16);
 		memcpy(DmpStackFrame.Parameter, pdwParameter, 16*sizeof(DWORD));
 		
-		fwrite(&DmpStackFrame, sizeof(DMPCALLSTACKFRAME), 1, fd);
+		MU_fwrite(&DmpStackFrame, sizeof(DMPCALLSTACKFRAME), 1, fd);
 	}
-	fclose(fd);
+	MU_fclose(fd);
 	
 	return true;
 }
@@ -403,10 +405,10 @@ bool CDmpFileLoader::Create(const std::string& dmpfile)
 {	
 	if(!m_listModule.empty() || !m_listStackFrame.empty()) { Release(); }
 	
-	FILE* fd = fopen(dmpfile.c_str(), "rb");
+	MU_FILE* fd = MU_fopen(dmpfile.c_str(), "rb");
 	if(fd == NULL) return false;
 	
-	fread(&m_DmpFileHeader, sizeof(DMPFILEHEADER), 1, fd);
+	MU_fread(&m_DmpFileHeader, sizeof(DMPFILEHEADER), 1, fd);
 
 	if(m_DmpFileHeader.Sign[0] != 'W' || m_DmpFileHeader.Sign[1] != 'D' || m_DmpFileHeader.Sign[2] != 'M' || m_DmpFileHeader.Sign[3] != 'P')
 		return false;
@@ -418,7 +420,7 @@ bool CDmpFileLoader::Create(const std::string& dmpfile)
 	DMPPROCESSINFOHEADER* pProcessInfoHeader = &m_DmpFileHeader.ProcessInfo;
 	//. Read image file infomation
 	if(pProcessInfoHeader->IsExistFixedFileInfo == TRUE) {
-		fread(&m_FixedImageFileInfo, sizeof(VS_FIXEDFILEINFO), 1, fd);
+		MU_fread(&m_FixedImageFileInfo, sizeof(VS_FIXEDFILEINFO), 1, fd);
 	}
 
 	//. Read modules infomation
@@ -426,18 +428,18 @@ bool CDmpFileLoader::Create(const std::string& dmpfile)
 	for(int i=0; i<(int)pProcessInfoHeader->NumOfModules; i++) 
 	{
 		DMPMODULEINFO* pModuleInfo = new DMPMODULEINFO;
-		fread(pModuleInfo, sizeof(DMPMODULEINFO), 1, fd);
+		MU_fread(pModuleInfo, sizeof(DMPMODULEINFO), 1, fd);
 		m_listModule.push_back(pModuleInfo);
 	}
 
 	for(int j=0; j<(int)m_DmpFileHeader.CallStackDepth; j++) 
 	{
 		DMPCALLSTACKFRAME* pCallstackFrame = new DMPCALLSTACKFRAME;
-		fread(pCallstackFrame, sizeof(DMPCALLSTACKFRAME), 1, fd);
+		MU_fread(pCallstackFrame, sizeof(DMPCALLSTACKFRAME), 1, fd);
 		m_listStackFrame.push_back(pCallstackFrame);
 	}
 	
-	fclose(fd);
+	MU_fclose(fd);
 
 	return true;
 }

@@ -177,7 +177,7 @@ void ParseTriangles(bool Flip)
 bool OpenSMDFile(char *FileName,int Type,bool Flip)
 { 
 	if(FileName == NULL) return false;
-	if((SMDFile=fopen(FileName,"rb")) == NULL)
+	if((SMDFile=MU_fopen(FileName,"rb")) == NULL)
 	{
 #ifdef _DEBUG
 		extern HWND g_hWnd;
@@ -202,7 +202,7 @@ bool OpenSMDFile(char *FileName,int Type,bool Flip)
      	ParseSkeleton();
 	}
 
-	fclose(SMDFile);
+	MU_fclose(SMDFile);
 	return true;
 }
 

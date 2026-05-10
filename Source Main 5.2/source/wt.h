@@ -191,6 +191,7 @@ typedef struct {
 #endif
 #endif //MU_MOBILE_WT_H
 
+//
 
 extern int TextNum;
 extern char TextList[30][100];

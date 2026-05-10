@@ -84,22 +84,22 @@ BuffScriptLoader::~BuffScriptLoader()
 
 bool BuffScriptLoader::Load(const std::string& pchFileName)
 {
-	FILE *fp = fopen( pchFileName.c_str(), "rb" );
+	MU_FILE *fp = MU_fopen( pchFileName.c_str(), "rb" );
 
 	if(fp != NULL)
 	{
 		DWORD structsize = sizeof(_BUFFINFO);
 
 		DWORD listsize;
-		fread( &listsize, sizeof(DWORD), 1, fp );
+		MU_fread( &listsize, sizeof(DWORD), 1, fp );
 
 		BYTE *Buffer = new BYTE [structsize*listsize];
-		fread( Buffer, structsize*listsize, 1, fp );
+		MU_fread( Buffer, structsize*listsize, 1, fp );
 
 		DWORD dwCheckSum;
-		fread( &dwCheckSum, sizeof(DWORD), 1, fp );
+		MU_fread( &dwCheckSum, sizeof(DWORD), 1, fp );
 
-		fclose(fp);
+		MU_fclose(fp);
 		if ( dwCheckSum != GenerateCheckSum2( Buffer, structsize*listsize, 0xE2F1))
 		{
 			char Text[256];

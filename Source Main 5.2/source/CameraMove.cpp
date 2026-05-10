@@ -5,6 +5,8 @@
 #include "CameraMove.h"
 #include "ProtocolSend.h"
 #include "ZzzLodTerrain.h"
+#include "mu_file.h"
+#include "wt.h"
 
 CCameraMove::CCameraMove()
 {
@@ -45,25 +47,25 @@ bool CCameraMove::LoadCameraWalkScript(const std::string& filename)
 {
 	UnLoadCameraWalkScript();
 
-	FILE* fp = fopen(filename.c_str(), "rb");
+	MU_FILE* fp = MU_fopen(filename.c_str(), "rb");
 	if(fp == NULL)
 		return false;
 
 	DWORD dwSign;
-	fread(&dwSign, 4, 1, fp);
+	MU_fread(&dwSign, 4, 1, fp);
 	if(dwSign != 0x00535743)
 		return false;
 
 	size_t size;
-	fread(&size, sizeof(size_t), 1, fp);
+	MU_fread(&size, sizeof(size_t), 1, fp);
 
 	for(int i=0; i<(int)size; i++) 
 	{
 		WAYPOINT* pWayPoint = new WAYPOINT;
-		fread(pWayPoint, sizeof(WAYPOINT), 1, fp);
+		MU_fread(pWayPoint, sizeof(WAYPOINT), 1, fp);
 		m_listWayPoint.push_back(pWayPoint);
 	}
-	fclose(fp);
+	MU_fclose(fp);
 
 	return true;
 }
@@ -79,19 +81,19 @@ void CCameraMove::UnLoadCameraWalkScript()
 bool CCameraMove::SaveCameraWalkScript(const std::string& filename)
 {
 	if(!m_listWayPoint.empty()) {
-		FILE* fp = fopen(filename.c_str(), "wb");
+		MU_FILE* fp = MU_fopen(filename.c_str(), "wb");
 		if(fp == NULL)
 			return false;
 
 		DWORD dwSign = 0x00535743;
-		fwrite(&dwSign, 4, 1, fp);
+		MU_fwrite(&dwSign, 4, 1, fp);
 		size_t size = m_listWayPoint.size();
-		fwrite(&size, sizeof(size_t), 1, fp);
+		MU_fwrite(&size, sizeof(size_t), 1, fp);
 		t_WayPointList::iterator iter = m_listWayPoint.begin();
 		for(; iter != m_listWayPoint.end(); iter++) {
-			fwrite((*iter), sizeof(WAYPOINT), 1, fp);
+			MU_fwrite((*iter), sizeof(WAYPOINT), 1, fp);
 		}
-		fclose(fp);
+		MU_fclose(fp);
 		return true;
 	}
 	return false;
