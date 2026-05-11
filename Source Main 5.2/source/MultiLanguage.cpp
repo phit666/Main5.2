@@ -10,10 +10,12 @@
 #include <string.h>
 #include "wt.h"
 #endif
+#include "w_nuklear.h"
+#include "mu_sdl.h"
 
 CMultiLanguage* CMultiLanguage::ms_Singleton = NULL;
 
-#ifndef _WIN32
+#ifdef MU_USE_SDL
 #include <cwchar>
 #include <cstdlib>
 #include <cstdint>
@@ -332,28 +334,57 @@ int	CMultiLanguage::GetClosestBlankFromCenter(const std::wstring wstrTarget)
 
 BOOL CMultiLanguage::_GetTextExtentPoint32(HDC hdc, LPCWSTR lpString, int cbString, LPSIZE lpSize)
 {
-	return GetTextExtentPoint32W(hdc, lpString, cbString, lpSize); 
+	if (!g_nk_ctx || !lpString || !lpSize) return false;
+
+	const struct nk_user_font *font = g_nk_ctx->style.font;
+	std::string ss;
+	this->ConvertWideCharToStr(ss, lpString);
+	lpSize->cx = (long)font->width(font->userdata, font->height, ss.c_str(), cbString);
+
+	lpSize->cy = (long)font->height;
+	return true;
 }
 
 BOOL CMultiLanguage::_GetTextExtentPoint32(HDC hdc, LPCSTR lpString, int cbString, LPSIZE lpSize)
 {
-	std::wstring wstrText = L"";
-	ConvertCharToWideStr(wstrText, lpString);
-	
-	return GetTextExtentPoint32W(hdc, wstrText.c_str(), wstrText.length(), lpSize);
+	if (!g_nk_ctx || !lpString || !lpSize) return false;
+
+	const struct nk_user_font* font = g_nk_ctx->style.font;
+
+	lpSize->cx = (long)font->width(font->userdata, font->height, lpString, cbString);
+
+	lpSize->cy = (long)font->height;
+	return true;
 }
 
 BOOL CMultiLanguage::_TextOut(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString)
 {
-	return TextOutW(hdc, nXStart, nYStart, lpString, cbString); 
+	std::string ss;
+	this->ConvertWideCharToStr(ss, lpString);
+	return _TextOut(hdc, nXStart, nYStart, ss.c_str(), cbString);
 }
+
+static uint32_t canvasctr = 1;
 
 BOOL CMultiLanguage::_TextOut(HDC hdc, int nXStart, int nYStart, LPCSTR lpString, int cbString)
 {
-	std::wstring wstrText = L"";
-	ConvertCharToWideStr(wstrText, lpString);
-	
-	return TextOutW(hdc, nXStart, nYStart, wstrText.c_str(), wstrText.length()); 
+	std::string canvastitle = std::to_string(canvasctr++); if (canvasctr >= 2000000000)canvasctr = 1;
+
+	if (nk_begin(g_nk_ctx, canvastitle.c_str(), nk_rect(0, 0, WindowWidth, WindowHeight), NK_WINDOW_NO_SCROLLBAR)) {
+
+		struct nk_command_buffer *canvas = nk_window_get_canvas(g_nk_ctx);
+
+		//struct nk_user_font *font = g_nk_ctx->style.font;
+
+		struct nk_rect text_rect = nk_rect(nXStart, nYStart, 200, 20);
+
+		nk_draw_text(canvas, text_rect, lpString, 5, g_nk_ctx->style.font,
+					 nk_rgb(255,255,255), nk_rgba(0,0,0,0));
+	}
+
+	nk_end(g_nk_ctx);
+
+	return 1;
 }
 	
 WPARAM CMultiLanguage::ConvertFulltoHalfWidthChar(DWORD wParam)

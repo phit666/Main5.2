@@ -37,6 +37,20 @@ extern BOOL g_bUseWindowMode;
 
 #define ARRAY_SIZE(pArray) (sizeof(pArray)/sizeof(pArray[0]))
 
+/*
+nk_color MU_RGB(int r, int g, int b) {
+	return nk_rgb(r, g, b);
+}
+
+void MU_SetBkColor(HDC hdc, nk_color color) {
+	g_nk_ctx->style.window.fixed_background = nk_style_item_color(color);
+}
+
+void MU_SetTextColor(HDC hdc, nk_color color) {
+	g_nk_ctx->style.text.color = color;
+}
+*/
+
 int CutStr(const char* pszSrcText, char * pTextOut, const int iTargetPixelWidth, const int iMaxOutLine, const int iOutStrLength, const int iFirstLineTab /* = 0 */)
 {
 	if(iFirstLineTab < 0)	return 0;
@@ -2643,7 +2657,7 @@ CUIRenderTextOriginal::~CUIRenderTextOriginal() { Release(); }
 
 bool CUIRenderTextOriginal::Create(HDC hDC)
 {
-#ifdef _WIN32
+#ifndef MU_USE_SDL
 	BITMAPINFO* DIB_INFO;
     DIB_INFO = (BITMAPINFO*)new BYTE[ sizeof(BITMAPINFOHEADER) + sizeof(PALETTEENTRY) * 256 ];
     memset( DIB_INFO, 0x00, sizeof(BITMAPINFOHEADER) );
@@ -2673,6 +2687,7 @@ bool CUIRenderTextOriginal::Create(HDC hDC)
 }
 void CUIRenderTextOriginal::Release()
 {
+#ifndef MU_USE_SDL
 	if (m_hFontDC != NULL)
 	{
 		DeleteDC(m_hFontDC);
@@ -2684,6 +2699,7 @@ void CUIRenderTextOriginal::Release()
 		DeleteObject(m_hBitmap);
 		m_hBitmap = NULL;
 	}
+#endif
 }
 
 HDC CUIRenderTextOriginal::GetFontDC() const { return m_hFontDC; }
@@ -2703,40 +2719,58 @@ void CUIRenderTextOriginal::SetBgColor(BYTE byRed, BYTE byGreen, BYTE byBlue, BY
 }
 void CUIRenderTextOriginal::SetBgColor(DWORD dwColor) { m_dwBackColor = dwColor; }
 
-void CUIRenderTextOriginal::SetFont(HFONT hFont) { SelectObject(m_hFontDC, hFont); }
+void CUIRenderTextOriginal::SetFont(HFONT hFont) { 
+	SelectObject(m_hFontDC, hFont); 
+}
 
 void CUIRenderTextOriginal::WriteText(int iOffset, int iWidth, int iHeight)
 {
-#ifdef _TODO
-	const int LIMIT_WIDTH = 256, LIMIT_HEIGHT = 32;
-	
-	SIZE FontDCSize = { static_cast<LONG>(640*g_fScreenRate_x), static_cast<LONG>(480*g_fScreenRate_y) };
-	int iPitch = ((FontDCSize.cx*24+31)&~31)>>3;
+#ifndef MU_USE_SDL
+	const int LIMIT_WIDTH = 256;
+	const int LIMIT_HEIGHT = 32;
 
-	BITMAP_t * pBitmapFont = &Bitmaps[BITMAP_FONT];
-	for(int y = 0; y < iHeight; ++y)
+	SIZE FontDCSize =
 	{
-		int SrcIndex = y*iPitch+iOffset;
-		int DstIndex = y * LIMIT_WIDTH*4;
-		for(int x = 0; x < iWidth; ++x)
-		{
-			if((SrcIndex > iPitch*FontDCSize.cy) || (DstIndex > LIMIT_WIDTH*4*LIMIT_HEIGHT))
-			{
-#ifdef _DEBUG
-				__asm { int 3 };
-#endif // _DEBUG
-				return;
-			}
+		static_cast<LONG>(640 * g_fScreenRate_x),
+		static_cast<LONG>(480 * g_fScreenRate_y)
+	};
 
-			if(*(m_pFontBuffer+SrcIndex) == 255)	// ����
-			{
-				*((unsigned int *)(pBitmapFont->Buffer + DstIndex)) = m_dwTextColor;
-			}
-			else									// ���
-			{
-				//*((unsigned int *)(pBitmapFont->Buffer + DstIndex)) = m_dwBackColor;
-				*((unsigned int *)(pBitmapFont->Buffer + DstIndex)) = 0;
-			}
+	int iPitch = ((FontDCSize.cx * 24 + 31) & ~31) >> 3;
+
+	BITMAP_t* pBitmapFont = &Bitmaps[BITMAP_FONT];
+
+	if (!m_pFontBuffer || !pBitmapFont->Buffer)
+		return;
+
+	if (iWidth > LIMIT_WIDTH)
+		iWidth = LIMIT_WIDTH;
+
+	if (iHeight > LIMIT_HEIGHT)
+		iHeight = LIMIT_HEIGHT;
+
+	int srcBufferSize = iPitch * FontDCSize.cy;
+	int dstBufferSize = LIMIT_WIDTH * LIMIT_HEIGHT * 4;
+
+	for (int y = 0; y < iHeight; ++y)
+	{
+		int SrcIndex = y * iPitch + iOffset;
+		int DstIndex = y * LIMIT_WIDTH * 4;
+
+		for (int x = 0; x < iWidth; ++x)
+		{
+			if (SrcIndex < 0 || SrcIndex >= srcBufferSize)
+				return;
+
+			if (DstIndex < 0 || DstIndex + 4 > dstBufferSize)
+				return;
+
+			uint32_t color = 0;
+
+			if (*(m_pFontBuffer + SrcIndex) == 255)
+				color = static_cast<uint32_t>(m_dwTextColor);
+
+			memcpy(pBitmapFont->Buffer + DstIndex, &color, sizeof(uint32_t));
+
 			SrcIndex += 3;
 			DstIndex += 4;
 		}
@@ -2806,6 +2840,10 @@ void CUIRenderTextOriginal::UploadText(int sx, int sy, int Width, int Height)
 			TextureU, TextureV, TextureUWidth, TextureVHeight, false, false);
 	}
 }
+
+
+static uint32_t canvasctr = 1;
+
 
 void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_char* pszText, 
 										int iBoxWidth /* = 0 */, int iBoxHeight /* = 0 */, 
@@ -2911,11 +2949,41 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 
 	if(pszText[0] != 0x0a)
 	{
-		::SetBkColor(m_hFontDC, RGB(0, 0, 0));
-		::SetTextColor(m_hFontDC, RGB(255,255,255));
+#ifdef MU_USE_SDL
+
+		if (g_nk_ctx) {
+
+			std::string canvastitle = std::to_string(canvasctr++); if (canvasctr >= 2000000000)canvasctr = 1;
+
+			float textWidth = g_nk_ctx->style.font->width(
+				g_nk_ctx->style.font->userdata,
+				g_nk_ctx->style.font->height,
+				pszText,
+				strlen(pszText)
+			);
+			float textHeight = g_nk_ctx->style.font->height;
+
+			struct nk_rect bounds = nk_rect((float)(RealBoxPos.x + iTab), (float)RealBoxPos.y, textWidth, textHeight);
+
+			if (nk_begin(g_nk_ctx, canvastitle.c_str(), bounds, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NO_INPUT)) {
+
+				struct nk_command_buffer* canvas = nk_window_get_canvas(g_nk_ctx);
+
+				struct nk_rect text_rect = nk_rect(bounds.x, bounds.y, bounds.w, bounds.h);
+
+				nk_draw_text(canvas, text_rect, pszText, strlen(pszText), g_nk_ctx->style.font,
+					nk_rgb(0, 0, 0), nk_rgba(255, 255, 255, 240));
+			}
+
+			nk_end(g_nk_ctx);
+		}
+#else
+		SetBkColor(m_hFontDC, RGB(0, 0, 0));
+		SetTextColor(m_hFontDC, RGB(255,255,255));
 		g_pMultiLanguage->_TextOut(m_hFontDC, 0, 0, pszText, lstrlen(pszText));
+#endif
 	}
-	
+#ifndef MU_USE_SDL
 	int iRealRenderWidth = RealRenderingSize.cx;
 	int iNumberOfSections = (RealRenderingSize.cx / LIMIT_WIDTH) + ((iRealRenderWidth % LIMIT_WIDTH >= 0) ? 1 : 0);
 	for(int i=0; i<iNumberOfSections; i++)
@@ -2927,6 +2995,7 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 		WriteText(LIMIT_WIDTH*i*3+iClipMove, RealSectionLine.cx, RealSectionLine.cy);
 		UploadText(RealBoxPos.x+LIMIT_WIDTH*i+iTab, RealBoxPos.y, RealSectionLine.cx, RealSectionLine.cy);
 	}
+#endif
 
 	if(lpTextSize)
 	{
@@ -2944,7 +3013,7 @@ BOOL g_bIMEBlock = FALSE;
 
 void SaveIMEStatus()
 {
-#ifdef _WIN32
+#ifndef MU_USE_SDL
 	HIMC hIMC = ImmGetContext(g_hWnd);
 	ImmGetConversionStatus(hIMC, &g_dwBKConv, &g_dwBKSent);
 	ImmSetConversionStatus(hIMC, IME_CMODE_ALPHANUMERIC, IME_SMODE_NONE);
@@ -2954,7 +3023,7 @@ void SaveIMEStatus()
 
 void RestoreIMEStatus()
 {
-#ifdef _WIN32
+#ifndef MU_USE_SDL
 	HIMC hIMC = ImmGetContext(g_hWnd);
 	ImmSetConversionStatus(hIMC, g_dwBKConv, g_dwBKSent);
 	ImmReleaseContext(g_hWnd, hIMC);
@@ -2963,7 +3032,7 @@ void RestoreIMEStatus()
 
 void CheckTextInputBoxIME(int iMode)
 {
-#ifdef _WIN32
+#ifndef MU_USE_SDL
 	if (g_bIMEBlock == FALSE) return;
 	if (iMode & IME_CONVERSIONMODE)
 	{

@@ -481,6 +481,20 @@ bool MU_InitSDL(int width, int height)
     nk_sdl_font_stash_begin(&atlas);
     nk_sdl_font_stash_end();
 
+    //struct nk_style_item old_bg = g_nk_ctx->style.window.fixed_background;
+
+    g_nk_ctx->style.window.fixed_background =
+        nk_style_item_color(nk_rgba(
+            0,
+            0,
+            0,
+            0));
+
+    g_nk_ctx->style.window.padding = nk_vec2(0, 0);
+    g_nk_ctx->style.window.spacing = nk_vec2(0, 0);
+    g_nk_ctx->style.window.border = 0;
+
+
     g_ErrorReport.Write( "MU_InitSDL > MU_InitNetworkEvent\r\n");
 
     if (!MU_InitNetworkEvent()) {
@@ -564,7 +578,7 @@ short GetAsyncKeyState_SDL(int vKey) {
 }
 
 BOOL TextOutW(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString){
-    /*
+
     if (nk_begin(g_nk_ctx, "Canvas", nk_rect(0, 0, WindowWidth, WindowHeight), NK_WINDOW_NO_SCROLLBAR)) {
         struct nk_command_buffer *canvas = nk_window_get_canvas(g_nk_ctx);
         //struct nk_user_font *font = g_nk_ctx->style.font;
@@ -573,12 +587,12 @@ BOOL TextOutW(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString)
                      nk_rgb(255,255,255), nk_rgba(0,0,0,0));
     }
     nk_end(g_nk_ctx);
-    */
+
     return 1;
 }
 
 bool GetTextExtentPoint32W(HDC hdc, LPCWSTR text, int len, SIZE *lpsz) {
-    /*
+
     if (!g_nk_ctx || !text || !lpsz) return false;
 
     const struct nk_user_font *font = g_nk_ctx->style.font; // Currently selected font
@@ -588,7 +602,7 @@ bool GetTextExtentPoint32W(HDC hdc, LPCWSTR text, int len, SIZE *lpsz) {
 
     // Height is constant for the font in Nuklear
     lpsz->cy = (long)font->height;
-    */
+
     return true;
 }
 
