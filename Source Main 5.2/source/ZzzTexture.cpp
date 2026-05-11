@@ -297,7 +297,7 @@ void PopUpErrorCheckMsgBox(const char* szErrorMsg, bool bForceDestroy)
 			return;
 		}
 #else
-		return;
+		//return;
 #endif
 	}
 

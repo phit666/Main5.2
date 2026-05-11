@@ -7,7 +7,7 @@
 #include "ZzzBMD.h"
 #include "ZzzTexture.h"
 #include "Utilities/Log/ErrorReport.h"
-
+#include "wt.h"
 CLoadData gLoadData;
 
 CLoadData::CLoadData() // OK
@@ -58,7 +58,7 @@ void CLoadData::OpenTexture(int Model,char *SubFolder, int Wrap, int Type,bool C
 		strcat(szFullPath, pTexture->FileName);
 		
 		char __ext[_MAX_EXT] = {0, };
-		_splitpath(pTexture->FileName, NULL, NULL, NULL, __ext);
+		MU_splitpath(pTexture->FileName, NULL, NULL, NULL, __ext);
 		if(pTexture->FileName[0]=='s' && pTexture->FileName[1]=='k' && pTexture->FileName[2]=='i')
 			pModel->IndexTexture[i] = BITMAP_SKIN;
 #ifdef PBG_ADD_NEWCHAR_MONK

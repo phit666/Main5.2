@@ -16,7 +16,7 @@
 #endif
 
 #include "mu_sdl.h"
-
+#include "wt.h"
 
 #ifdef __ANDROID__
 
@@ -323,7 +323,7 @@ void leaf::GetAbsoluteFilePath(IN const std::string& path, OUT std::string& absp
 void leaf::SplitFileName(IN const std::string& filepath, OUT std::string& filename, bool bIncludeExt) {
 	char __fname[_MAX_FNAME] = {0, };
 	char __ext[_MAX_EXT] = {0, };
-	_splitpath(filepath.c_str(), NULL, NULL, __fname, __ext);
+	MU_splitpath(filepath.c_str(), NULL, NULL, __fname, __ext);
 	filename = __fname;
 	if(bIncludeExt)
 		filename += __ext;
@@ -331,13 +331,13 @@ void leaf::SplitFileName(IN const std::string& filepath, OUT std::string& filena
 void leaf::SplitDirectoryPath(IN const std::string& filepath, OUT std::string& dir) {
 	char __drive[_MAX_DRIVE] = {0, };
 	char __dir[_MAX_DIR] = {0, };
-	_splitpath(filepath.c_str(), __drive, __dir, NULL, NULL);
+	MU_splitpath(filepath.c_str(), __drive, __dir, NULL, NULL);
 	dir = __drive;
 	dir += __dir;
 }
 void leaf::SplitExt(IN const std::string& filepath, OUT std::string& ext, bool bIncludeDot) {
 	char __ext[_MAX_EXT] = {0, };
-	_splitpath(filepath.c_str(), NULL, NULL, NULL, __ext);
+	MU_splitpath(filepath.c_str(), NULL, NULL, NULL, __ext);
 	if(bIncludeDot) {
 		ext = __ext;
 	}
@@ -370,7 +370,7 @@ void leaf::ExchangeExt(IN const std::string& in_filepath, IN const std::string& 
 	char __drive[_MAX_DRIVE] = {0, };
 	char __dir[_MAX_DIR] = {0, };
 	char __fname[_MAX_FNAME] = {0, };
-	_splitpath(in_filepath.c_str(), __drive, __dir, __fname, NULL);
+	MU_splitpath(in_filepath.c_str(), __drive, __dir, __fname, NULL);
 	
 	out_filepath = __drive;
 	out_filepath += __dir;

@@ -56,8 +56,8 @@ bool CCameraMove::LoadCameraWalkScript(const std::string& filename)
 	if(dwSign != 0x00535743)
 		return false;
 
-	size_t size;
-	MU_fread(&size, sizeof(size_t), 1, fp);
+	int32_t size;
+	MU_fread(&size, sizeof(int32_t), 1, fp);
 
 	for(int i=0; i<(int)size; i++) 
 	{
@@ -87,8 +87,8 @@ bool CCameraMove::SaveCameraWalkScript(const std::string& filename)
 
 		DWORD dwSign = 0x00535743;
 		MU_fwrite(&dwSign, 4, 1, fp);
-		size_t size = m_listWayPoint.size();
-		MU_fwrite(&size, sizeof(size_t), 1, fp);
+		int32_t size = m_listWayPoint.size();
+		MU_fwrite(&size, sizeof(int32_t), 1, fp);
 		t_WayPointList::iterator iter = m_listWayPoint.begin();
 		for(; iter != m_listWayPoint.end(); iter++) {
 			MU_fwrite((*iter), sizeof(WAYPOINT), 1, fp);

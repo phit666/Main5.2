@@ -2707,6 +2707,7 @@ void CUIRenderTextOriginal::SetFont(HFONT hFont) { SelectObject(m_hFontDC, hFont
 
 void CUIRenderTextOriginal::WriteText(int iOffset, int iWidth, int iHeight)
 {
+#ifdef _TODO
 	const int LIMIT_WIDTH = 256, LIMIT_HEIGHT = 32;
 	
 	SIZE FontDCSize = { static_cast<LONG>(640*g_fScreenRate_x), static_cast<LONG>(480*g_fScreenRate_y) };
@@ -2740,6 +2741,7 @@ void CUIRenderTextOriginal::WriteText(int iOffset, int iWidth, int iHeight)
 			DstIndex += 4;
 		}
 	}
+#endif
 }
 
 void CUIRenderTextOriginal::UploadText(int sx, int sy, int Width, int Height)
@@ -3472,7 +3474,7 @@ void CUITextInputBox::GiveFocus(BOOL SelectText)
 #ifdef MU_USE_SDL
 	m_bFocused = true;
 	m_bShow = true;
-	SDL_StartTextInput();
+	//SDL_StartTextInput();
 #else
 	if (m_hEditWnd == NULL) return;
 

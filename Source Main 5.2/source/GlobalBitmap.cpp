@@ -9,6 +9,8 @@
 #include "./Utilities/Log/muConsoleDebug.h"
 #include "mu_sdl.h"
 
+
+
 #ifndef j_boolean
 #define j_boolean int
 #endif
@@ -524,12 +526,18 @@ BITMAP_t* CGlobalBitmap::FindTexture(const std::string& filename)
 BITMAP_t* CGlobalBitmap::FindTextureByName(const std::string& name)
 {
 	type_bitmap_map::iterator mi = m_mapBitmap.begin();
+
 	for(; mi != m_mapBitmap.end(); mi++)
 	{
 		BITMAP_t* pBitmap = (*mi).second;
-		std::string texname;
-		SplitFileName(pBitmap->FileName, texname, true);
-		if(0 == stricmp(texname.c_str(), name.c_str())) 
+
+		//std::string texname="";
+
+        std::string _textname = "";
+
+		SplitFileName(pBitmap->FileName, _textname, true);
+
+		if(0 == stricmp(_textname.c_str(), name.c_str()))
 			return pBitmap;
 	}
 	return NULL;
@@ -667,18 +675,6 @@ std::string MU_NormalizePath2(const char* path)
 			c = '/';
 	}
 
-	// remove leading "./"
-	//while (s.size() >= 2 && s[0] == '.' && s[1] == '/')
-	//{
-		//s.erase(0, 2);
-	//}
-
-	// lowercase
-	for (char& c : s)
-	{
-		c = (char)tolower((unsigned char)c);
-	}
-
 	return s;
 }
 
@@ -761,7 +757,7 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 #ifdef _WIN32
 		filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
 #else
-		ndk_copy_s(filename, pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+		ndk_copy_s(MU_NormalizePath2(filename.c_str()), pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
 #endif
 
 		pNewBitmap->Width = (float)Width;
@@ -792,7 +788,9 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 			memcpy(dst, buffer[0], row_stride);
 		}
 
-		m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
+        g_ErrorReport.Write("> OpenJpeg, Inserted texture %s (%u)", pNewBitmap->FileName, pNewBitmap->TextureNumber);
+
+        m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
 
 		glGenTextures(1, &(pNewBitmap->TextureNumber));
 		glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
@@ -917,7 +915,7 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 #ifdef _WIN32
 	filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
 #else
-    ndk_copy_s(filename,pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+    ndk_copy_s(MU_NormalizePath2(filename.c_str()),pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
 #endif
 
 	pNewBitmap->Width = (float)Width;
@@ -1200,30 +1198,96 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 	return true;
 }
 #endif
+#include "wt.h"
+
+inline void MU_splitpath2(
+        const char* path,
+        char* drive,
+        char* dir,
+        char* fname,
+        char* ext)
+{
+    namespace fs = std::filesystem;
+
+    if (!path)
+        return;
+
+    fs::path p(path);
+
+    // DRIVE
+    if (drive)
+    {
+#ifdef _WIN32
+        std::string root = p.root_name().string();
+        std::snprintf(drive, _MAX_DRIVE, "%s", root.c_str());
+#else
+        drive[0] = '\0';
+#endif
+    }
+
+    // DIRECTORY
+    if (dir)
+    {
+        std::string d = p.parent_path().string();
+
+        // mimic old _splitpath behavior
+        if (!d.empty())
+        {
+            char last = d[d.size() - 1];
+
+            if (last != '/' && last != '\\')
+                d += "/";
+        }
+
+        std::snprintf(dir, _MAX_DIR, "%s", d.c_str());
+    }
+
+
+    // FILENAME
+    if (fname)
+    {
+        std::string f = p.stem().string();
+        std::snprintf(fname, _MAX_FNAME, "%s", f.c_str());
+        //g_ErrorReport.Write("> MU_splitpath2, %s", p.filename().c_str());
+    }
+
+    // EXTENSION
+    if (ext)
+    {
+        std::string e = p.extension().string();
+        std::snprintf(ext, _MAX_EXT, "%s", e.c_str());
+    }
+
+
+
+}
 
 void CGlobalBitmap::SplitFileName(IN const std::string& filepath, OUT std::string& filename, bool bIncludeExt) 
 {
-	char __fname[_MAX_FNAME] = {0, };
-	char __ext[_MAX_EXT] = {0, };
-	_splitpath(filepath.c_str(), NULL, NULL, __fname, __ext);
-	filename = __fname;
+	char fname[_MAX_FNAME] = {0};
+	char ext[_MAX_EXT] = {0};
+
+    MU_splitpath2(filepath.c_str(), NULL, NULL, fname, ext);
+
+    filename = fname;
 	if(bIncludeExt)
-		filename += __ext;
+		filename += ext;
 }
 void CGlobalBitmap::SplitExt(IN const std::string& filepath, OUT std::string& ext, bool bIncludeDot) 
 {
-	char __ext[_MAX_EXT] = {0, };
-	_splitpath(filepath.c_str(), NULL, NULL, NULL, __ext);
+	char fext[_MAX_EXT] = {0};
+	MU_splitpath2(filepath.c_str(), NULL, NULL, NULL, fext);
 	if(bIncludeDot) {
-		ext = __ext;
+		ext = fext;
 	}
 	else {
-		if((__ext[0] == '.') && __ext[1])
-			ext = __ext+1;
+		if((fext[0] == '.') && fext[1])
+			ext = fext+1;
 	}
 }
 
 #include <string>
+
 
 void CGlobalBitmap::ExchangeExt(const std::string& in_filepath, const std::string& ext, std::string& out_filepath)
 {

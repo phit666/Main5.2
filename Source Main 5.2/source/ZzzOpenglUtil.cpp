@@ -229,7 +229,29 @@ void safe_enable_attr(GLuint index) {
 	}
 }
 
+
 void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
+{
+	projectionStack.back() = glm::perspective(
+		glm::radians(Fov),
+		Aspect,
+		ZNear,
+		ZFar
+	);
+
+	MU_ApplyMatrices();
+
+	ScreenCenterX = OpenglWindowX + OpenglWindowWidth / 2;
+	ScreenCenterY = OpenglWindowY + OpenglWindowHeight / 2;
+	ScreenCenterYFlip = WindowHeight - ScreenCenterY;
+
+	float tanFov = tanf(Fov * 0.5f * 3.141592f / 180.0f);
+
+	PerspectiveX = tanFov * Aspect / (OpenglWindowWidth * 0.5f);
+	PerspectiveY = tanFov / (OpenglWindowHeight * 0.5f);
+}
+
+void gluPerspective2_old(float Fov, float Aspect, float ZNear, float ZFar)
 {
 	// 1. Update the manual Projection Stack
 	// glm::perspective uses radians, so we convert Fov
@@ -252,8 +274,42 @@ void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 	PerspectiveY = tanFov / (float)(OpenglWindowHeight / 2) * AspectY;
 }
 
-
 void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
+{
+#ifdef _WIN32
+	sx = sx * WindowWidth / 640;
+	sy = sy * WindowHeight / 480;
+#else
+	float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+	sx = sx * scale;
+	sy = sy * scale;
+#endif
+
+	vec3_t p1, p2;
+
+	if (bFixView)
+	{
+		p1[0] = (float)(sx - ScreenCenterX) * CameraViewFar * PerspectiveX;
+		p1[1] = -(float)(sy - ScreenCenterY) * CameraViewFar * PerspectiveY;
+		p1[2] = -CameraViewFar;
+	}
+	else
+	{
+		p1[0] = (float)(sx - ScreenCenterX) * RENDER_ITEMVIEW_FAR * PerspectiveX;
+		p1[1] = -(float)(sy - ScreenCenterY) * RENDER_ITEMVIEW_FAR * PerspectiveY;
+		p1[2] = -RENDER_ITEMVIEW_FAR;
+	}
+
+	p2[0] = -CameraMatrix[0][3];
+	p2[1] = -CameraMatrix[1][3];
+	p2[2] = -CameraMatrix[2][3];
+
+	VectorIRotate(p2, CameraMatrix, MousePosition);
+	VectorIRotate(p1, CameraMatrix, p2);
+	VectorAdd(MousePosition, p2, Target);
+}
+
+void CreateScreenVectorOld(int sx, int sy, vec3_t Target, bool bFixView)
 {
 	sx = sx * WindowWidth / 640;
 	sy = sy * WindowHeight / 480;
@@ -667,11 +723,23 @@ float ConvertY(float y)
 
 void BeginOpengl(int x, int y, int Width, int Height)
 {
+#ifdef _WIN32
 	// 1. Resolution Scaling
 	x = x * WindowWidth / 640;
 	y = y * WindowHeight / 480;
 	Width = Width * WindowWidth / 640;
 	Height = Height * WindowHeight / 480;
+#else
+	float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+
+	float offsetX = (WindowWidth - 640.0f * scale) * 0.5f;
+	float offsetY = (WindowHeight - 480.0f * scale) * 0.5f;
+
+	x = (int)(offsetX + x * scale);
+	y = (int)(offsetY + y * scale);
+	Width = (int)(Width * scale);
+	Height = (int)(Height * scale);
+#endif
 
 	// --- PROJECTION ---
 	glMatrixMode(GL_PROJECTION);
@@ -706,7 +774,11 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	myShader.use();
 	myShader.setFloat(g_uAlphaTestLoc, AlphaTestEnable ? 1.0f : 0.0f);
 	myShader.setFloat(g_uTexEnabledLoc, TextureEnable ? 1.0f : 0.0f);
+
 	//myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Reset global tint
+
+	//glDisableVertexAttribArray(g_aColorLoc);
+	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	// --- HARDWARE STATES ---
 	glEnable(GL_DEPTH_TEST);
@@ -738,9 +810,10 @@ void BeginOpengl(int x, int y, int Width, int Height)
 void EndOpengl()
 {
 	// Force-disable the common attributes used by UI/Sprites
-	safe_disable_attr(g_aPosLoc);
-	safe_disable_attr(g_aTexLoc);
-	safe_disable_attr(g_aColorLoc);
+
+	//safe_disable_attr(g_aPosLoc);
+	//safe_disable_attr(g_aTexLoc);
+	//safe_disable_attr(g_aColorLoc);
 
 	// Standard state resets
 	//glDisable(GL_SCISSOR_TEST); // Crucial: Nuklear leaves this on!

@@ -61,8 +61,8 @@ void wzAudioPlay(char* szFilename, int numRepeat)
         Mix_FreeMusic(g_wzMusic);
         g_wzMusic = nullptr;
     }
-
-    g_wzMusic = Mix_LoadMUS(szFilename);
+    std::string f = MU_NormalizePath(szFilename);
+    g_wzMusic = Mix_LoadMUS(f.c_str());
     if (!g_wzMusic)
         return;
 

@@ -516,14 +516,14 @@ void CMsgWin::ManageOKClick()
 		rUIMng.ShowWin(&rUIMng.m_LoginWin);
 		CUIMng::Instance().m_LoginWin.GetIDInputBox()->GiveFocus(TRUE);
 		CurrentProtocolState = RECEIVE_JOIN_SERVER_SUCCESS;
-		SDL_StartTextInput();
+		//SDL_StartTextInput();
 		break;
 	case MESSAGE_INPUT_PASSWORD:
 	case RECEIVE_LOG_IN_FAIL_PASSWORD:
 		rUIMng.ShowWin(&rUIMng.m_LoginWin);
 		CUIMng::Instance().m_LoginWin.GetPassInputBox()->GiveFocus(TRUE);
 		CurrentProtocolState = RECEIVE_JOIN_SERVER_SUCCESS;
-		SDL_StartTextInput();
+		//SDL_StartTextInput();
 		break;
 	case MESSAGE_DELETE_CHARACTER_CONFIRM:
 		PopUp(MESSAGE_DELETE_CHARACTER_RESIDENT);

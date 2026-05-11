@@ -327,7 +327,7 @@ int OpenTerrainMapping(char *FileName)	//
 	}
 	delete [] Data;
 	
-	MU_fclose(fp);
+	//MU_fclose(fp);
 
     TerrainGrassEnable = true;
 

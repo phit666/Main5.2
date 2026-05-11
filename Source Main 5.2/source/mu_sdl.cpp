@@ -19,6 +19,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <clocale>
 #endif
 
 typedef struct
@@ -400,6 +401,10 @@ bool MU_InitSDL(int width, int height)
 {
     g_ErrorReport.Write( "MU_InitSDL > SDL_Init\r\n");
 
+#ifndef _WIN32
+    setlocale(LC_ALL, "");
+#endif
+
      if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) != 0)
         return false;
 
@@ -464,7 +469,7 @@ bool MU_InitSDL(int width, int height)
 #endif
 
     SDL_GL_SetSwapInterval(1);
-    SDL_StartTextInput();
+    //SDL_StartTextInput();
 
     InitShader();
 
@@ -559,6 +564,7 @@ short GetAsyncKeyState_SDL(int vKey) {
 }
 
 BOOL TextOutW(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString){
+    /*
     if (nk_begin(g_nk_ctx, "Canvas", nk_rect(0, 0, WindowWidth, WindowHeight), NK_WINDOW_NO_SCROLLBAR)) {
         struct nk_command_buffer *canvas = nk_window_get_canvas(g_nk_ctx);
         //struct nk_user_font *font = g_nk_ctx->style.font;
@@ -567,10 +573,12 @@ BOOL TextOutW(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString)
                      nk_rgb(255,255,255), nk_rgba(0,0,0,0));
     }
     nk_end(g_nk_ctx);
+    */
     return 1;
 }
 
 bool GetTextExtentPoint32W(HDC hdc, LPCWSTR text, int len, SIZE *lpsz) {
+    /*
     if (!g_nk_ctx || !text || !lpsz) return false;
 
     const struct nk_user_font *font = g_nk_ctx->style.font; // Currently selected font
@@ -580,7 +588,7 @@ bool GetTextExtentPoint32W(HDC hdc, LPCWSTR text, int len, SIZE *lpsz) {
 
     // Height is constant for the font in Nuklear
     lpsz->cy = (long)font->height;
-
+    */
     return true;
 }
 

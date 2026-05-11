@@ -106,7 +106,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.254.115";
+char *szServerIpAddress = "192.168.1.19";
 WORD g_ServerPort = 44405;
 
 #ifdef MOVIE_DIRECTSHOW
@@ -1341,12 +1341,16 @@ bool NewRenderLogInScene(HDC hDC)
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	//g_ErrorReport.Write( "> RenderLoginScene, BeginOpengl...");
+
 	BeginOpengl(0,25,640,430);
 
 	CreateFrustrum((float)Width/(float)640, pos);
 
 	if (!CUIMng::Instance().m_CreditWin.IsShow())
 	{
+		//g_ErrorReport.Write( "> RenderLoginScene, CreditWin.IsShow...");
+
 		CameraViewFar = 330.f * CCameraMove::GetInstancePtr()->GetCurrentCameraDistanceLevel();
 
 		RenderTerrain(false);
@@ -1394,6 +1398,8 @@ bool NewRenderLogInScene(HDC hDC)
 #else //PBG_ADD_MUBLUE_LOGO
 		RenderBitmap(BITMAP_LOG_IN + 16, 320.0f - 128.0f * 0.8f, 25.0f, 256.0f * 0.8f, 128.0f * 0.8f);
 #endif //PBG_ADD_MUBLUE_LOGO
+
+		//g_ErrorReport.Write( "> RenderLoginScene, GetInstancePtr()->IsTourMode()...");
 	}
 
 	SIZE Size;
@@ -1490,7 +1496,7 @@ void LoadingScene(HDC hDC)
 	//::glFlush();
 
 #ifdef MU_USE_SDL
-	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);

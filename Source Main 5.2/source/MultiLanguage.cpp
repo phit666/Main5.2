@@ -13,6 +13,139 @@
 
 CMultiLanguage* CMultiLanguage::ms_Singleton = NULL;
 
+#ifndef _WIN32
+#include <cwchar>
+#include <cstdlib>
+#include <cstdint>
+
+int MU_MultiByteToWideChar(
+		uint32_t CodePage,
+		uint32_t dwFlags,
+		const char* lpMBStr,
+		int cbMB,
+		wchar_t* lpWCStr,
+		int cchWC)
+{
+	(void)CodePage;
+	(void)dwFlags;
+
+	if (!lpMBStr)
+		return 0;
+
+	// Windows behavior:
+	// cbMB == -1 means null-terminated input.
+	if (cbMB == -1)
+	{
+		size_t need = mbstowcs(nullptr, lpMBStr, 0);
+
+		if (need == (size_t)-1)
+			return 0;
+
+		need += 1; // include null terminator
+
+		if (!lpWCStr || cchWC == 0)
+			return (int)need;
+
+		size_t written = mbstowcs(lpWCStr, lpMBStr, cchWC);
+
+		if (written == (size_t)-1)
+			return 0;
+
+		if ((int)written < cchWC)
+			lpWCStr[written] = L'\0';
+
+		return (int)written;
+	}
+
+	// Explicit byte count
+	std::string temp(lpMBStr, lpMBStr + cbMB);
+
+	size_t need = mbstowcs(nullptr, temp.c_str(), 0);
+
+	if (need == (size_t)-1)
+		return 0;
+
+	if (!lpWCStr || cchWC == 0)
+		return (int)need;
+
+	size_t written = mbstowcs(lpWCStr, temp.c_str(), cchWC);
+
+	if (written == (size_t)-1)
+		return 0;
+
+	if ((int)written < cchWC)
+		lpWCStr[written] = L'\0';
+
+	return (int)written;
+}
+
+int MU_WideCharToMultiByte(
+		uint32_t CodePage,
+		uint32_t dwFlags,
+		const wchar_t* lpWCStr,
+		int cchWC,
+		char* lpMBStr,
+		int cbMB,
+		const char* lpDefChar,
+		bool* lpUsedDefChar)
+{
+	(void)CodePage;
+	(void)dwFlags;
+	(void)lpDefChar;
+
+	if (lpUsedDefChar)
+		*lpUsedDefChar = false;
+
+	if (!lpWCStr)
+		return 0;
+
+	// Windows behavior: -1 means include null terminator.
+	if (cchWC == -1)
+	{
+		size_t need = wcstombs(nullptr, lpWCStr, 0);
+		if (need == (size_t)-1)
+			return 0;
+
+		need += 1;
+
+		if (!lpMBStr || cbMB == 0)
+			return (int)need;
+
+		size_t written = wcstombs(lpMBStr, lpWCStr, cbMB);
+		if (written == (size_t)-1)
+			return 0;
+
+		if ((int)written < cbMB)
+			lpMBStr[written] = '\0';
+
+		return (int)written;
+	}
+
+	// cchWC is explicit character count.
+	std::wstring temp(lpWCStr, lpWCStr + cchWC);
+
+	size_t need = wcstombs(nullptr, temp.c_str(), 0);
+	if (need == (size_t)-1)
+		return 0;
+
+	if (!lpMBStr || cbMB == 0)
+		return (int)need;
+
+	size_t written = wcstombs(lpMBStr, temp.c_str(), cbMB);
+	if (written == (size_t)-1)
+		return 0;
+
+	if ((int)written < cbMB)
+		lpMBStr[written] = '\0';
+
+	return (int)written;
+}
+#else
+#define MU_MultiByteToWideChar MultiByteToWideChar
+#define MU_WideCharToMultiByte WideCharToMultiByte
+#endif
+
+
 CMultiLanguage::CMultiLanguage(std::string strSelectedML)
 {
 	ms_Singleton = this;
@@ -111,12 +244,12 @@ int CMultiLanguage::ConvertCharToWideStr(std::wstring& wstrDest, LPCSTR lpString
 	iConversionType = (IsCharUTF8(lpString)) ? CP_UTF8 : iCodePage;
 
     // calculate the number of characters needed to hold the wide-character version of the string.
-    nLenOfWideCharStr = MultiByteToWideChar(iConversionType, 0, lpString, -1, NULL, 0);
+    nLenOfWideCharStr = MU_MultiByteToWideChar(iConversionType, 0, lpString, -1, NULL, 0);
     // memory allocation
     wchar_t* pwszStr = new wchar_t[nLenOfWideCharStr];
     
     // convert the multi-byte string to a wide-character string.
-    MultiByteToWideChar(iConversionType, 0, lpString, -1, pwszStr, nLenOfWideCharStr);
+	MU_MultiByteToWideChar(iConversionType, 0, lpString, -1, pwszStr, nLenOfWideCharStr);
     
     //assign
     wstrDest += pwszStr;
@@ -137,12 +270,12 @@ int CMultiLanguage::ConvertWideCharToStr(std::string& strDest, LPCWSTR lpwString
     int nLenOfWideCharStr;
     
     // calculate the number of characters needed to hold the wide-character version of the string.
-    nLenOfWideCharStr = WideCharToMultiByte(iConversionType, 0, lpwString, -1, NULL, 0, 0, 0);
+    nLenOfWideCharStr = MU_WideCharToMultiByte(iConversionType, 0, lpwString, -1, NULL, 0, 0, 0);
     // memory allocation
     char* pszStr = new char[nLenOfWideCharStr];
     
     // convert the multi-byte string to a wide-character string.
-    WideCharToMultiByte(iConversionType, 0, lpwString, -1, pszStr, nLenOfWideCharStr, 0, 0);
+	MU_WideCharToMultiByte(iConversionType, 0, lpwString, -1, pszStr, nLenOfWideCharStr, 0, 0);
 
     //assign
     strDest += pszStr;

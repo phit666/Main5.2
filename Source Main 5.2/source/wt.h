@@ -191,7 +191,66 @@ typedef struct {
 #endif
 #endif //MU_MOBILE_WT_H
 
-//
+#include <filesystem>
+#include <string>
+#include <cstring>
+
+inline void MU_splitpath(
+    const char* path,
+    char* drive,
+    char* dir,
+    char* fname,
+    char* ext)
+{
+    namespace fs = std::filesystem;
+
+    if (!path)
+        return;
+
+    fs::path p(path);
+
+    // DRIVE
+    if (drive)
+    {
+#ifdef _WIN32
+        std::string root = p.root_name().string();
+        std::snprintf(drive, _MAX_DRIVE, "%s", root.c_str());
+#else
+        drive[0] = '\0';
+#endif
+    }
+
+    // DIRECTORY
+    if (dir)
+    {
+        std::string d = p.parent_path().string();
+
+        // mimic old _splitpath behavior
+        if (!d.empty())
+        {
+            char last = d[d.size() - 1];
+
+            if (last != '/' && last != '\\')
+                d += "/";
+        }
+
+        std::snprintf(dir, _MAX_DIR, "%s", d.c_str());
+    }
+
+    // FILENAME
+    if (fname)
+    {
+        std::string f = p.filename().string();
+        std::snprintf(fname, _MAX_FNAME, "%s", f.c_str());
+    }
+
+    // EXTENSION
+    if (ext)
+    {
+        std::string e = p.extension().string();
+        std::snprintf(ext, _MAX_EXT, "%s", e.c_str());
+    }
+}
 
 extern int TextNum;
 extern char TextList[30][100];

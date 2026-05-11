@@ -155,6 +155,9 @@ void PlayMp3(char *Name, BOOL bEnforce )
 	if(Destroy) return;
     if(!m_MusicOnOff && !bEnforce) return;
 
+    if(Name != NULL)
+        g_ErrorReport.Write( "> PlayMp3, %s", Name);
+
 	if(strcmp(Name,Mp3FileName) == 0) 
 	{
 		return;

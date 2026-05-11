@@ -1127,10 +1127,10 @@ void CMixRecipeMgr::OpenRecipeFile(const unicode::t_char * szFileName)
 
 	iSize = sizeof(MIX_RECIPE);
 
-	g_ErrorReport.Write("long size %d", sizeof(long));
-	g_ErrorReport.Write("DWORD size %d", sizeof(DWORD));
-    g_ErrorReport.Write("MIXRATE_TOKEN size %d", sizeof(MIXRATE_TOKEN));
-    g_ErrorReport.Write("MIX_RECIPE_ITEM size %d", sizeof(MIX_RECIPE_ITEM));
+	//g_ErrorReport.Write("long size %d", sizeof(long));
+	//g_ErrorReport.Write("DWORD size %d", sizeof(DWORD));
+   // g_ErrorReport.Write("MIXRATE_TOKEN size %d", sizeof(MIXRATE_TOKEN));
+    //g_ErrorReport.Write("MIX_RECIPE_ITEM size %d", sizeof(MIX_RECIPE_ITEM));
 
 	for (j = 0; j < MAX_MIX_TYPES; ++j)
 	{
