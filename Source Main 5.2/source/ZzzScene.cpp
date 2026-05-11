@@ -596,10 +596,12 @@ void RenderInfomation()
     
 	CUIMng::Instance().Render();
 
+#ifdef _WIN32
 	if(SceneFlag == LOG_IN_SCENE || SceneFlag == CHARACTER_SCENE)
 	{
 		RenderCursor();
 	}
+#endif
 	
     RenderInfomation3D();
 }
@@ -2225,7 +2227,9 @@ bool RenderMainScene()
 	EndBitmap();
 	BeginBitmap();
 
+#ifdef _WIN32
     RenderCursor();
+#endif
 
 	EndBitmap();
     EndOpengl();
