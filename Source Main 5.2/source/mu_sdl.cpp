@@ -412,6 +412,12 @@ bool MU_InitSDL(int width, int height)
 
     g_ErrorReport.Write( "MU_InitSDL > SDL_CreateWindow\r\n");
 
+#ifdef __ANDROID__
+    SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+    width = 0;
+    height = 0;
+#endif
+
     gSDLWindow = SDL_CreateWindow(
         "MU",
         SDL_WINDOWPOS_CENTERED,
@@ -443,6 +449,18 @@ bool MU_InitSDL(int width, int height)
         //OutputDebugStringA("[SDL-DEBUG] gladLoadGLES2Loader failed.");
         return false;
     }
+#endif
+
+#ifdef __ANDROID__
+    int _screen_w, _screen_h;
+    SDL_GetWindowSize(gSDLWindow, &_screen_w, &_screen_h);
+    WindowWidth = _screen_w;
+    WindowHeight = _screen_h;
+    g_fScreenRate_x = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+    g_fScreenRate_y = g_fScreenRate_x;
+
+    g_ErrorReport.Write("> Screen Width %d Height %d Scale %f", WindowWidth, WindowHeight, g_fScreenRate_x);
+
 #endif
 
     SDL_GL_SetSwapInterval(1);

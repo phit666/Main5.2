@@ -21,6 +21,7 @@
 #include "mu_sdl.h"
 #include "mu_gles2_matrix.h"
 #include "wt.h"
+#include "./Utilities/Log//ErrorReport.h"
 
 //BMD Models[MAX_MODELS];
 BMD *Models;
@@ -2365,11 +2366,14 @@ bool BMD::Open2(char *DirName,char *ModelFileName, bool bReAlloc)
 	Version          = *((char *)(Data+DataPtr));DataPtr+=1;
 	if ( Version == 12)
 	{
-		long lSize          = *((long *)(Data+DataPtr));DataPtr+=sizeof ( long);
-		long lDecSize = MapFileDecrypt( NULL, Data+DataPtr, lSize);
-		BYTE *pbyDec = new BYTE [lDecSize];
-		MapFileDecrypt( pbyDec, Data+DataPtr, lSize);
-		delete [] Data;
+		int32_t lSize = 0;
+		memcpy(&lSize, Data + DataPtr, sizeof(lSize));
+		DataPtr += sizeof(lSize);
+
+		long lDecSize = MapFileDecrypt(NULL, Data + DataPtr, lSize);
+		BYTE* pbyDec = new BYTE[lDecSize];
+		MapFileDecrypt(pbyDec, Data + DataPtr, lSize);
+		delete[] Data;
 		Data = pbyDec;
 		DataPtr = 0;
 	}
@@ -2388,6 +2392,14 @@ bool BMD::Open2(char *DirName,char *ModelFileName, bool bReAlloc)
 	IndexTexture     = new GLuint    [max( 1, NumMeshs)  ];
 	
 	int i;
+
+	//g_ErrorReport.Write("sizeof(Vertex_t) %d", sizeof(Vertex_t));
+	//g_ErrorReport.Write("sizeof(Normal_t) %d", sizeof(Normal_t));
+	//g_ErrorReport.Write("sizeof(Triangle_t) %d", sizeof(Triangle_t));
+	//g_ErrorReport.Write("sizeof(Triangle_t2) %d", sizeof(Triangle_t2));
+	//g_ErrorReport.Write("sizeof(BoneMatrix_t) %d", sizeof(BoneMatrix_t));
+	//g_ErrorReport.Write("sizeof(Action_t) %d", sizeof(Action_t));
+
 
 	for(i=0;i<NumMeshs;i++)
 	{

@@ -35,7 +35,7 @@ bool CMoveCommandData::Create(const std::string& filename)
 	{		
 		MOVEINFODATA* pMoveInfoData = new MOVEINFODATA;
 		MU_fread(&(pMoveInfoData->_ReqInfo), sizeof(MOVEREQINFO), 1, fp);
-		::BuxConvert((BYTE*)&(pMoveInfoData->_ReqInfo), sizeof(MOVEREQINFO));	
+		::BuxConvert((BYTE*)&(pMoveInfoData->_ReqInfo), sizeof(MOVEREQINFO));	//
 		m_listMoveInfoData.push_back(pMoveInfoData);
 	}
 	MU_fclose(fp);

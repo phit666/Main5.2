@@ -4715,7 +4715,7 @@ void CSlideHelpMgr::OpenSlideTextFile(const char * szFileName)
 
 	SLIDEHELP SlideHelp;
 	MU_fread(&SlideHelp, sizeof(SLIDEHELP), 1, fp);
-	BuxConvert((BYTE*)&SlideHelp, sizeof(SLIDEHELP));
+	BuxConvert((BYTE*)&SlideHelp, sizeof(SLIDEHELP));//
 	MU_fclose(fp);
 
 	SetCreateDelay(SlideHelp.iCreateDelay);

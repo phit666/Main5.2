@@ -190,6 +190,8 @@ bool PetProcess::LoadData()
 	int _ver;
 	int _array;
 
+	g_ErrorReport.Write("> PetProcess::LoadData...");
+
 	MU_FILE *fp = MU_fopen(FileName, "rb");
 	if(fp == NULL)
 	{
@@ -220,8 +222,13 @@ bool PetProcess::LoadData()
 
 	MU_fread( Buffer,Size*_listSize,1,fp );
 
-	DWORD dwCheckSum;
+	DWORD dwCheckSum, dwCheckSum2;
+
 	MU_fread(&dwCheckSum,sizeof ( DWORD),1,fp);
+
+	dwCheckSum2 = GenerateCheckSum2(Buffer, Size * _listSize, 0x7F1D);
+
+	g_ErrorReport.Write("> PetProcess::LoadData, checksum %u / %u (_listSize %d)", dwCheckSum, dwCheckSum2, _listSize);
 
 	if ( dwCheckSum != GenerateCheckSum2( Buffer, Size*_listSize, 0x7F1D))
 	{
@@ -242,10 +249,11 @@ bool PetProcess::LoadData()
 			_scale = 0.0f;
 			_blendMesh = -1;
 			_count = 0;
+
 			ZeroMemory( _action, sizeof(_action) );
 			ZeroMemory( _speed, sizeof(_speed) );
 
-			BuxConvert(pSeek,Size);
+			BuxConvert(pSeek,Size);//
 
 			memcpy(&_type, pSeek, sizeof(_type));
 			pSeek += sizeof(_type);
@@ -262,8 +270,12 @@ bool PetProcess::LoadData()
 			memcpy(_action, pSeek, sizeof(int)*_array);
 			pSeek += sizeof(int)*_array;
 			
-			memcpy(_speed, pSeek, sizeof(_speed)*_array);
-			pSeek += sizeof(_speed)*_array;
+			memcpy(_speed, pSeek, sizeof(_speed[0]) * _array);
+			pSeek += sizeof(_speed[0]) * _array;
+
+			g_ErrorReport.Write("> PetProcess, index %d _blendMesh %d _scale %f _count %d _type %d", 
+				i, _blendMesh, _scale, _count, _type);
+
 
 			PetInfoPtr petInfo = PetInfo::Make();
 			petInfo->SetBlendMesh( _blendMesh );
@@ -273,9 +285,14 @@ bool PetProcess::LoadData()
 			m_petsInfo.insert( make_pair(ITEM_HELPER+_type, petInfo) );
 		}
 	}
+
+	g_ErrorReport.Write("> PetProcess::LoadData, clean memory.");
+
 	delete [] _action;
 	delete [] _speed;
 	delete [] Buffer;
+
+	g_ErrorReport.Write("> PetProcess::LoadData...done.");
 
 	return TRUE;
 }

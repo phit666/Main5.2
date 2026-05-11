@@ -856,7 +856,7 @@ void SEASON3B::CNewUIMasterLevel::OpenMasterLevel ( const char* filename )
 			}
 			for(int i=0;i<MAX_MASTER;i++)
 			{
-				BuxConvert(pSeek,Size);
+				BuxConvert(pSeek,Size);//
 				memcpy(&(m_MasterLevel[i]),pSeek,Size);
 
 				pSeek += Size;

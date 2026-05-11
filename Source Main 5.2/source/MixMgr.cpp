@@ -1123,7 +1123,7 @@ void CMixRecipeMgr::OpenRecipeFile(const unicode::t_char * szFileName)
 	int iNumMixRecipes[MAX_MIX_TYPES];
 	int iSize = sizeof(int) * MAX_MIX_TYPES;
 	size_t len = MU_fread(iNumMixRecipes, iSize, 1, fp);
-	BuxConvert((BYTE*)iNumMixRecipes, iSize);
+	BuxConvert((BYTE*)iNumMixRecipes, iSize);//
 
 	iSize = sizeof(MIX_RECIPE);
 
@@ -1144,7 +1144,7 @@ void CMixRecipeMgr::OpenRecipeFile(const unicode::t_char * szFileName)
 		{
 			MIX_RECIPE * pMixRecipe = new MIX_RECIPE;
 			MU_fread(pMixRecipe, iSize, 1, fp);
-			BuxConvert((BYTE*)pMixRecipe, iSize);
+			BuxConvert((BYTE*)pMixRecipe, iSize);//
 			m_MixRecipe[j].AddRecipe(pMixRecipe);
 		}
 	}

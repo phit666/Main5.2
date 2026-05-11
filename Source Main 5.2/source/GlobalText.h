@@ -108,7 +108,7 @@ public:
 
 			if( CheckLoadDisposition(GTStringHeader.dwKey, dwLoadDisposition) || GTStringHeader.dwKey < MAX_NUMBER_OF_TEXTS)
 			{
-				BuxConvert(pStringBuffer, sizeof(T)*GTStringHeader.dwSizeOfString);		//. decoding
+				BuxConvert(pStringBuffer, sizeof(T)*GTStringHeader.dwSizeOfString);		//. decoding ??
 				pStringBuffer[GTStringHeader.dwSizeOfString] = '\0';
 				m_StringSet.Add(GTStringHeader.dwKey, pStringBuffer);
 			}
@@ -147,7 +147,7 @@ public:
 			T* pStringBuffer = new T[GTStringHeader.dwSizeOfString];
 			memcpy(pStringBuffer, m_StringSet[key], sizeof(T)*GTStringHeader.dwSizeOfString);
 			
-			BuxConvert(pStringBuffer, sizeof(T)*GTStringHeader.dwSizeOfString);		//. encoding
+			BuxConvert(pStringBuffer, sizeof(T)*GTStringHeader.dwSizeOfString);		//. encoding ??
 			MU_fwrite(pStringBuffer, sizeof(T), GTStringHeader.dwSizeOfString, fp);
 			
 			delete [] pStringBuffer;

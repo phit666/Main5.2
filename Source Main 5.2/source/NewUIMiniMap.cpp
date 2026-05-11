@@ -260,7 +260,7 @@ void SEASON3B::CNewUIMiniMap::LoadImages(const char* Filename)
 
 			for(i=0;i<MAX_MINI_MAP_DATA;i++)
 			{
-				BuxConvert(pSeek,Size);
+				BuxConvert(pSeek,Size);//
 				memcpy(&(m_Mini_Map_Data[i]),pSeek,Size);
 
 				pSeek += Size;

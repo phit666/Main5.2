@@ -47,7 +47,7 @@ const bool ItemAddOptioninfo::OpenItemAddOptionInfoFile( const std::string& file
 		int nSize = sizeof(ITEM_ADD_OPTION) * MAX_ITEM;
 
 		::MU_fread(m_ItemAddOption, nSize, 1, fp);
-		::BuxConvert((BYTE*)m_ItemAddOption, nSize);
+		::BuxConvert((BYTE*)m_ItemAddOption, nSize);//
 		::MU_fclose(fp);
 
 		return true;

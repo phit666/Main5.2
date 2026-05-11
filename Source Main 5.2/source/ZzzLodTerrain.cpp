@@ -159,7 +159,7 @@ int OpenTerrainAttribute(char *FileName)
         extAtt = true;
     }
 
-	BuxConvert( byBuffer, iSize);
+	BuxConvert( byBuffer, iSize);//
 	Version = byBuffer[0];
 	int iMap = byBuffer[1];
 	Width = byBuffer[2];

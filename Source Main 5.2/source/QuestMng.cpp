@@ -57,7 +57,7 @@ void CQuestMng::LoadNPCDialogueScript()
 
 	while (0 != MU_fread(abyBuffer, nSize, 1, fp))
 	{
-		::BuxConvert(abyBuffer, nSize);
+		::BuxConvert(abyBuffer, nSize);//
 
 		::memcpy(&dwIndex, abyBuffer, sizeof(DWORD));
 		::memcpy(&sNPCDialogue, abyBuffer + sizeof(DWORD), sizeof(SNPCDialogue));
@@ -88,7 +88,7 @@ void CQuestMng::LoadQuestProgressScript()
 
 	while (0 != MU_fread(abyBuffer, nSize, 1, fp))
 	{
-		::BuxConvert(abyBuffer, nSize);
+		::BuxConvert(abyBuffer, nSize);//
 
 		::memcpy(&dwIndex, abyBuffer, sizeof(DWORD));
 		::memcpy(&sQuestProgress, abyBuffer + sizeof(DWORD), sizeof(SQuestProgress));
@@ -127,10 +127,10 @@ void CQuestMng::LoadQuestWordsScript()
 	
 	while (0 != MU_fread(&sQuestWordsHeader, nSize, 1, fp))
 	{
-		::BuxConvert((BYTE*)&sQuestWordsHeader, nSize);
+		::BuxConvert((BYTE*)&sQuestWordsHeader, nSize);//
 
 		MU_fread(szWords, sQuestWordsHeader.m_nWordsLen, 1, fp);
-		::BuxConvert((BYTE*)szWords, sQuestWordsHeader.m_nWordsLen);
+		::BuxConvert((BYTE*)szWords, sQuestWordsHeader.m_nWordsLen);//
 		strWords = szWords;
 		m_mapQuestWords.insert(std::make_pair(sQuestWordsHeader.m_nIndex, strWords));
 	}

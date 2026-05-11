@@ -138,7 +138,7 @@ bool CSQuest::OpenQuestScript ( char* filename )
 	for ( int i=0; i<MAX_QUESTS; i++ )
 	{
 		MU_fread ( Buffer, Size, 1, fp );
-		BuxConvert ( Buffer, Size );
+		BuxConvert ( Buffer, Size );//
 		memcpy ( &m_Quest[i], Buffer, Size );
 	}
 	SAFE_DELETE_ARRAY(Buffer);

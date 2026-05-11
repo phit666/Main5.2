@@ -70,6 +70,7 @@
 #include "wt.h"
 #include "wzAudio.h"
 #include "MixMgr.h"
+#include <algorithm>
 
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
@@ -1196,6 +1197,7 @@ BOOL OpenInitFile()
 	RegCloseKey( hKey);
 #endif
 
+#ifdef _WIN32
 	switch(m_Resolution)
 	{
 	case 0:WindowWidth=640 ;WindowHeight=480 ;break;
@@ -1205,9 +1207,9 @@ BOOL OpenInitFile()
 	//case 3:WindowWidth=1920;WindowHeight=1440;break;
 	case 4:WindowWidth=1600;WindowHeight=1200;break;
 	}
-	
 	g_fScreenRate_x = (float)WindowWidth / 640;		// ��
 	g_fScreenRate_y = (float)WindowHeight / 480;
+#endif
 
 	return TRUE;
 }
@@ -1980,6 +1982,18 @@ void MU_ProcessSDLEvents()
 			{
 				WindowWidth = e.window.data1;
 				WindowHeight = e.window.data2;
+
+#ifdef __ANDROID__
+				//scale = std::min(WindowWidth / 640.0f, WindowHeight / 480.0f);
+				g_fScreenRate_x = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+				g_fScreenRate_y = g_fScreenRate_x;
+
+				g_ErrorReport.Write("> Resize Screen Width %d Height %d Scale %f", WindowWidth, WindowHeight, g_fScreenRate_x);
+
+#else
+				g_fScreenRate_x = (float)WindowWidth / 640;		// ��
+				g_fScreenRate_y = (float)WindowHeight / 480;
+#endif
 
 				// 2. Update Hardware Viewport
 				// Tells OpenGL how to map its (-1 to 1) space to actual pixels

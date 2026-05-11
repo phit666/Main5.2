@@ -330,7 +330,7 @@ void CCreditWin::LoadText()
 
 	int nSize = sizeof(SCreditItem) * CRW_ITEM_MAX;
 	MU_fread(m_aCredit, nSize, 1, fp);
-	::BuxConvert((BYTE*)m_aCredit, nSize);
+	::BuxConvert((BYTE*)m_aCredit, nSize);//
 
 	MU_fclose(fp);
 }

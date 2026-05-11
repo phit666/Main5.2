@@ -116,7 +116,7 @@ bool BuffScriptLoader::Load(const std::string& pchFileName)
 			{
 				_BUFFINFO tempbuffinfo;
 
-				BuxConvert( pSeek, structsize );
+				BuxConvert( pSeek, structsize );//
 				memcpy( &tempbuffinfo, pSeek, structsize );
 
 				BuffInfo buffinfo;

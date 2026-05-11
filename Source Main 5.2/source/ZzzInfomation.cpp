@@ -57,7 +57,7 @@ void SaveTextFile(char *FileName)
 	for(int i=0;i<MAX_TEXTS;i++)
 	{
 		memcpy(Buffer,GlobalText[i],Size);
-		BuxConvert(Buffer,Size);
+		BuxConvert(Buffer,Size);//
 		MU_fwrite(Buffer,Size,1,fp);
 	}
 	delete [] Buffer;
@@ -93,7 +93,7 @@ void OpenFilterFile(char *FileName)
 		BYTE *pSeek = Buffer;
 		for(int i=0;i<MAX_FILTERS;i++)
 		{
-			BuxConvert(pSeek,Size);
+			BuxConvert(pSeek,Size);//
 			memcpy(AbuseFilter[i],pSeek,Size);
 			if(AbuseFilter[i][0] == NULL)
 			{
@@ -141,7 +141,7 @@ void OpenNameFilterFile(char *FileName)
 		BYTE *pSeek = Buffer;
 		for(int i=0;i<MAX_NAMEFILTERS;i++)
 		{
-			BuxConvert(pSeek,Size);
+			BuxConvert(pSeek,Size);//
 			memcpy(AbuseNameFilter[i],pSeek,Size);
 			if(AbuseNameFilter[i][0] == NULL)
 			{
@@ -168,7 +168,7 @@ void OpenGateScript(char *FileName)
 		for(int i=0;i<MAX_GATES;i++)
 		{
 			MU_fread(Buffer,Size,1,fp);
-            BuxConvert(Buffer,Size);
+            BuxConvert(Buffer,Size);//
 			memcpy(&GateAttribute[i],Buffer,Size);
 		}
 		delete [] Buffer;
@@ -199,7 +199,7 @@ void OpenMonsterSkillScript(char *FileName)
 		for(int i=0;i<FileCount;i++)
 		{
 			MU_fread(Buffer,Size,1,fp);
-            BuxConvert(Buffer,Size);
+            BuxConvert(Buffer,Size);//
 			int dummy = -1;
 			int Seek = 0;
 			memcpy(&dummy,Buffer + Seek,sizeof(int));
@@ -277,7 +277,7 @@ void OpenSkillScript(char *FileName)
 			for(int i=0;i<MAX_SKILLS;i++)
 			{
 
-				BuxConvert(pSeek,Size);
+				BuxConvert(pSeek,Size);//
 				memcpy(&SkillAttribute[i],pSeek,Size);
 
 				pSeek += Size;
@@ -366,7 +366,7 @@ void OpenDialogFile(char *FileName)
 	for(int i=0;i<MAX_DIALOG;i++)
 	{
 		MU_fread(Buffer,Size,1,fp);
-		BuxConvert(Buffer,Size);
+		BuxConvert(Buffer,Size);//
 		memcpy(&g_DialogScript[i],Buffer,Size);
 	}
 	delete [] Buffer;
@@ -409,7 +409,7 @@ void OpenItemScript(char *FileName)
 			BYTE *pSeek = Buffer;
 			for(int i=0;i<MAX_ITEM;i++)
 			{
-				BuxConvert(pSeek,Size);
+				BuxConvert(pSeek,Size);//
 				memcpy(&ItemAttribute[i],pSeek,Size);
 				pSeek += Size;
 			}

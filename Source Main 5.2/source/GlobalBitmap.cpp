@@ -652,11 +652,41 @@ static void jpeg_mem_src_compat(j_decompress_ptr cinfo, const unsigned char* dat
 	src->pub.next_input_byte = data;
 }
 
+
+std::string MU_NormalizePath2(const char* path)
+{
+	if (!path)
+		return "";
+
+	std::string s(path);
+
+	// replace backslashes
+	for (char& c : s)
+	{
+		if (c == '\\')
+			c = '/';
+	}
+
+	// remove leading "./"
+	//while (s.size() >= 2 && s[0] == '.' && s[1] == '/')
+	//{
+		//s.erase(0, 2);
+	//}
+
+	// lowercase
+	for (char& c : s)
+	{
+		c = (char)tolower((unsigned char)c);
+	}
+
+	return s;
+}
+
+
 bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter, GLuint uiWrapMode)
 {
 	std::string filename_ozj;
-	ExchangeExt(filename, "OZJ", filename_ozj);
-
+	ExchangeExt(filename, "ozj", filename_ozj);
 
 
 	MU_FILE* infile = MU_fopen(filename_ozj.c_str(), "rb");
@@ -804,14 +834,17 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 
 bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter, GLuint uiWrapMode)
 {
-	std::string filename_ozt;
-	ExchangeExt(filename, "OZT", filename_ozt);
+	g_ErrorReport.Write("> OpenTga %s ...",filename.c_str());
 
+	std::string filename_ozt;
+	ExchangeExt(filename, "ozt", filename_ozt);
+
+	g_ErrorReport.Write("> OpenTga->ExchangeExt %s ...",filename_ozt.c_str());
 
 	MU_FILE* fp = MU_fopen(filename_ozt.c_str(), "rb");
 
 	if (fp == NULL) {
-		g_ErrorReport.Write("> OpenTga %s, failed to open.",filename_ozt.c_str());
+		g_ErrorReport.Write("> OpenTga %s, failed to open.", filename_ozt.c_str());
 		return false;
 	}
 
@@ -1189,19 +1222,33 @@ void CGlobalBitmap::SplitExt(IN const std::string& filepath, OUT std::string& ex
 			ext = __ext+1;
 	}
 }
-void CGlobalBitmap::ExchangeExt(IN const std::string& in_filepath, IN const std::string& ext, OUT std::string& out_filepath) 
+
+#include <string>
+
+void CGlobalBitmap::ExchangeExt(const std::string& in_filepath, const std::string& ext, std::string& out_filepath)
 {
-	char __drive[_MAX_DRIVE] = {0, };
-	char __dir[_MAX_DIR] = {0, };
-	char __fname[_MAX_FNAME] = {0, };
-	_splitpath(in_filepath.c_str(), __drive, __dir, __fname, NULL);
-	
-	out_filepath = __drive;
-	out_filepath += __dir;
-	out_filepath += __fname;
-	out_filepath += '.';
-	out_filepath += ext;
+	// Find the last position of the directory separator
+	size_t lastSlash = in_filepath.find_last_of("/\\");
+
+	// Find the last position of the dot (extension)
+	size_t lastDot = in_filepath.find_last_of('.');
+
+	// If the dot is part of a directory name (e.g., /path.to/file), ignore it
+	if (lastDot != std::string::npos && lastSlash != std::string::npos && lastDot < lastSlash) {
+		lastDot = std::string::npos;
+	}
+
+	if (lastDot == std::string::npos) {
+		// No extension found, just append the new one
+		out_filepath = in_filepath + "." + ext;
+	}
+	else {
+		// Strip the old extension and append the new one
+		out_filepath = in_filepath.substr(0, lastDot) + "." + ext;
+	}
 }
+
+
 
 bool CGlobalBitmap::Convert_Format(const unicode::t_string& filename)
 {

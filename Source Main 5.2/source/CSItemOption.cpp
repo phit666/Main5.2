@@ -75,7 +75,7 @@ bool	CSItemOption::OpenItemSetType ( const char* filename )
 			BYTE *pSeek = Buffer;
 			for(int i=0;i<MAX_ITEM;i++)
 			{
-				BuxConvert(pSeek,Size);
+				BuxConvert(pSeek,Size);//
 				memcpy(&m_ItemSetType[i],pSeek,Size);
 
 				pSeek += Size;
@@ -121,7 +121,7 @@ bool CSItemOption::OpenItemSetOption ( const char* filename )
 			BYTE *pSeek = Buffer;
 			for(int i=0;i<MAX_SET_OPTION;i++)
 			{
-				BuxConvert(pSeek,Size);
+				BuxConvert(pSeek,Size);//
 				memcpy(&m_ItemSetOption[i],pSeek,Size);
 
 				pSeek += Size;

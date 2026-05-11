@@ -6,6 +6,7 @@
 #include "GlobalBitmap.h"
 #include "ZzzBMD.h"
 #include "ZzzTexture.h"
+#include "Utilities/Log/ErrorReport.h"
 
 CLoadData gLoadData;
 
@@ -83,6 +84,9 @@ void CLoadData::OpenTexture(int Model,char *SubFolder, int Wrap, int Type,bool C
 		if(pModel->IndexTexture[i] == BITMAP_UNKNOWN)
 		{
 			BITMAP_t* pBitmap = Bitmaps.FindTextureByName(pTexture->FileName);
+
+			g_ErrorReport.Write("> FindTextureByName %s, found %d", pTexture->FileName, (pBitmap) ? 1 : 0);
+
 			if(pBitmap)
 			{
 				Bitmaps.LoadImage(pBitmap->BitmapIndex, pBitmap->FileName);
