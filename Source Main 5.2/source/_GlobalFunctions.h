@@ -89,7 +89,7 @@ BuffStateValueControl& TheBuffStateValueControl();
 #define g_BuffStateValueString( outstr, type ) \
 	TheBuffStateValueControl().GetBuffValueString( outstr, type )
 
-inline unsigned long RGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+inline DWORD RGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 { return (r)+(g<<8)+(b<<16)+(a<<24); }
 inline unsigned char GetAlpha(unsigned long rgba)
 { return ((rgba) >> 24); }
@@ -117,4 +117,5 @@ inline void __TraceF(const TCHAR* pFmt, ...)
 #endif // _DEBUG
 }
 
-#endif	// _GLOBAL_FUNCTIONS_H
+#endif
+// _GLOBAL_FUNCTIONS_H

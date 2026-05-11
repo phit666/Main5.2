@@ -21,8 +21,16 @@ int wzAudioCreate(HWND)
 
         Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG);
 
-        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
-            return -1;
+
+#ifdef _WIN32
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) < 0)
+            return E_FAIL;
+
+#else
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 8192) < 0)
+            return E_FAIL;
+#endif
+
         gIsMixerInit = true;
     }
 

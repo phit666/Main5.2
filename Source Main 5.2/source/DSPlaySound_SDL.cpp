@@ -47,8 +47,14 @@ HRESULT InitDirectSound(HWND)
         int flags = MIX_INIT_OGG | MIX_INIT_MP3;
         Mix_Init(flags);
 
-        if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) < 0)
+#ifdef _WIN32
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) < 0)
             return E_FAIL;
+
+#else
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 8192) < 0)
+            return E_FAIL;
+#endif
         gIsMixerInit = true;
     }
 
@@ -144,6 +150,18 @@ HRESULT PlayBuffer(int Buffer, OBJECT* Object, BOOL bLooped)
     if (maxCh <= 0 || maxCh > MAX_CHANNEL)
         maxCh = MAX_CHANNEL;
 
+    // If this is a looped sound and already playing, do not restart it.
+    if (bLooped)
+    {
+        for (int i = 0; i < maxCh; ++i)
+        {
+            int ch = g_SoundChannels[Buffer][i];
+
+            if (ch >= 0 && Mix_Playing(ch))
+                return S_OK;
+        }
+    }
+
     int slot = BufferChannel[Buffer];
 
     if (slot < 0 || slot >= maxCh)
@@ -151,8 +169,15 @@ HRESULT PlayBuffer(int Buffer, OBJECT* Object, BOOL bLooped)
 
     int oldChannel = g_SoundChannels[Buffer][slot];
 
+    // For one-shot sounds, only reuse dead slots.
     if (oldChannel >= 0 && Mix_Playing(oldChannel))
-        Mix_HaltChannel(oldChannel);
+    {
+        if (!bLooped)
+        {
+            // allow overlap instead of cutting old sound
+            oldChannel = -1;
+        }
+    }
 
     int channel = Mix_PlayChannel(-1, g_SoundChunks[Buffer], bLooped ? -1 : 0);
 

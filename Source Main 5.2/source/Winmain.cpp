@@ -69,6 +69,7 @@
 #include "mu_gles2_matrix.h"
 #include "wt.h"
 #include "wzAudio.h"
+#include "MixMgr.h"
 
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
@@ -285,7 +286,7 @@ HANDLE g_hMainExe = INVALID_HANDLE_VALUE;
 
 BOOL OpenMainExe( void)
 {
-#ifdef _WIN32
+#ifdef _TODO
 #ifdef _DEBUG
 	return ( TRUE);
 #endif
@@ -296,8 +297,9 @@ BOOL OpenMainExe( void)
 	g_hMainExe = CreateFile( ( char*)lpszFile, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL, 0);
 	
 	return ( INVALID_HANDLE_VALUE != g_hMainExe);
+#else
+	return TRUE;
 #endif
-	return 0;
 }
 
 void CloseMainExe( void)
@@ -1391,9 +1393,11 @@ int main(int argc, char* argv[])
 #endif
 
 	//OutputDebugStringA("[SDL-DEBUG] AttachExceptionHandler");
-
+    g_ErrorReport.Write("MU Classic Mobile v1.1");
 
 	leaf::AttachExceptionHandler(ExceptionCallback);
+
+    g_ErrorReport.Write(">AttachExceptionHandler");
 
 	char lpszExeVersion[256] = "unknown";
 
@@ -1404,7 +1408,7 @@ int main(int argc, char* argv[])
 
 	//OutputDebugStringA("[SDL-DEBUG] GetFileNameOfFilePath");
 
-
+	/*
 	if ( GetFileNameOfFilePath( lpszFile, lpszCommandLine))
 	{
 		if ( GetFileVersion( lpszFile, wVersion))
@@ -1418,10 +1422,11 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
+
+	*/
 #endif
 	//OutputDebugStringA("[SDL-DEBUG] g_ErrorReport.Write");
-
-	g_ErrorReport.Write( "\r\n");
+	g_ErrorReport.Write( "> Reporting start");
 	g_ErrorReport.WriteLogBegin();
 	g_ErrorReport.AddSeparator();
 	//g_ErrorReport.Write( "Mu online %s (%s) executed. (%d.%d.%d.%d)\r\n", lpszExeVersion, "Eng", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
@@ -1429,10 +1434,12 @@ int main(int argc, char* argv[])
 	//OutputDebugStringA("[SDL-DEBUG] g_ConsoleDebug->Write");
 
 	//g_ConsoleDebug->Write(MCD_NORMAL, "Mu Online (Version: %d.%d.%d.%d)", wVersion[0], wVersion[1], wVersion[2], wVersion[3]);
-
+    g_ErrorReport.Write(">WriteCurrentTime");
 	g_ErrorReport.WriteCurrentTime();
 	ER_SystemInfo si;
 	ZeroMemory( &si, sizeof ( ER_SystemInfo));
+
+    g_ErrorReport.Write(">GetSystemInfo");
 	GetSystemInfo( &si);
 	g_ErrorReport.AddSeparator();
 	g_ErrorReport.WriteSystemInfo( &si);
@@ -1455,21 +1462,19 @@ int main(int argc, char* argv[])
 	//strcpy(szServerIpAddress, "192.168.1.19");
 
 	//OutputDebugStringA("[SDL-DEBUG] OpenMainExe");
-
+    g_ErrorReport.Write(">OpenMainExe");
 	if ( !OpenMainExe())
 	{
 		return false;
 	}
 
-	//OutputDebugStringA("[SDL-DEBUG] LoadEncryptionKey");
-	// PKD_ADD_BINARY_PROTECTION
-	//VM_START
+    g_ErrorReport.Write(">LoadEncryptionKey Enc");
 	g_SimpleModulusCS.LoadEncryptionKey( "Data\\Enc1.dat");
 
-	//OutputDebugStringA("[SDL-DEBUG] LoadDecryptionKey");
 
+    g_ErrorReport.Write(">LoadEncryptionKey Dec");
 	g_SimpleModulusSC.LoadDecryptionKey( "Data\\Dec2.dat");
-	//VM_END
+
 
 	g_ErrorReport.Write( "> To read config.ini.\r\n");
 	if( OpenInitFile() == FALSE )
@@ -1478,6 +1483,7 @@ int main(int argc, char* argv[])
 		return false;
 	}
 
+    g_ErrorReport.Write(">CMultiLanguage instance");
 	pMultiLanguage = new CMultiLanguage(g_strSelectedML);
 
 	if (g_iChatInputType == 1)
@@ -1510,37 +1516,40 @@ int main(int argc, char* argv[])
 	DWORD dwBitsPerPel = 32;
 #endif
 
+
+
+#ifdef _TODO
 #ifdef ENABLE_FULLSCREEN
 #if defined USER_WINDOW_MODE || (defined WINDOWMODE)
 	if (g_bUseWindowMode == FALSE)
 #endif	// USER_WINDOW_MODE
 	{
-		for(int n2=0; n2<nModes; n2++)
+		for (int n2 = 0; n2 < nModes; n2++)
 		{
-			if(pDevmodes[n2].dmPelsWidth==WindowWidth && pDevmodes[n2].dmPelsHeight==WindowHeight && pDevmodes[n2].dmBitsPerPel == dwBitsPerPel)
+			if (pDevmodes[n2].dmPelsWidth == WindowWidth && pDevmodes[n2].dmPelsHeight == WindowHeight && pDevmodes[n2].dmBitsPerPel == dwBitsPerPel)
 			{
-				g_ErrorReport.Write( "> Change display setting %dx%d.\r\n", pDevmodes[n2].dmPelsWidth, pDevmodes[n2].dmPelsHeight);
-				ChangeDisplaySettings(&pDevmodes[n2],0);
+				g_ErrorReport.Write("> Change display setting %dx%d.\r\n", pDevmodes[n2].dmPelsWidth, pDevmodes[n2].dmPelsHeight);
+				ChangeDisplaySettings(&pDevmodes[n2], 0);
 				break;
 			}
 		}
 	}
 #endif //ENABLE_FULLSCREEN
-
-#ifdef _TODO
 	delete [] pDevmodes;
 #endif
 
 	g_ErrorReport.Write( "> Screen size = %d x %d.\r\n", WindowWidth, WindowHeight);
-	g_hInst = hInstance;
+	g_hInst = NULL;//hInstance;
 
 #ifdef MU_USE_SDL
-
-	//OutputDebugStringA("[SDL-DEBUG] MU_InitSDL");
-
+    g_ErrorReport.Write(">MU_InitSDL");
 	if (!MU_InitSDL(WindowWidth, WindowHeight)) {
 		return FALSE;
 	}
+
+    g_ErrorReport.Write(">OpenRecipeFile");
+	g_MixRecipeMgr.OpenRecipeFile("Data\\Local\\mix.bmd");
+
 #else
 	g_hWnd = StartWindow(hInstance, nCmdShow);
 #endif

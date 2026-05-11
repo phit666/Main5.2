@@ -9,6 +9,10 @@
 #include "./Utilities/Log/muConsoleDebug.h"
 #include "mu_sdl.h"
 
+#ifndef j_boolean
+#define j_boolean int
+#endif
+
 CBitmapCache::CBitmapCache() 
 {
 	memset(m_QuickCache, 0, sizeof(QUICK_CACHE)*NUMBER_OF_QUICK_CACHE);

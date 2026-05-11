@@ -12,7 +12,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \
 $(LOCAL_PATH)/../SDL2_mixer/include \
 $(LOCAL_PATH)/common \
 $(LOCAL_PATH)/../libevent/include \
-$(LOCAL_PATH)/../libjpeg-turbo/include \
+$(LOCAL_PATH)/../jpeg/include \
+$(LOCAL_PATH)/../jpeg/libjpeg-turbo-201 \
 $(LOCAL_PATH)/../curl/$(TARGET_ARCH_ABI)/include \
 $(LOCAL_PATH)/../glm \
 $(LOCAL_PATH)
@@ -356,17 +357,13 @@ LOCAL_LDLIBS += -lGLESv2
 
 LOCAL_CPP_FEATURES = exceptions
 
-LOCAL_CFLAGS = -frtti -DANDROID -DMU_USE_SDL=1 -DUSE_LIBEVENT=1 -DMU_USE_SDL_AUDIO=1
+LOCAL_CFLAGS = -frtti -DANDROID -DMU_USE_SDL=1 -DUSE_LIBEVENT=1 -DMU_USE_SDL_AUDIO=1 -D_MU_SDL_FILE
 
 LOCAL_CPPFLAGS += \
-    -std=c++17 \
-    -fexceptions \
-    -frtti \
-    -Wno-error \
     -Wno-error=format-security \
     -Wno-format-security
 
-LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer event2
-LOCAL_STATIC_LIBRARIES := jpeg curl
+LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer event2 jpeg
+LOCAL_STATIC_LIBRARIES := curl
 
 include $(BUILD_SHARED_LIBRARY)

@@ -33,9 +33,9 @@ using MU_FILE = SDL_RWops;
 
 inline MU_FILE* MU_fopen(const char* path, const char* mode)
 {
-    char t[100] = { 0 };
-    sprintf(t, "[SDL-DEBUG] MU_fopen %s", path);
-    OutputDebugStringA(t);
+    //char t[100] = { 0 };
+   // sprintf(t, "[SDL-DEBUG] MU_fopen %s", path);
+    //OutputDebugStringA(t);
     std::string fixed = MU_NormalizePath(path);
     return SDL_RWFromFile(fixed.c_str(), mode);
 }
@@ -340,7 +340,7 @@ inline void MU_jpeg_stdio_src(j_decompress_ptr cinfo, SDL_RWops* rw)
 #else
 
 #include <cstdio>
-
+xxxx
 using MU_FILE = FILE;
 
 #define MU_fopen  fopen

@@ -958,8 +958,10 @@ template <class T, class S>
 BOOL CBTree<T, S>::GetOptimizeList( T *pData, S *pCompValue)
 {
 	long lOptimizeCount = 0;
-	DWORD dwOptimizeData[3] = { ( DWORD)&lOptimizeCount, ( DWORD)pData, ( DWORD)pCompValue};
-	Cycle( ProcessGetOptimizeList, ( DWORD)dwOptimizeData);
+
+	uintptr_t dwOptimizeData[3] = { (uintptr_t)&lOptimizeCount, (uintptr_t)pData, (uintptr_t)pCompValue };
+
+	Cycle( ProcessGetOptimizeList, (uintptr_t)dwOptimizeData);
 	if ( GetCount() != lOptimizeCount)
 	{
 		return ( FALSE);

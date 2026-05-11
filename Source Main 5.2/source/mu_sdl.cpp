@@ -395,6 +395,8 @@ bool MU_KillTimer(void* hWnd, uintptr_t nIDEvent) {
 
 bool MU_InitSDL(int width, int height)
 {
+    g_ErrorReport.Write( "MU_InitSDL > SDL_Init\r\n");
+
      if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) != 0)
         return false;
 
@@ -405,7 +407,7 @@ bool MU_InitSDL(int width, int height)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    //OutputDebugStringA("[SDL-DEBUG] SDL_CreateWindow");
+    g_ErrorReport.Write( "MU_InitSDL > SDL_CreateWindow\r\n");
 
     gSDLWindow = SDL_CreateWindow(
         "MU",
@@ -413,13 +415,17 @@ bool MU_InitSDL(int width, int height)
         SDL_WINDOWPOS_CENTERED,
         width,
         height,
+#ifndef _WIN32
+        SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL
+#else
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
+#endif
     );
 
     if (!gSDLWindow)
         return false;
 
-    //OutputDebugStringA("[SDL-DEBUG] SDL_GL_CreateContext");
+    g_ErrorReport.Write( "MU_InitSDL > SDL_GL_CreateContext\r\n");
 
     gGLContext = SDL_GL_CreateContext(gSDLWindow);
 
@@ -441,11 +447,15 @@ bool MU_InitSDL(int width, int height)
 
     InitShader();
 
+    g_ErrorReport.Write( "MU_InitSDL > nk_sdl_init\r\n");
+
     g_nk_ctx = nk_sdl_init(gSDLWindow);
 
     struct nk_font_atlas* atlas;
     nk_sdl_font_stash_begin(&atlas);
     nk_sdl_font_stash_end();
+
+    g_ErrorReport.Write( "MU_InitSDL > MU_InitNetworkEvent\r\n");
 
     if (!MU_InitNetworkEvent()) {
         //OutputDebugStringA("[SDL-DEBUG] MU_InitNetworkEvent failed.");

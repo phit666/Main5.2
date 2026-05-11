@@ -599,7 +599,7 @@ BOOL CMixRecipes::GetRecipeName(MIX_RECIPE * pRecipe, unicode::t_char * pszNameO
 			}
 			return FALSE;
 		}
-		assert(optionTextlist.size() == 2 && "¿É¼ÇÀº 2°³¿©¾ß ÇÔ");
+		assert(optionTextlist.size() == 2 && "ï¿½É¼ï¿½ï¿½ï¿½ 2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½");
 		if (iNameLine == 1)
 		{
 			unicode::_strcpy(pszNameOut, optionTextlist[0].c_str());
@@ -1113,31 +1113,30 @@ void CMixRecipeMgr::OpenRecipeFile(const unicode::t_char * szFileName)
 	}
 
 	MU_FILE *fp = MU_fopen(szFileName,"rb");
+
 	if(fp == NULL)
 	{
-		unicode::t_char Text[256];
-    	unicode::_sprintf(Text,"%s - File not exist.",szFileName);
-		g_ErrorReport.Write( Text);
-		MessageBox(g_hWnd,Text,NULL,MB_OK);
-		SendMessage(g_hWnd,WM_DESTROY,0,0);
+        g_ErrorReport.Write("%s - File not exist.", szFileName);
 		exit(0);
 	}
 
 	int iNumMixRecipes[MAX_MIX_TYPES];
 	int iSize = sizeof(int) * MAX_MIX_TYPES;
-	MU_fread(iNumMixRecipes, iSize, 1, fp);
+	size_t len = MU_fread(iNumMixRecipes, iSize, 1, fp);
 	BuxConvert((BYTE*)iNumMixRecipes, iSize);
 
 	iSize = sizeof(MIX_RECIPE);
+
+	g_ErrorReport.Write("long size %d", sizeof(long));
+	g_ErrorReport.Write("DWORD size %d", sizeof(DWORD));
+    g_ErrorReport.Write("MIXRATE_TOKEN size %d", sizeof(MIXRATE_TOKEN));
+    g_ErrorReport.Write("MIX_RECIPE_ITEM size %d", sizeof(MIX_RECIPE_ITEM));
+
 	for (j = 0; j < MAX_MIX_TYPES; ++j)
 	{
 		if (MU_feof(fp) || iNumMixRecipes[j] > 1000)
 		{
-			unicode::t_char Text[256];
-    		unicode::_sprintf(Text,"%s - Version not matched.",szFileName);
-			g_ErrorReport.Write( Text);
-			MessageBox(g_hWnd,Text,NULL,MB_OK);
-			SendMessage(g_hWnd,WM_DESTROY,0,0);
+			g_ErrorReport.Write("%s - Version not matched.", szFileName);
 			MU_fclose(fp);
 			exit(0);
 		}
@@ -1149,12 +1148,13 @@ void CMixRecipeMgr::OpenRecipeFile(const unicode::t_char * szFileName)
 			m_MixRecipe[j].AddRecipe(pMixRecipe);
 		}
 	}
+
 	MU_fclose(fp);
 }
 
 int CMixRecipeMgr::GetMixInventoryType()
 {
-	assert(m_iMixType >= MIXTYPE_GOBLIN_NORMAL && m_iMixType < MAX_MIX_TYPES && "Á¤ÀÇµÇÁö ¾ÊÀº Á¶ÇÕÃ¢");
+	assert(m_iMixType >= MIXTYPE_GOBLIN_NORMAL && m_iMixType < MAX_MIX_TYPES && "ï¿½ï¿½ï¿½Çµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¢");
 	return m_iMixType;
 }
 

@@ -36,11 +36,14 @@
 // Basic Win32 types
 // ======================================================
 
-typedef int                 BOOL;
+#ifndef BOOL
+#define BOOL int
+#endif
+
 typedef uint8_t             BYTE;
 typedef uint8_t*             PBYTE;
 typedef uint16_t            WORD;
-typedef unsigned long            DWORD;
+typedef uint32_t            DWORD;
 typedef long             LONG;
 typedef unsigned long            ULONG;
 //typedef uint64_t            QWORD;
@@ -48,11 +51,11 @@ typedef uint64_t            ULONGLONG;
 typedef char CHAR;
 typedef int INT;
 typedef void VOID;
-typedef unsigned long* LPDWORD;
+typedef uint32_t* LPDWORD;
 typedef void* LPOVERLAPPED;
 typedef void* CONTEXT;
 
-typedef unsigned int        UINT;
+typedef uint32_t       UINT;
 typedef uintptr_t           UINT_PTR;
 typedef intptr_t            LONG_PTR;
 typedef uintptr_t           WPARAM;

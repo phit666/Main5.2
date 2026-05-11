@@ -25,9 +25,18 @@ BOOL CErrorReport::WriteFile(HANDLE, void*, DWORD, LPDWORD, LPOVERLAPPED)
 
 void CErrorReport::WriteDebugInfoStr(char*) {}
 
-void CErrorReport::Write(const char*, ...)
-{
+
+void CErrorReport::Write(const char* msg, ...) {
+
+    char szBuffer[1024];
+    memset(szBuffer, 0, sizeof(szBuffer));
+    va_list pArguments;
+    va_start(pArguments, msg);
+    vsprintf(szBuffer, msg, pArguments);
+    va_end(pArguments);
+    __android_log_print(ANDROID_LOG_DEBUG, "MU_MOBILE_LOG", "%s", szBuffer);
 }
+
 
 void CErrorReport::HexWrite(void*, int) {}
 void CErrorReport::AddSeparator() {}

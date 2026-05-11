@@ -144,7 +144,7 @@ namespace SEASON3A
 
 	typedef struct _MIXRATE_TOKEN
 	{
-		enum _MIXRATE_OPS op;
+		int op;
 		float value;
 	} MIXRATE_TOKEN;
 
@@ -264,7 +264,7 @@ namespace SEASON3A
 		{
 			m_iMixSubType = 0;
 			m_btPlusChaosRate = 0;
-			OpenRecipeFile("Data\\Local\\Mix.bmd");
+
 		}
 		virtual ~CMixRecipeMgr() {}
 
@@ -363,7 +363,7 @@ namespace SEASON3A
 		}
 #endif //LJH_MOD_CANNOT_USE_CHARMITEM_AND_CHAOSCHARMITEM_SIMULTANEOUSLY
 
-	protected:
+	public:
 		void OpenRecipeFile(const unicode::t_char * szFileName);	// mix.bmd
 
 	protected:

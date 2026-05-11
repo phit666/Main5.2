@@ -173,13 +173,18 @@ void CErrorReport::WriteDebugInfoStr( char *lpszToWrite)
 
 void CErrorReport::Write( const char* lpszFormat, ...)
 {
-	char lpszBuffer[1024] = {0, };
+	char lpszBuffer[512] = {0, };
 	va_list va;
 	va_start( va, lpszFormat);
 	vsprintf( lpszBuffer, lpszFormat, va);
 	va_end( va);
-
+#ifdef _WIN32
+	std::string s = "[MU-DEBUG] ";
+	s.append(lpszBuffer);
+	OutputDebugString(s.c_str());
+#else
 	WriteDebugInfoStr( lpszBuffer);
+#endif
 }
 
 void CErrorReport::HexWrite( void *pBuffer, int iSize)

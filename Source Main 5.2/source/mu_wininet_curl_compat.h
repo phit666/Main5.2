@@ -52,7 +52,7 @@ typedef unsigned char BYTE;
 #endif
 
 #ifndef DWORD
-typedef unsigned long DWORD;
+typedef uint32_t DWORD;
 #endif
 
 #ifndef DWORD_PTR
@@ -80,7 +80,7 @@ typedef char* LPSTR;
 #endif
 
 #ifndef LPDWORD
-typedef DWORD* LPDWORD;
+typedef uint32_t* LPDWORD;
 #endif
 
 #ifndef HIBYTE
