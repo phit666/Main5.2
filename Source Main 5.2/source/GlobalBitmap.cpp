@@ -657,13 +657,14 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 	std::string filename_ozj;
 	ExchangeExt(filename, "OZJ", filename_ozj);
 
-	//char t[100] = { 0 };
-	//sprintf(t, "[SDL-DEBUG] OpenJpeg, %s", filename.c_str());
-	//OutputDebugStringA(t);
+
 
 	MU_FILE* infile = MU_fopen(filename_ozj.c_str(), "rb");
-	if (infile == NULL)
-		return false;
+
+	if (infile == NULL) {
+        g_ErrorReport.Write("> OpenJpeg %s, failed to open.",filename_ozj.c_str());
+        return false;
+    }
 
 	MU_fseek(infile, 0, SEEK_END);
 	long fileSize = MU_ftell(infile);
@@ -671,7 +672,8 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 
 	if (fileSize <= 24)
 	{
-		MU_fclose(infile);
+        g_ErrorReport.Write("> OpenJpeg %s, fileSize <= 24.",filename_ozj.c_str());
+        MU_fclose(infile);
 		return false;
 	}
 
@@ -681,6 +683,7 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 
 	if (readSize != (size_t)fileSize)
 	{
+        g_ErrorReport.Write("> OpenJpeg %s, readSize != (size_t)fileSize.",filename_ozj.c_str());
 		delete[] fileBuffer;
 		return false;
 	}
@@ -696,6 +699,7 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 
 	if (setjmp(jerr.setjmp_buffer))
 	{
+        g_ErrorReport.Write("> OpenJpeg %s, setjmp(jerr.setjmp_buffer).",filename_ozj.c_str());
 		jpeg_destroy_decompress(&cinfo);
 		delete[] fileBuffer;
 		return false;
@@ -803,14 +807,13 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 	std::string filename_ozt;
 	ExchangeExt(filename, "OZT", filename_ozt);
 
-	//char t[100] = { 0 };
-	//sprintf(t, "[SDL-DEBUG] OpenTga, %s", filename.c_str());
-	//OutputDebugStringA(t);
-
 
 	MU_FILE* fp = MU_fopen(filename_ozt.c_str(), "rb");
-	if (fp == NULL)
+
+	if (fp == NULL) {
+		g_ErrorReport.Write("> OpenTga %s, failed to open.",filename_ozt.c_str());
 		return false;
+	}
 
 	MU_fseek(fp, 0, SEEK_END);
 	int Size = (int)MU_ftell(fp);
@@ -818,6 +821,7 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 
 	if (Size <= 0)
 	{
+		g_ErrorReport.Write("> OpenTga %s, Size <= 0.",filename_ozt.c_str());
 		MU_fclose(fp);
 		return false;
 	}
@@ -829,6 +833,7 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 
 	if (readSize != (size_t)Size)
 	{
+		g_ErrorReport.Write("> OpenTga %s, readSize != (size_t)Size.",filename_ozt.c_str());
 		SAFE_DELETE_ARRAY(PakBuffer);
 		return false;
 	}
@@ -838,6 +843,7 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 
 	if (index + 6 > Size)
 	{
+		g_ErrorReport.Write("> OpenTga %s, index + 6 > Size.",filename_ozt.c_str());
 		SAFE_DELETE_ARRAY(PakBuffer);
 		return false;
 	}
@@ -849,12 +855,14 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 
 	if (bit != 32 || nx > MAX_WIDTH || ny > MAX_HEIGHT || nx <= 0 || ny <= 0)
 	{
+		g_ErrorReport.Write("> OpenTga %s, bit != 32 || nx > MAX_WIDTH...",filename_ozt.c_str());
 		SAFE_DELETE_ARRAY(PakBuffer);
 		return false;
 	}
 
 	if (index + nx * ny * 4 > Size)
 	{
+		g_ErrorReport.Write("> OpenTga %s, index + nx * ny * 4 > Size",filename_ozt.c_str());
 		SAFE_DELETE_ARRAY(PakBuffer);
 		return false;
 	}

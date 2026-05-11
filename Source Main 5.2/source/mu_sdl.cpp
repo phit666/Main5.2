@@ -133,6 +133,7 @@ void MU_OnSocketEvent(evutil_socket_t fd, short events, void*)
     {
         //OutputDebugStringA("[SDL-DEBUG] MU_OnSocketEvent, EV_READ");
         if (SocketClient.nRecv() == 1) {
+            g_ErrorReport.Write("> MU_OnSocketEvent - Close(), SocketClient.nRecv() == 1");
             SocketClient.Close();
             return;
         }
@@ -270,12 +271,14 @@ conn_eventcb(struct bufferevent* bev, short events, void* user_data)
     {
         bufferevent_free(g_bev);
         g_bev = NULL;
+        g_ErrorReport.Write("> conn_eventcb - BEV_EVENT_EOF");
         SocketClient.Close();
     }
     else if (events & BEV_EVENT_ERROR)
     {
         bufferevent_free(g_bev);
         g_bev = NULL;
+        g_ErrorReport.Write("> conn_eventcb - BEV_EVENT_ERROR");
         SocketClient.Close();
     }
     else if (events & BEV_EVENT_CONNECTED)

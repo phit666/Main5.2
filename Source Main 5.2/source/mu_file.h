@@ -18,15 +18,22 @@
 
 inline std::string MU_NormalizePath(const char* path)
 {
-    std::string p = path ? path : "";
+    if (!path)
+        return "";
 
-    for (char& c : p)
+    std::string s(path);
+
+    for (char& c : s)
     {
+        // windows -> unix slash
         if (c == '\\')
             c = '/';
+
+        // lowercase for android/linux assets
+        c = (char)tolower((unsigned char)c);
     }
 
-    return p;
+    return s;
 }
 
 using MU_FILE = SDL_RWops;

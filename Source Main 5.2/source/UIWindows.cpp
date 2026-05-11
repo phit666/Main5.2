@@ -3636,6 +3636,7 @@ void CChatRoomSocketList::RemoveChatRoomSocket(DWORD dwRoomID)
 		assert(!"RemoveChatRoomSocket!!!");
 		return;
 	}
+	g_ErrorReport.Write("> RemoveChatRoomSocket - Close(), RemoveChatRoomSocket");
 	m_ChatRoomSocketMapIter->second->m_WSClient.Close();
 	delete m_ChatRoomSocketMapIter->second;
 	m_ChatRoomSocketMapIter->second = NULL;
@@ -4846,7 +4847,7 @@ void CUITextInputWindow::ReturnText()
 	m_TextInputBox.SetText(NULL);
 	if (pszReturnText[0] == '\0') return;
 
-	g_pWindowMgr->SendUIMessageToWindow(m_dwReturnWindowUIID, UI_MESSAGE_TXTRETURN, GetUIID(), (DWORD)pszReturnText);
+	g_pWindowMgr->SendUIMessageToWindow(m_dwReturnWindowUIID, UI_MESSAGE_TXTRETURN, GetUIID(), (uintptr_t)pszReturnText);
 	g_pWindowMgr->SendUIMessage(UI_MESSAGE_CLOSE, GetUIID(), 0);
 }
 

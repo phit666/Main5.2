@@ -219,6 +219,7 @@ BOOL CreateSocket(char *IpAddr, unsigned short Port)
 
 void DeleteSocket()
 {
+	g_ErrorReport.Write("> RemoveChatRoomSocket - DeleteSocket");
 	SocketClient.Close();
 	//gProtocolSend.DisconnectServer();
 }

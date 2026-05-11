@@ -282,6 +282,8 @@ void PopUpErrorCheckMsgBox(const char* szErrorMsg, bool bForceDestroy)
 	char szMsg[1024] = {0, };
 	strcpy(szMsg, szErrorMsg);
 
+    g_ErrorReport.Write("> PopUpErrorCheckMsgBox %s", szErrorMsg);
+
 	if(bForceDestroy)
 	{
 		MessageBox(g_hWnd, szErrorMsg, "ErrorCheckBox", MB_OK|MB_ICONERROR);
