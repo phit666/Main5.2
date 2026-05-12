@@ -73,6 +73,8 @@ void CWin::SetSize(int nWidth, int nHeight, CHANGE_PRAM eChangedPram)
 		m_psprBg->SetSize(nWidth, nHeight, eChangedPram);
 }
 
+#include "Utilities/Log/ErrorReport.h"
+
 bool CWin::CursorInWin(int nArea)
 {
 	if (!m_bShow)
@@ -94,8 +96,12 @@ bool CWin::CursorInWin(int nArea)
 		//sprintf(t, "[SDL-DEBUG-3] left %d right %d cursor %d %d", rc.left, rc.right, rInput.GetCursorPos().x, rInput.GetCursorPos().y);
 		//OutputDebugStringA(t);
 
-		if (::PtInRect(&rc, rInput.GetCursorPos()))
+		if (::PtInRect(&rc, rInput.GetCursorPos())) {
+			
+			//g_ErrorReport.Write("> CLoginMainWin, cursor %d %d", rInput.GetCursorPos().x, rInput.GetCursorPos().y);
+
 			return true;
+		}
 		break;
 
 	case WA_MOVE:

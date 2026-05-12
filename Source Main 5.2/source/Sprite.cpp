@@ -35,6 +35,12 @@ void CSprite::Create(int nOrgWidth, int nOrgHeight, int nTexID, int nMaxFrame, S
 {
 	Release();
 
+	switch (nTexID) {
+	case BITMAP_LOG_IN:
+		break;
+	}
+
+
 	m_fOrgWidth = (float)nOrgWidth;
 	m_fOrgHeight = (float)nOrgHeight;
 	m_nTexID = nTexID;

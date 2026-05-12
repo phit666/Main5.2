@@ -180,6 +180,7 @@ void CServerSelWin::SetArrowSpritePosition()
 	{
 		m_aArrowDeco[1].SetPosition(m_aServerGroupBtn[m_iSelectServerBtnIndex].GetXPos(),m_aServerGroupBtn[m_iSelectServerBtnIndex].GetYPos());
 	}
+
 }
 
 void CServerSelWin::UpdateDisplay()
@@ -408,6 +409,8 @@ void CServerSelWin::UpdateWhileActive(double dDeltaTick)
 	{
 		if (m_aServerGroupBtn[i].IsClick())
 		{
+			g_ErrorReport.Write("> CLoginMainWin::UpdateWhileActive, m_aServerGroupBtn clicked.");
+
 			if(m_iSelectServerBtnIndex != -1 )
 			{
 				m_aServerGroupBtn[m_iSelectServerBtnIndex].SetCheck(false);

@@ -4163,7 +4163,6 @@ void CUIChatInputBox::Init(HWND hWnd)
 	m_CurrentHistoryLine = m_HistoryList.begin();
 	m_bHistoryMode = FALSE;
 	memset(m_szTempText, 0, MAX_TEXT_LENGTH + 1);
-
 #ifndef MU_USE_SDL
 	SetFocus(g_hWnd);
 	HIMC hIMC = ImmGetContext(g_hWnd);

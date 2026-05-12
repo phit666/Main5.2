@@ -8,7 +8,7 @@
 #include "UIControls.h"
 #include "GlobalBitmap.h"
 #include "ZzzTexture.h"
-
+#include "wt.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -416,8 +416,8 @@ bool SEASON3B::CNewUIButton::Render( bool RendOption )
 		g_pRenderText->SetFont( m_hTextFont );
 		g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), m_Name.c_str(), m_Name.size(), &Fontsize);
 
-		Fontsize.cx = Fontsize.cx / ((float)WindowWidth / 640);
-		Fontsize.cy = Fontsize.cy / ((float)WindowHeight / 480);
+		Fontsize.cx = Fontsize.cx / g_fScreenRate_x;// ((float)WindowWidth / 640);
+		Fontsize.cy = Fontsize.cy / g_fScreenRate_y;// ((float)WindowHeight / 480);
 
 		int x = m_Pos.x+((m_Size.x/2)-(Fontsize.cx/2));
 		int y = m_Pos.y+((m_Size.y/2)-(Fontsize.cy/2));
@@ -444,8 +444,8 @@ bool SEASON3B::CNewUIButton::Render( bool RendOption )
 			g_pRenderText->SetFont( m_hToolTipFont );
 			g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), m_TooltipText.c_str(), m_TooltipText.size(), &Fontsize);
 
-			Fontsize.cx = Fontsize.cx / ((float)WindowWidth / 640);
-			Fontsize.cy = Fontsize.cy / ((float)WindowHeight / 480);
+			Fontsize.cx = Fontsize.cx / g_fScreenRate_x;// ((float)WindowWidth / 640);
+			Fontsize.cy = Fontsize.cy / g_fScreenRate_y;// ((float)WindowHeight / 480);
 
 			int x = m_Pos.x+((m_Size.x/2)-(Fontsize.cx/2));
 			int y = m_Pos.y+m_Size.y+2;
@@ -743,8 +743,8 @@ bool CNewUIRadioButton::Render()
 
 		g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), m_Name.c_str(), m_Name.size(), &Fontsize);
 
-		Fontsize.cx = Fontsize.cx / ((float)WindowWidth / 640);
-		Fontsize.cy = Fontsize.cy / ((float)WindowHeight / 480);
+		Fontsize.cx = Fontsize.cx / g_fScreenRate_x;// ((float)WindowWidth / 640);
+		Fontsize.cy = Fontsize.cy / g_fScreenRate_y;// ((float)WindowHeight / 480);
 
 		int x = m_Pos.x+((m_Size.x/2)-(Fontsize.cx/2));
 		int y = m_Pos.y+((m_Size.y/2)-(Fontsize.cy/2));

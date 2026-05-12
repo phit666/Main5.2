@@ -1079,6 +1079,7 @@ bool NewRenderCharacterScene(HDC hDC)
 	OBJECT* o = &CharactersClient[SelectedHero].Object;
 	
 	CreateScreenVector(MouseX,MouseY,MouseTarget);
+
 	for(int i = 0; i < 5; i++)
 	{
 		CharactersClient[i].Object.Position[2] = 163.0f;
@@ -1714,6 +1715,9 @@ bool MoveMainCamera()
 		}
 		else g_shCameraLevel =0;
 
+
+		//g_shCameraLevel = 2;
+
 #ifdef PJH_NEW_SERVER_SELECT_MAP
 		if(CCameraMove::GetInstancePtr()->IsTourMode())
 		{
@@ -1757,7 +1761,7 @@ bool MoveMainCamera()
 			CameraAngle[0] = -84.5f;
 			CameraAngle[1] = 0.0f;
 			CameraAngle[2] = -75.0f;
- 			CameraPosition[0] = 9758.93f;
+			CameraPosition[0] = 9758.93f;
  			CameraPosition[1] = 18913.11f;
  			CameraPosition[2] = 675.5f;
 #else //PJH_NEW_SERVER_SELECT_MAP

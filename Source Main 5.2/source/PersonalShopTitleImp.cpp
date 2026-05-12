@@ -7,6 +7,7 @@
 #include "./Utilities/Log/ErrorReport.h"
 #include "UIManager.h"		
 #include "NewUISystem.h"	
+#include "wt.h"
 
 CPersonalShopTitleImp::CPersonalShopTitleImp() : m_iHighlightFrame(0), m_bShow(true)
 {}
@@ -411,8 +412,8 @@ void CPersonalShopTitleImp::CalculateBooleanPos(IN CHARACTER* pPlayer, IN const 
 	Projection(posTemp, (int*)&ptFloating.x, (int*)&ptFloating.y);		//. logical position
 
 	//. pos : real position
-	pos.x = (ptFloating.x*(int)WindowWidth/640)-size.cx/2;
-	pos.y = (ptFloating.y*(int)WindowHeight/480)-(12*3*(int)WindowHeight/480);
+	pos.x = (ptFloating.x*(int)g_fScreenRate_x)-size.cx/2;
+	pos.y = (ptFloating.y*(int)g_fScreenRate_y)-(12*3*(int)g_fScreenRate_y);
 }
 
 CPersonalShopTitleImp::CShopTitleDrawObj::CShopTitleDrawObj() { Init(); }

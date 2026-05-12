@@ -9,6 +9,8 @@
 #include "CSChaosCastle.h"
 #include "ZzzOpenData.h"
 #include "MapManager.h"
+#include "wt.h"
+
 using namespace SEASON3B;
 
 
@@ -738,8 +740,8 @@ void SEASON3B::CNewUIChatInputBox::RenderTooltip()
 	g_pRenderText->SetFont(g_hFont);
 	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), strTooltip, unicode::_strlen(strTooltip), &Fontsize);
 
-	Fontsize.cx = Fontsize.cx / ((float)WindowWidth / 640);
-	Fontsize.cy = Fontsize.cy / ((float)WindowHeight / 480);
+	Fontsize.cx = Fontsize.cx / g_fScreenRate_x;// ((float)WindowWidth / 640);
+	Fontsize.cy = Fontsize.cy / g_fScreenRate_y;// ((float)WindowHeight / 480);
 
 	int x = m_WndPos.x + (m_iTooltipType*27) + (m_iTooltipType/3*6) + 10 - (Fontsize.cx / 2); 
 	if(x < 0) x = 0;

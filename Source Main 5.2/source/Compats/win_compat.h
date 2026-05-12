@@ -667,10 +667,13 @@ inline BOOL ScreenToClient(HWND, POINT*)
     return FALSE;
 }
 
-inline short GetAsyncKeyState(int)
+#ifdef __ANDROID__
+short MU_GetAsyncKeyState(int key);
+inline short GetAsyncKeyState(int key)
 {
-    return 0;
+    return MU_GetAsyncKeyState(key);
 }
+#endif
 
 inline short GetKeyState(int)
 {

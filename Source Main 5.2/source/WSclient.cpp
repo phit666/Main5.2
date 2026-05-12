@@ -6023,7 +6023,7 @@ BOOL ReceiveTalk(BYTE *ReceiveBuffer, BOOL bEncrypted)
 	{
 #endif	// WINDOWMODE
 		int x = 260*MouseX/640;
-		SetCursorPos((x)*WindowWidth/640,(MouseY)*WindowHeight/480);
+		SetCursorPos((x)*g_fScreenRate_x,(MouseY)*g_fScreenRate_y);
 #ifdef WINDOWMODE
 	}
 #endif	// WINDOWMODE

@@ -14,6 +14,7 @@
 #include "NewUIMyInventory.h"
 #include "CSitemOption.h"
 #include "MapManager.h"
+#include "wt.h"
 
 extern BYTE m_OccupationState;
 
@@ -323,8 +324,8 @@ bool SEASON3B::CNewUIMiniMap::Check_Btn(int mx,int my)
 				g_pRenderText->SetFont( g_hFont );
 				g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), m_TooltipText.c_str(), m_TooltipText.size(), &Fontsize);
 
-				Fontsize.cx = Fontsize.cx / ((float)WindowWidth / 640);
-				Fontsize.cy = Fontsize.cy / ((float)WindowHeight / 480);
+				Fontsize.cx = Fontsize.cx / g_fScreenRate_x;// ((float)WindowWidth / 640);
+				Fontsize.cy = Fontsize.cy / g_fScreenRate_y;// ((float)WindowHeight / 480);
 
 				int x = m_Btn_Loc[i][0]+((m_Btn_Loc[i][2]/2)-(Fontsize.cx/2));
 				int y = m_Btn_Loc[i][1]+m_Btn_Loc[i][3]+2;

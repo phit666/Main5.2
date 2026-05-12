@@ -10,6 +10,7 @@
 #include "wsclientinline.h"
 #include "CComGem.h"
 #include "mu_sdl.h"
+#include "wt.h"
 
 using namespace SEASON3B;
 
@@ -622,7 +623,7 @@ void CNewUITrade::ProcessToReceiveTradeResult(LPPTRADE pTradeData)
 		InitTradeInfo();
 
 		int x = 260*MouseX/640;
-		::SetCursorPos(x*WindowWidth/640, MouseY*WindowHeight/480);
+		::SetCursorPos(x* g_fScreenRate_x, MouseY* g_fScreenRate_x);
 
 		char szTempID[MAX_ID_SIZE+1];
 		::memcpy(szTempID, pTradeData->ID, MAX_ID_SIZE);

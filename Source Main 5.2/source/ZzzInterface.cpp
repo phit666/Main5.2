@@ -3817,7 +3817,7 @@ void SendMove(CHARACTER *c,OBJECT *o)
 		{
 #endif	// WINDOWMODE
 			int x = 640*MouseX/260;
-			SetCursorPos((x)*WindowWidth/640,(MouseY)*WindowHeight/480);
+			SetCursorPos((x)*g_fScreenRate_x,(MouseY)*g_fScreenRate_y);
 #ifdef WINDOWMODE
 		}
 #endif	// WINDOWMODE

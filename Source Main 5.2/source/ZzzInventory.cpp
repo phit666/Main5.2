@@ -11931,7 +11931,7 @@ void RenderGuildList(int StartX,int StartY)
 	else
 		sprintf(Text,"%s (Score:%d)",GuildMark[Hero->GuildMarkIndex].GuildName,GuildTotalScore);
 
-	g_pRenderText->RenderText(StartX+95-60,StartY+12,Text,120*WindowWidth/640,true,3);
+	g_pRenderText->RenderText(StartX+95-60,StartY+12,Text,120* g_fScreenRate_x,true,3);
 
 	g_pRenderText->SetBgColor(0);
     g_pRenderText->SetTextColor(230, 230, 230, 255);

@@ -11,6 +11,7 @@
 #include "Zzzinfomation.h"
 #include "NewUISystem.h"
 #include "mu_gles2_matrix.h"
+#include "wt.h"
 
 int     OpenglWindowX;
 int     OpenglWindowY;
@@ -230,7 +231,7 @@ void safe_enable_attr(GLuint index) {
 }
 
 
-void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
+void gluPerspective2TEST(float Fov, float Aspect, float ZNear, float ZFar)
 {
 	projectionStack.back() = glm::perspective(
 		glm::radians(Fov),
@@ -251,7 +252,7 @@ void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 	PerspectiveY = tanFov / (OpenglWindowHeight * 0.5f);
 }
 
-void gluPerspective2_old(float Fov, float Aspect, float ZNear, float ZFar)
+void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 {
 	// 1. Update the manual Projection Stack
 	// glm::perspective uses radians, so we convert Fov
@@ -274,15 +275,22 @@ void gluPerspective2_old(float Fov, float Aspect, float ZNear, float ZFar)
 	PerspectiveY = tanFov / (float)(OpenglWindowHeight / 2) * AspectY;
 }
 
-void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
+void CreateScreenVectorTEST(int sx, int sy, vec3_t Target, bool bFixView)
 {
 #ifdef _WIN32
 	sx = sx * WindowWidth / 640;
 	sy = sy * WindowHeight / 480;
 #else
-	float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
-	sx = sx * scale;
-	sy = sy * scale;
+	float scale = (std::min)(
+		WindowWidth / 640.0f,
+		WindowHeight / 480.0f
+		);
+
+	float offsetX = (WindowWidth - 640.0f * scale) * 0.5f;
+	float offsetY = (WindowHeight - 480.0f * scale) * 0.5f;
+
+	sx = (int)(offsetX + sx * scale);
+	sy = (int)(offsetY + sy * scale);
 #endif
 
 	vec3_t p1, p2;
@@ -309,11 +317,13 @@ void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 	VectorAdd(MousePosition, p2, Target);
 }
 
-void CreateScreenVectorOld(int sx, int sy, vec3_t Target, bool bFixView)
+void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 {
-	sx = sx * WindowWidth / 640;
-	sy = sy * WindowHeight / 480;
+	sx = sx * g_fScreenRate_x;// WindowWidth / 640;
+	sy = sy * g_fScreenRate_y;// WindowHeight / 480;
+
 	vec3_t p1, p2;
+
 	if (bFixView)
 	{
 		p1[0] = (float)(sx - ScreenCenterX) * CameraViewFar * PerspectiveX;
@@ -341,6 +351,9 @@ void Projection(vec3_t Position, int* sx, int* sy)
 	VectorTransform(Position, CameraMatrix, TrasformPosition);
 	*sx = -(int)(TrasformPosition[0] / PerspectiveX / TrasformPosition[2]) + ScreenCenterX;
 	*sy = (int)(TrasformPosition[1] / PerspectiveY / TrasformPosition[2]) + ScreenCenterY;
+
+	//float scale = (std::max)(640 / (int)WindowWidth, 480 / (int)WindowHeight);
+
 	*sx = *sx * 640 / (int)WindowWidth;
 	*sy = *sy * 480 / (int)WindowHeight;
 }
@@ -712,40 +725,43 @@ void glViewport2(int x, int y, int Width, int Height)
 
 float ConvertX(float x)
 {
-	return x * (float)WindowWidth / 640.f;
+	return x * g_fScreenRate_x;
 }
 
 float ConvertY(float y)
 {
-	return y * (float)WindowHeight / 480.f;
+	return y * g_fScreenRate_y;
 }
 
 
 void BeginOpengl(int x, int y, int Width, int Height)
 {
-#ifdef _WIN32
 	// 1. Resolution Scaling
-	x = x * WindowWidth / 640;
-	y = y * WindowHeight / 480;
-	Width = Width * WindowWidth / 640;
-	Height = Height * WindowHeight / 480;
-#else
-	float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+	x = x * g_fScreenRate_x;
+	y = y * g_fScreenRate_y;
+	Width = Width * g_fScreenRate_x;
+	Height = Height * g_fScreenRate_y;
 
+	/*
+	float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
 	float offsetX = (WindowWidth - 640.0f * scale) * 0.5f;
 	float offsetY = (WindowHeight - 480.0f * scale) * 0.5f;
-
 	x = (int)(offsetX + x * scale);
 	y = (int)(offsetY + y * scale);
 	Width = (int)(Width * scale);
 	Height = (int)(Height * scale);
-#endif
+	*/
 
 	// --- PROJECTION ---
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
 	glViewport2(x, y, Width, Height);
+
+#ifdef __ANDROID__
+    CameraFOV -= 15;
+	//CameraAngle[0] += 10.0f;
+#endif
 
 	float aspect = (float)Width / (float)Height;
 	projectionStack.back() = glm::perspective(glm::radians(CameraFOV), aspect, CameraViewNear, CameraViewFar * 1.4f);
@@ -1766,55 +1782,7 @@ void RenderBitmapLocalRotate(int Texture, float x, float y, float Width, float H
 // xx
 void RenderBitmapAlpha(int Texture, float sx, float sy, float Width, float Height)
 {
-	EnableAlphaTest();
-	BindTexture(Texture);
 
-	sy = WindowHeight - sy;
-	for (int y = 0; y < 4; y++)
-	{
-		for (int x = 0; x < 4; x++)
-		{
-			float p[4][2];
-			p[0][0] = sx + ((x)*Width) * 0.25f; p[0][1] = sy - ((y)*Height) * 0.25f;
-			p[1][0] = sx + ((x)*Width) * 0.25f; p[1][1] = sy - ((y + 1) * Height) * 0.25f;
-			p[2][0] = sx + ((x + 1) * Width) * 0.25f; p[2][1] = sy - ((y + 1) * Height) * 0.25f;
-			p[3][0] = sx + ((x + 1) * Width) * 0.25f; p[3][1] = sy - ((y)*Height) * 0.25f;
-
-			float c[4][2];
-			TEXCOORD(c[0], (x) * 0.25f, (y) * 0.25f);
-			TEXCOORD(c[1], (x) * 0.25f, (y + 1) * 0.25f);
-			TEXCOORD(c[2], (x + 1) * 0.25f, (y + 1) * 0.25f);
-			TEXCOORD(c[3], (x + 1) * 0.25f, (y) * 0.25f);
-
-			float Alpha[4] = { 1.f,1.f,1.f,1.f };
-			if (x == 0) { Alpha[0] = 0.f; Alpha[1] = 0.f; }
-			if (x == 3) { Alpha[2] = 0.f; Alpha[3] = 0.f; }
-			if (y == 0) { Alpha[0] = 0.f; Alpha[3] = 0.f; }
-			if (y == 3) { Alpha[1] = 0.f; Alpha[2] = 0.f; }
-			/*if(x==0&&y==0) Alpha[0] = 0.f;
-			if(x==0&&y==3) Alpha[1] = 0.f;
-			if(x==3&&y==3) Alpha[2] = 0.f;
-			if(x==3&&y==0) Alpha[3] = 0.f;*/
-
-			MU2DColorVertex quad[4];
-
-			for (int i = 0; i < 4; ++i)
-			{
-				quad[i].x = p[i][0];
-				quad[i].y = p[i][1];
-
-				quad[i].u = c[i][0];
-				quad[i].v = c[i][1];
-
-				quad[i].r = 255;
-				quad[i].g = 255;
-				quad[i].b = 255;
-				quad[i].a = MU_FloatToColorByte(Alpha[i]);
-			}
-
-			MU_DrawBoundTexturedColorQuad2D(quad);
-		}
-	}
 }
 //
 void RenderBitmapUV(int Texture, float x, float y, float Width, float Height, float u, float v, float uWidth, float vHeight)

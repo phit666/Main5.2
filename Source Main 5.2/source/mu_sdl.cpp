@@ -355,6 +355,8 @@ void MU_CloseBev()
 }
 
 evutil_socket_t MU_GetFD() {
+    if (g_bev == nullptr)
+        return -1;
     return bufferevent_getfd(g_bev);
 }
 
@@ -447,6 +449,8 @@ bool MU_InitSDL(int width, int height)
         return false;
 
     SDL_GL_MakeCurrent(gSDLWindow, gGLContext);
+    
+    SDL_GL_SetSwapInterval(1);
 
 #ifdef _WIN32
     if (!gladLoadGLES2Loader((GLADloadproc)SDL_GL_GetProcAddress))
@@ -458,18 +462,14 @@ bool MU_InitSDL(int width, int height)
 
 #ifdef __ANDROID__
     int _screen_w, _screen_h;
-    SDL_GetWindowSize(gSDLWindow, &_screen_w, &_screen_h);
+    SDL_GL_GetDrawableSize(gSDLWindow, &_screen_w, &_screen_h);
+    float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
     WindowWidth = _screen_w;
     WindowHeight = _screen_h;
-    g_fScreenRate_x = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
-    g_fScreenRate_y = g_fScreenRate_x;
-
-    g_ErrorReport.Write("> Screen Width %d Height %d Scale %f", WindowWidth, WindowHeight, g_fScreenRate_x);
-
+    g_fScreenRate_x = WindowWidth / 640.0f;
+    g_fScreenRate_y = WindowHeight / 480.0f;
+    g_ErrorReport.Write("> SDL_GL_GetDrawableSize, Screen Width %d Height %d", WindowWidth, WindowHeight);
 #endif
-
-    SDL_GL_SetSwapInterval(1);
-    //SDL_StartTextInput();
 
     InitShader();
 
@@ -528,55 +528,32 @@ void MU_ShutdownSDL()
     //OutputDebugStringA("[SDL-DEBUG] MU_ShutdownSDL");
 }
 
+short MU_GetAsyncKeyState(int key) {
 
-#ifndef _WIN32
-// A wrapper to mimic Win32 GetAsyncKeyState using SDL2
-short GetAsyncKeyState_SDL(int vKey) {
-    // Ensure the SDL event queue is up to date before checking state
-    SDL_PumpEvents();
+    // Mouse buttons
+    Uint32 mouse = SDL_GetMouseState(nullptr, nullptr);
 
-    // 1. Handle Mouse Buttons (VK_LBUTTON, VK_RBUTTON, etc.)
-    if (vKey == VK_LBUTTON || vKey == VK_RBUTTON || vKey == VK_MBUTTON) {
-        Uint32 mouseState = SDL_GetMouseState(NULL, NULL);
-        bool isDown = false;
+    switch (key)
+    {
+    case VK_LBUTTON:
+        return (mouse & SDL_BUTTON(SDL_BUTTON_LEFT)) ? (short)0x8000 : 0;
 
-        if (vKey == VK_LBUTTON) isDown = (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT));
-        else if (vKey == VK_RBUTTON) isDown = (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT));
-        else if (vKey == VK_MBUTTON) isDown = (mouseState & SDL_BUTTON(SDL_BUTTON_MIDDLE));
+    case VK_RBUTTON:
+        return (mouse & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? (short)0x8000 : 0;
 
-        return isDown ? (short)0x8000 : 0;
+    case VK_MBUTTON:
+        return (mouse & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? (short)0x8000 : 0;
     }
 
-    // 2. Handle Keyboard Keys
-    const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+    // Keyboard
+    const Uint8* state = SDL_GetKeyboardState(nullptr);
 
-    // Map Win32 Virtual Key codes to SDL Scancodes
-    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
+    SDL_Scancode scan = SDL_GetScancodeFromKey(key);
 
-    switch (vKey) {
-    case VK_SHIFT:   scancode = SDL_SCANCODE_LSHIFT; break; // Or RSHIFT
-    case VK_CONTROL: scancode = SDL_SCANCODE_LCTRL; break;
-    case VK_MENU:    scancode = SDL_SCANCODE_LALT; break;
-    case VK_ESCAPE:  scancode = SDL_SCANCODE_ESCAPE; break;
-    case VK_SPACE:   scancode = SDL_SCANCODE_SPACE; break;
-    case VK_RETURN:  scancode = SDL_SCANCODE_RETURN; break;
-        // Add other VK mappings as needed for your project...
-    default:
-        // Generic mapping for alphanumeric keys (rough estimation)
-        if (vKey >= 'A' && vKey <= 'Z')
-            scancode = (SDL_Scancode)(SDL_SCANCODE_A + (vKey - 'A'));
-        else if (vKey >= '0' && vKey <= '9')
-            scancode = (SDL_Scancode)(SDL_SCANCODE_1 + (vKey - '1'));
-        break;
-    }
-
-    if (scancode != SDL_SCANCODE_UNKNOWN && keyboardState[scancode]) {
-        return (short)0x8000;
-    }
-
-    return 0;
+    return state[scan] ? (short)0x8000 : 0;
 }
 
+#ifndef _WIN32
 BOOL TextOutW(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString){
 
     if (nk_begin(g_nk_ctx, "Canvas", nk_rect(0, 0, WindowWidth, WindowHeight), NK_WINDOW_NO_SCROLLBAR)) {

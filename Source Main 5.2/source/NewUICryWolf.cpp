@@ -14,6 +14,7 @@
 #include "ZzzInventory.h"
 #include "wsclientinline.h"
 #include "GMCrywolf1st.h"
+#include "wt.h"
 
 extern bool	View_Bal;
 extern char	Suc_Or_Fail;
@@ -490,12 +491,12 @@ bool SEASON3B::CNewUICryWolf::Update()
 
 float SEASON3B::CNewUICryWolf::ConvertX(float x)
 {
-	return x*(float)WindowWidth/640.f;
+	return x * g_fScreenRate_x;// (float)WindowWidth / 640.f;
 }
 
 float SEASON3B::CNewUICryWolf::ConvertY(float y)
 {
-	return y*(float)WindowHeight/480.f;
+	return y * g_fScreenRate_y;// (float)WindowHeight / 480.f;
 }
 
 bool SEASON3B::CNewUICryWolf::Render(int Posx,int Posy,int nPosx,int nPosy,float u,float v,float su, float sv,int Index,bool Scale,bool StartScale,float Alpha)

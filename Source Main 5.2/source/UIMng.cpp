@@ -634,18 +634,19 @@ void CUIMng::Update(double dDeltaTick)
 #ifdef MU_USE_SDL_TMP
 	if (MouseLButtonPush)
 #else
-	if (rInput.IsLBtnDn())
+	if (rInput.IsLBtnDn()) //MouseLButtonPush
 #endif
 	{
 		bool bWinClick = false;
 		position = m_WinList.GetHeadPosition();
-
 		while (position)
 		{
 			pWin = (CWin*)m_WinList.GetNext(position);
 
 			if (pWin->CursorInWin(WA_ALL))
 			{
+				//g_ErrorReport.Write("> CLoginMainWin::rInput.IsLBtnDn() SetActiveWin");
+
 				SetActiveWin(pWin);
 				bWinClick = true;
 				break;

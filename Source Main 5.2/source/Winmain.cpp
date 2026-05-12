@@ -1790,8 +1790,8 @@ int main(int argc, char* argv[])
 		if (g_eventBase)
 			event_base_loop(g_eventBase, EVLOOP_NONBLOCK);
 
-		glViewport(0, 0, WindowWidth, WindowHeight);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glViewport(0, 0, WindowWidth, WindowHeight);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #if (defined WINDOWMODE)
 		if (g_bUseWindowMode == TRUE)
@@ -1988,8 +1988,13 @@ void MU_ProcessSDLEvents()
 
 #ifdef __ANDROID__
 				//scale = std::min(WindowWidth / 640.0f, WindowHeight / 480.0f);
-				g_fScreenRate_x = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
-				g_fScreenRate_y = g_fScreenRate_x;
+				float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+
+				//g_fScreenRate_x = scale;//(std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+				//g_fScreenRate_y = scale;// g_fScreenRate_x;
+
+				g_fScreenRate_x = (float)WindowWidth / 640;		// ��
+				g_fScreenRate_y = (float)WindowHeight / 480;
 
 				g_ErrorReport.Write("> Resize Screen Width %d Height %d Scale %f", WindowWidth, WindowHeight, g_fScreenRate_x);
 
@@ -2087,8 +2092,19 @@ void MU_ProcessSDLEvents()
 				break;
 
 		case SDL_MOUSEMOTION:
+
+#ifdef __ANDROID__
+			//scale = std::min(WindowWidth / 640.0f, WindowHeight / 480.0f);
+			//g_fScreenRate_x = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+			//g_fScreenRate_y = g_fScreenRate_x;
+
 			MouseX = (float)e.motion.x / g_fScreenRate_x;
 			MouseY = (float)e.motion.y / g_fScreenRate_y;
+
+#else
+			MouseX = (float)e.motion.x / g_fScreenRate_x;
+			MouseY = (float)e.motion.y / g_fScreenRate_y;
+#endif
 
 			if (MouseX < 0) MouseX = 0;
 			if (MouseX > 640) MouseX = 640;
@@ -2136,6 +2152,9 @@ void MU_ProcessSDLEvents()
 				MouseLButton = false;
 				g_iMousePopPosition_x = MouseX;
 				g_iMousePopPosition_y = MouseY;
+
+				//g_ErrorReport.Write("> CLoginMainWin::UpdateWhileActive, Mouse X %d Y %d", MouseX, MouseY);
+
 			}
 			else if (e.button.button == SDL_BUTTON_RIGHT)
 			{
