@@ -148,6 +148,21 @@ protected:
 
 	bool OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter = GL_NEAREST, GLuint uiWrapMode = GL_CLAMP_TO_EDGE);
 	bool OpenTga(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter = GL_NEAREST, GLuint uiWrapMode = GL_CLAMP_TO_EDGE);
+
+	bool CGlobalBitmap::OpenTgaScaledCopy(
+		GLuint uiBitmapIndex,
+		const std::string& filename,
+		GLuint uiFilter,
+		GLuint uiWrapMode,
+		float scale);
+
+	bool CGlobalBitmap::OpenJpegScaledCopy(
+		GLuint uiBitmapIndex,
+		const std::string& filename,
+		GLuint uiFilter,
+		GLuint uiWrapMode,
+		float scale);
+
 	void SplitFileName(IN const std::string& filepath, OUT std::string& filename, bool bIncludeExt);
 	void SplitExt(IN const std::string& filepath, OUT std::string& ext, bool bIncludeDot);
 	void ExchangeExt(IN const std::string& in_filepath, IN const std::string& ext, OUT std::string& out_filepath);

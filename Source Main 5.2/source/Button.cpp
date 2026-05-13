@@ -165,7 +165,9 @@ void CButton::Update()
 		if (CursorInObject() && rInput.IsLBtnDn())
 			m_pBtnHeld = this;
 
-		//m_bClick = false;
+#ifdef _TODO
+		m_bClick = false;
+#endif
 
 		if(rInput.IsLBtnUp() || MouseLButtonPush)
 		{
@@ -278,7 +280,13 @@ void CButton::Render()
 
 	float fTextRelativeYPos = ((CSprite::GetHeight() - size.cy) / 2.0f);
 
-	g_pRenderText->RenderText(int(CSprite::GetXPos() / g_fScreenRate_x),int(((float)CSprite::GetYPos() + fTextRelativeYPos) / g_fScreenRate_y + m_fTextAddYPos), m_szText, CSprite::GetWidth() / g_fScreenRate_x, 0, RT3_SORT_CENTER);
+	g_pRenderText->RenderText(
+		int(CSprite::GetXPos() / g_fScreenRate_x) + ((this->m_scalex * CSprite::GetWidth()) - CSprite::GetWidth()) / 2.1f, // X
+		int(((float)CSprite::GetYPos() + fTextRelativeYPos) / g_fScreenRate_y + m_fTextAddYPos) + ((this->m_scaley * CSprite::GetHeight()) - CSprite::GetHeight()) * 2.5f, // Y
+		m_szText, 
+		CSprite::GetWidth() / g_fScreenRate_x, 
+		0, 
+		RT3_SORT_CENTER);
 }
 
 void CButton::ReleaseText()

@@ -48,7 +48,7 @@ public:
 	CWin();
 	virtual ~CWin();
 
-	void Create(int nWidth, int nHeight, int nTexID = -1, bool bTile = false);
+	void Create(int nWidth, int nHeight, int nTexID = -1, bool bTile = false, float scalex=1.0f, float scaley=1.0f);
 	virtual void Release();
 	virtual void SetPosition(int nXCoord, int nYCoord);
 	int GetXPos(){ return m_ptPos.x; }

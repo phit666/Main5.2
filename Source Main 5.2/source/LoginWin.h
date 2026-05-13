@@ -31,6 +31,8 @@ public:
 
 private:
 	int FirstLoad = 0;
+	float scalex = 1.0f;
+	float scaley = 1.0f;
 
 protected:
 	void PreRelease();

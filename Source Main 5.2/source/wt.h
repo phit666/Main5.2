@@ -252,6 +252,17 @@ inline void MU_splitpath(
     }
 }
 
+#define FONT_SIZE14 14
+#define FONT_SIZE16 16
+#define FONT_SIZE18 18
+#define FONT_SIZE20 20
+#define FONT_SIZE22 22
+#define FONT_SIZE30 30
+#define DEFAULT_FONT_SIZE FONT_SIZE18
+#define MAX_FONTS 50
+
+void setfont(int size);
+
 extern int TextNum;
 extern char TextList[30][100];
 extern int TextListColor[30];

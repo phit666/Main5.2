@@ -398,6 +398,43 @@ bool MU_KillTimer(void* hWnd, uintptr_t nIDEvent) {
 }
 
 
+static void* fontrawdata;
+static Sint64 fontrawsize;
+struct nk_font* font[MAX_FONTS];
+static bool iscustomfontfailed = false;
+
+bool loadfont()
+{
+    SDL_RWops* rw = SDL_RWFromFile("data/fonts/segoeuib.ttf", "rb");
+    if (!rw) {
+        g_ErrorReport.Write("SDL_RWFromFile failed: %s", SDL_GetError());
+        return false;
+    }
+    else {
+        fontrawsize = SDL_RWsize(rw);
+        fontrawdata = SDL_malloc((size_t)fontrawsize);
+        if (!fontrawdata) {
+            SDL_RWclose(rw);
+            return false;
+        }
+        else {
+            SDL_RWread(rw, fontrawdata, 1, (size_t)fontrawsize);
+            SDL_RWclose(rw);
+        }
+    }
+    return true;
+}
+
+void setfont(int size) {
+    if (iscustomfontfailed)
+        return;
+    if (size < 0 || size >= (MAX_FONTS))
+        return;
+    if (font[size] == nullptr)
+        return;
+    nk_style_set_font(g_nk_ctx, &font[size]->handle);
+}
+
 
 bool MU_InitSDL(int width, int height)
 {
@@ -477,9 +514,44 @@ bool MU_InitSDL(int width, int height)
 
     g_nk_ctx = nk_sdl_init(gSDLWindow);
 
-    struct nk_font_atlas* atlas;
-    nk_sdl_font_stash_begin(&atlas);
-    nk_sdl_font_stash_end();
+
+    if (loadfont()) {
+
+        struct nk_font_atlas* atlas = nullptr;
+
+        nk_sdl_font_stash_begin(&atlas);
+
+        static const nk_rune ASCII_RANGE[] = { 0x0020, 0x007E, 0 };
+
+        struct nk_font_config cfg = nk_font_config(0);
+        cfg.oversample_h = 1;
+        cfg.oversample_v = 1;
+        cfg.pixel_snap = 1;
+        cfg.range = ASCII_RANGE;
+
+        for (int n = 0; n < MAX_FONTS; n++) font[n] = nullptr;
+
+        font[FONT_SIZE14] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE14 * g_fScreenRate_y, &cfg);
+        font[FONT_SIZE16] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE16 * g_fScreenRate_y, &cfg);
+        font[FONT_SIZE18] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE18 * g_fScreenRate_y, &cfg);
+        font[FONT_SIZE20] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE20 * g_fScreenRate_y, &cfg);
+        font[FONT_SIZE22] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE22 * g_fScreenRate_y, &cfg);
+        font[FONT_SIZE30] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE30 * g_fScreenRate_y, &cfg);
+
+        nk_sdl_font_stash_end();
+
+        if (!sdl.ogl.font_tex) {
+            g_ErrorReport.Write("> font allocation failed, failing back to default.");
+            iscustomfontfailed = true;
+            nk_style_set_font(g_nk_ctx, 0);
+            nk_font_atlas_clear(atlas);
+        }
+        else {
+            iscustomfontfailed = false;
+        }
+
+        setfont(FONT_SIZE14);
+    }
 
     //struct nk_style_item old_bg = g_nk_ctx->style.window.fixed_background;
 

@@ -17,14 +17,14 @@ CWin::~CWin()
 	Release();
 }
 
-void CWin::Create(int nWidth, int nHeight, int nTexID, bool bTile)
+void CWin::Create(int nWidth, int nHeight, int nTexID, bool bTile, float scalex, float scaley)
 {
 	Release();
 
 	if (-2 < nTexID)
 	{
 		m_psprBg = new CSprite;
-		m_psprBg->Create(nWidth, nHeight, nTexID, 0, NULL, 0, 0, bTile);
+		m_psprBg->Create(nWidth, nHeight, nTexID, 0, NULL, 0, 0, bTile, 0, scalex, scaley);
 		if (-1 == nTexID)
 		{
 			m_psprBg->SetAlpha(128);
@@ -38,6 +38,12 @@ void CWin::Create(int nWidth, int nHeight, int nTexID, bool bTile)
 	m_Size.cy = nHeight;
 	m_bDocking = m_bActive = m_bShow = false;
 	m_nState = WS_NORMAL;
+
+	if (scalex != 1.0f) {
+		//float _diffX = nWidth * scalex - nWidth;
+		//float _diffY = nHeight * scaley - nHeight;
+		//this->SetSize(nWidth + _diffX, nHeight + _diffY);
+	}
 }
 
 void CWin::Release()

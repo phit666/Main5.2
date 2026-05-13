@@ -40,9 +40,6 @@ void CSprite::Create(int nOrgWidth, int nOrgHeight, int nTexID, int nMaxFrame, S
 	m_nTexID = nTexID;
 	m_pTexture = Bitmaps.FindTexture(m_nTexID);
 
-
-	float extraButtonScale = g_fScreenRate_x;
-
 	m_fScrHeight = (float)WindowHeight / fScaleY;
 
 	m_fScaleX = fScaleX;
@@ -52,10 +49,13 @@ void CSprite::Create(int nOrgWidth, int nOrgHeight, int nTexID, int nMaxFrame, S
 
 	m_aScrCoord[LT].fX = 0.0f;
 	m_aScrCoord[LT].fY = m_fScrHeight;
+
 	m_aScrCoord[LB].fX = 0.0f;
 	m_aScrCoord[LB].fY = m_fScrHeight - m_fOrgHeight;
+	
 	m_aScrCoord[RB].fX = m_fOrgWidth;
 	m_aScrCoord[RB].fY = m_fScrHeight - m_fOrgHeight;
+	
 	m_aScrCoord[RT].fX = m_fOrgWidth;
 	m_aScrCoord[RT].fY = m_fScrHeight;
 
@@ -211,10 +211,10 @@ BOOL CSprite::PtInSprite(long lXPos, long lYPos)
 	POINT pt = { lXPos, lYPos };
 
 	RECT rc = {
-		long(m_aScrCoord[LT].fX * m_fScaleX),
-		long((m_fScrHeight - m_aScrCoord[LT].fY) * m_fScaleY),
-		long(m_aScrCoord[RB].fX * m_fScaleX),
-		long((m_fScrHeight - m_aScrCoord[RB].fY) * m_fScaleY)
+		long(m_aScrCoord[LT].fX * m_fScaleX), // x
+		long((m_fScrHeight - m_aScrCoord[LT].fY) * m_fScaleY), //y
+		long(m_aScrCoord[RB].fX * m_fScaleX), // w
+		long((m_fScrHeight - m_aScrCoord[RB].fY) * m_fScaleY) // h
 	};
 
 

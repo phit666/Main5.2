@@ -4870,7 +4870,7 @@ void OpenLogoSceneData()
     gLoadData.OpenTexture(MODEL_LOGO+2,"Logo\\",GL_REPEAT, GL_LINEAR);
 #endif //PJH_NEW_SERVER_SELECT_MAP
 	//image
-	::LoadBitmap("Interface\\cha_bt.tga", BITMAP_LOG_IN);
+	LoadBitmap("Interface\\cha_bt.tga", BITMAP_LOG_IN);
 	::LoadBitmap("Interface\\server_b2_all.tga", BITMAP_LOG_IN+1);
 	::LoadBitmap("Interface\\server_b2_loding.jpg", BITMAP_LOG_IN+2);
 	::LoadBitmap("Interface\\server_deco_all.tga", BITMAP_LOG_IN+3);

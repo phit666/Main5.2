@@ -595,6 +595,14 @@ struct jpeg_memory_source
 	j_boolean start_of_file;
 };
 
+static int MU_NextPowerOfTwo(int v)
+{
+	int r = 1;
+	while (r < v)
+		r <<= 1;
+	return r;
+}
+
 static void jpeg_mem_init_source(j_decompress_ptr cinfo)
 {
 	jpeg_memory_source* src = (jpeg_memory_source*)cinfo->src;
@@ -677,7 +685,6 @@ std::string MU_NormalizePath2(const char* path)
 
 	return s;
 }
-
 
 bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter, GLuint uiWrapMode)
 {
@@ -788,8 +795,6 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 			memcpy(dst, buffer[0], row_stride);
 		}
 
-        g_ErrorReport.Write("> OpenJpeg, Inserted texture %s (%u)", pNewBitmap->FileName, pNewBitmap->TextureNumber);
-
         m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
 
 		glGenTextures(1, &(pNewBitmap->TextureNumber));
@@ -797,8 +802,6 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-		// 1. Determine if we can safely use REPEAT
-		// GLES2 only allows REPEAT for Power-of-Two (POT) textures
 		bool isPOT = ((Width & (Width - 1)) == 0) && ((Height & (Height - 1)) == 0);
 
 		GLuint wrap = uiWrapMode;
@@ -807,13 +810,11 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 			wrap = GL_CLAMP_TO_EDGE;
 		}
 
-		// Safety check for GLES2: If it's NOT power-of-two, 
 		// we MUST use CLAMP_TO_EDGE even if the engine requested REPEAT.
 		if (!isPOT) {
 			wrap = GL_CLAMP_TO_EDGE;
 		}
 
-		// internalFormat and format must match in GLES2 for RGB data
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, pNewBitmap->Buffer);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, uiFilter);
@@ -830,14 +831,218 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 	return true;
 }
 
+bool CGlobalBitmap::OpenJpegScaledCopy(
+	GLuint uiBitmapIndex,
+	const std::string& filename,
+	GLuint uiFilter,
+	GLuint uiWrapMode,
+	float scale)
+{
+	if (scale <= 0.0f)
+		scale = 1.0f;
+
+	std::string filename_ozj;
+	ExchangeExt(filename, "ozj", filename_ozj);
+
+	MU_FILE* infile = MU_fopen(filename_ozj.c_str(), "rb");
+
+	if (infile == NULL)
+	{
+		g_ErrorReport.Write("> OpenJpegScaledCopy %s, failed to open.", filename_ozj.c_str());
+		return false;
+	}
+
+	MU_fseek(infile, 0, SEEK_END);
+	long fileSize = MU_ftell(infile);
+	MU_fseek(infile, 0, SEEK_SET);
+
+	if (fileSize <= 24)
+	{
+		g_ErrorReport.Write("> OpenJpegScaledCopy %s, fileSize <= 24.", filename_ozj.c_str());
+		MU_fclose(infile);
+		return false;
+	}
+
+	BYTE* fileBuffer = new BYTE[fileSize];
+
+	size_t readSize = MU_fread(fileBuffer, 1, fileSize, infile);
+	MU_fclose(infile);
+
+	if (readSize != (size_t)fileSize)
+	{
+		g_ErrorReport.Write("> OpenJpegScaledCopy %s, readSize != fileSize.", filename_ozj.c_str());
+		delete[] fileBuffer;
+		return false;
+	}
+
+	BYTE* jpegData = fileBuffer + 24;
+	size_t jpegSize = fileSize - 24;
+
+	struct jpeg_decompress_struct cinfo;
+	struct my_error_mgr jerr;
+
+	cinfo.err = jpeg_std_error(&jerr.pub);
+	jerr.pub.error_exit = my_error_exit;
+
+	if (setjmp(jerr.setjmp_buffer))
+	{
+		g_ErrorReport.Write("> OpenJpegScaledCopy %s, jpeg error.", filename_ozj.c_str());
+		jpeg_destroy_decompress(&cinfo);
+		delete[] fileBuffer;
+		return false;
+	}
+
+	jpeg_create_decompress(&cinfo);
+
+	jpeg_mem_src_compat(&cinfo, jpegData, jpegSize);
+
+	jpeg_read_header(&cinfo, TRUE);
+	jpeg_start_decompress(&cinfo);
+
+	if (cinfo.output_width > MAX_WIDTH || cinfo.output_height > MAX_HEIGHT)
+	{
+		g_ErrorReport.Write("> OpenJpegScaledCopy %s, size too large.", filename_ozj.c_str());
+
+		jpeg_finish_decompress(&cinfo);
+		jpeg_destroy_decompress(&cinfo);
+		delete[] fileBuffer;
+
+		return false;
+	}
+
+	int srcW = (int)cinfo.output_width;
+	int srcH = (int)cinfo.output_height;
+	int srcComponents = (int)cinfo.output_components;
+
+	if (srcComponents != 3)
+	{
+		g_ErrorReport.Write("> OpenJpegScaledCopy %s, output_components != 3.", filename_ozj.c_str());
+
+		jpeg_finish_decompress(&cinfo);
+		jpeg_destroy_decompress(&cinfo);
+		delete[] fileBuffer;
+
+		return false;
+	}
+
+	size_t srcBufferSize = srcW * srcH * srcComponents;
+	BYTE* srcBuffer = new BYTE[srcBufferSize];
+	memset(srcBuffer, 0, srcBufferSize);
+
+	int row_stride = srcW * srcComponents;
+
+	JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)(
+		(j_common_ptr)&cinfo,
+		JPOOL_IMAGE,
+		row_stride,
+		1
+		);
+
+	while (cinfo.output_scanline < cinfo.output_height)
+	{
+		jpeg_read_scanlines(&cinfo, buffer, 1);
+
+		BYTE* dst = srcBuffer + (cinfo.output_scanline - 1) * row_stride;
+		memcpy(dst, buffer[0], row_stride);
+	}
+
+	jpeg_finish_decompress(&cinfo);
+	jpeg_destroy_decompress(&cinfo);
+
+	delete[] fileBuffer;
+
+	int scaledW = (int)((float)srcW * scale + 0.5f);
+	int scaledH = (int)((float)srcH * scale + 0.5f);
+
+	if (scaledW <= 0)
+		scaledW = 1;
+
+	if (scaledH <= 0)
+		scaledH = 1;
+
+	int Width = MU_NextPowerOfTwo(scaledW);
+	int Height = MU_NextPowerOfTwo(scaledH);
+
+	BITMAP_t* pNewBitmap = new BITMAP_t;
+	memset(pNewBitmap, 0, sizeof(BITMAP_t));
+
+	pNewBitmap->BitmapIndex = uiBitmapIndex;
+
+#ifdef _WIN32
+	filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#else
+	ndk_copy_s(MU_NormalizePath2(filename.c_str()), pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#endif
+
+	pNewBitmap->Width = (float)Width;
+	pNewBitmap->Height = (float)Height;
+	pNewBitmap->Components = 3;
+	pNewBitmap->Ref = 1;
+
+	size_t BufferSize = Width * Height * pNewBitmap->Components;
+	pNewBitmap->Buffer = new BYTE[BufferSize];
+	memset(pNewBitmap->Buffer, 0, BufferSize);
+
+	m_dwUsedTextureMemory += BufferSize;
+
+	for (int y = 0; y < scaledH; y++)
+	{
+		int srcY = (int)((float)y * (float)srcH / (float)scaledH);
+
+		BYTE* dst = pNewBitmap->Buffer + y * Width * 3;
+
+		for (int x = 0; x < scaledW; x++)
+		{
+			int srcX = (int)((float)x * (float)srcW / (float)scaledW);
+
+			BYTE* src = srcBuffer + ((srcY * srcW + srcX) * 3);
+
+			dst[0] = src[0];
+			dst[1] = src[1];
+			dst[2] = src[2];
+
+			dst += 3;
+		}
+	}
+
+	delete[] srcBuffer;
+
+	m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
+
+	glGenTextures(1, &(pNewBitmap->TextureNumber));
+	glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGB,
+		Width,
+		Height,
+		0,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		pNewBitmap->Buffer
+	);
+
+	GLuint wrap = uiWrapMode;
+
+	if (wrap == 0x2900)
+		wrap = GL_CLAMP_TO_EDGE;
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, uiFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, uiFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+
+	return true;
+}
+
 bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter, GLuint uiWrapMode)
 {
-	g_ErrorReport.Write("> OpenTga %s ...",filename.c_str());
-
 	std::string filename_ozt;
 	ExchangeExt(filename, "ozt", filename_ozt);
-
-	g_ErrorReport.Write("> OpenTga->ExchangeExt %s ...",filename_ozt.c_str());
 
 	MU_FILE* fp = MU_fopen(filename_ozt.c_str(), "rb");
 
@@ -970,18 +1175,12 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 		pNewBitmap->Buffer
 	);
 
-	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-	// FIX 4: Wrap Mode Logic
-	// If the TGA is for UI or a loading screen (NPOT), you MUST use CLAMP_TO_EDGE.
 	GLuint wrap = uiWrapMode;
 	if (wrap == 0x2900) wrap = GL_CLAMP_TO_EDGE; // Handle legacy GL_CLAMP
 
-	// GLES2 NPOT Safety: Check if dimensions are power-of-two
 	bool isPOT = ((Width & (Width - 1)) == 0) && ((Height & (Height - 1)) == 0);
 	if (!isPOT) {
 		wrap = GL_CLAMP_TO_EDGE;
-		// Also, NPOT textures CANNOT have mipmaps. Ensure uiFilter is linear/nearest.
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
@@ -992,6 +1191,181 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+
+	return true;
+}
+
+static int MU_NextPowerOfTwo(int v)
+{
+	int r = 1;
+	while (r < v)
+		r <<= 1;
+	return r;
+}
+
+bool CGlobalBitmap::OpenTgaScaledCopy(
+	GLuint uiBitmapIndex,
+	const std::string& filename,
+	GLuint uiFilter,
+	GLuint uiWrapMode,
+	float scale)
+{
+	if (scale <= 0.0f)
+		scale = 1.0f;
+
+	std::string filename_ozt;
+	ExchangeExt(filename, "ozt", filename_ozt);
+
+	MU_FILE* fp = MU_fopen(filename_ozt.c_str(), "rb");
+
+	if (fp == NULL)
+	{
+		g_ErrorReport.Write("> OpenTgaScaledCopy %s, failed to open.", filename_ozt.c_str());
+		return false;
+	}
+
+	MU_fseek(fp, 0, SEEK_END);
+	int Size = (int)MU_ftell(fp);
+	MU_fseek(fp, 0, SEEK_SET);
+
+	if (Size <= 0)
+	{
+		g_ErrorReport.Write("> OpenTgaScaledCopy %s, Size <= 0.", filename_ozt.c_str());
+		MU_fclose(fp);
+		return false;
+	}
+
+	unsigned char* PakBuffer = new unsigned char[Size];
+
+	size_t readSize = MU_fread(PakBuffer, 1, Size, fp);
+	MU_fclose(fp);
+
+	if (readSize != (size_t)Size)
+	{
+		g_ErrorReport.Write("> OpenTgaScaledCopy %s, readSize != Size.", filename_ozt.c_str());
+		SAFE_DELETE_ARRAY(PakBuffer);
+		return false;
+	}
+
+	int index = 12;
+	index += 4;
+
+	if (index + 6 > Size)
+	{
+		g_ErrorReport.Write("> OpenTgaScaledCopy %s, index + 6 > Size.", filename_ozt.c_str());
+		SAFE_DELETE_ARRAY(PakBuffer);
+		return false;
+	}
+
+	short nx = *((short*)(PakBuffer + index)); index += 2;
+	short ny = *((short*)(PakBuffer + index)); index += 2;
+	char bit = *((char*)(PakBuffer + index)); index += 1;
+	index += 1;
+
+	if (bit != 32 || nx > MAX_WIDTH || ny > MAX_HEIGHT || nx <= 0 || ny <= 0)
+	{
+		g_ErrorReport.Write("> OpenTgaScaledCopy %s, invalid size/bit.", filename_ozt.c_str());
+		SAFE_DELETE_ARRAY(PakBuffer);
+		return false;
+	}
+
+	if (index + nx * ny * 4 > Size)
+	{
+		g_ErrorReport.Write("> OpenTgaScaledCopy %s, image data out of range.", filename_ozt.c_str());
+		SAFE_DELETE_ARRAY(PakBuffer);
+		return false;
+	}
+
+	int srcDataIndex = index;
+
+	int scaledNx = (int)((float)nx * scale + 0.5f);
+	int scaledNy = (int)((float)ny * scale + 0.5f);
+
+	if (scaledNx <= 0)
+		scaledNx = 1;
+
+	if (scaledNy <= 0)
+		scaledNy = 1;
+
+	int Width = MU_NextPowerOfTwo(scaledNx);
+	int Height = MU_NextPowerOfTwo(scaledNy);
+
+	BITMAP_t* pNewBitmap = new BITMAP_t;
+	memset(pNewBitmap, 0, sizeof(BITMAP_t));
+
+	pNewBitmap->BitmapIndex = uiBitmapIndex;
+
+#ifdef _WIN32
+	filename._Copy_s(pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#else
+	ndk_copy_s(MU_NormalizePath2(filename.c_str()), pNewBitmap->FileName, MAX_BITMAP_FILE_NAME, MAX_BITMAP_FILE_NAME);
+#endif
+
+	pNewBitmap->Width = (float)Width;
+	pNewBitmap->Height = (float)Height;
+	pNewBitmap->Components = 4;
+	pNewBitmap->Ref = 1;
+
+	size_t BufferSize = Width * Height * pNewBitmap->Components;
+	pNewBitmap->Buffer = new BYTE[BufferSize];
+	memset(pNewBitmap->Buffer, 0, BufferSize);
+
+	m_dwUsedTextureMemory += BufferSize;
+
+	for (int y = 0; y < scaledNy; y++)
+	{
+		int srcY = (int)((float)y * (float)ny / (float)scaledNy);
+
+		unsigned char* dst =
+			&pNewBitmap->Buffer[(scaledNy - 1 - y) * Width * pNewBitmap->Components];
+
+		for (int x = 0; x < scaledNx; x++)
+		{
+			int srcX = (int)((float)x * (float)nx / (float)scaledNx);
+
+			unsigned char* src =
+				&PakBuffer[srcDataIndex + ((srcY * nx + srcX) * 4)];
+
+			dst[0] = src[2];
+			dst[1] = src[1];
+			dst[2] = src[0];
+			dst[3] = src[3];
+
+			dst += pNewBitmap->Components;
+		}
+	}
+
+	SAFE_DELETE_ARRAY(PakBuffer);
+
+	m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
+
+	glGenTextures(1, &(pNewBitmap->TextureNumber));
+	glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		Width,
+		Height,
+		0,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		pNewBitmap->Buffer
+	);
+
+	GLuint wrap = uiWrapMode;
+
+	if (wrap == 0x2900) // legacy GL_CLAMP
+		wrap = GL_CLAMP_TO_EDGE;
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, uiFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, uiFilter);
 
 	return true;
 }

@@ -44,13 +44,25 @@ CLoginWin::~CLoginWin()
 
 void CLoginWin::Create()
 {
-	CWin::Create(329, 245, BITMAP_LOG_IN + 7);
+
+#ifdef __ANDROID__
+	//this->scalex = (float)WindowWidth / 1600.0f;
+	//this->scaley = (float)WindowHeight / 1200.0f;
+#else
+	//this->scalex = (float)WindowWidth / 800.0f;
+	//this->scaley = (float)WindowHeight / 600.0f;
+#endif
+
+
+	CWin::Create(329, 245, BITMAP_LOG_IN + 7, false, this->scalex, this->scaley);
 
 	m_asprInputBox[LIW_ACCOUNT].Create(156, 23, BITMAP_LOG_IN + 8);
 	m_asprInputBox[LIW_PASSWORD].Create(156, 23, BITMAP_LOG_IN + 8);
 
 	for (int i = 0; i < 2; ++i)
 	{
+		m_aBtn[i].SetScaleX(this->scalex);
+		m_aBtn[i].SetScaleX(this->scaley);
 		m_aBtn[i].Create(54, 30, BITMAP_BUTTON + i, 3, 2, 1);
 		CWin::RegisterButton(&m_aBtn[i]);
 	}
@@ -94,7 +106,10 @@ void CLoginWin::PreRelease()
 
 void CLoginWin::SetPosition(int nXCoord, int nYCoord)
 {
-	CWin::SetPosition(nXCoord, nYCoord);
+	float _fScrHeight = (float)WindowHeight - ((float)WindowHeight / this->scaley);
+	float _fW = ((float)CWin::GetWidth() * this->scalex) - CWin::GetWidth();
+
+	CWin::SetPosition(nXCoord - _fW * 1.4f, nYCoord - _fScrHeight);
 
 	m_asprInputBox[LIW_ACCOUNT].SetPosition(nXCoord + 109, nYCoord + 106);
 	m_asprInputBox[LIW_PASSWORD].SetPosition(nXCoord + 109, nYCoord + 131);

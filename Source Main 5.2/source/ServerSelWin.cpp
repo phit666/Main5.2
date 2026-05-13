@@ -100,11 +100,7 @@ void CServerSelWin::Create()
 	int _w = (SERVER_GROUP_BTN_WIDTH + SSW_GAP_WIDTH) * 2 + SERVER_BTN_WIDTH;
 	int _h = SERVER_BTN_HEIGHT * SSW_SERVER_MAX + SSW_GAP_HEIGHT * 2 + SERVER_GROUP_BTN_HEIGHT + m_winDescription.GetHeight();
 
-
-	float _diffX = _w * this->m_scalex - _w;
-	float _diffY = _h * this->m_scaley - _h;
-
-	CWin::SetSize(_w + _diffX, _h + _diffY);
+	CWin::SetSize(_w * this->m_scalex, _h * this->m_scaley);
 }
 
 void CServerSelWin::PreRelease()
@@ -137,19 +133,22 @@ void CServerSelWin::SetPosition(int nXCoord, int nYCoord)
 	int nBtnPosY;
 	int i;
 
-	float _fScrHeight = (float)WindowHeight - ((float)WindowHeight / this->m_scaley);
-	float _fW = ((float)nServerGBtnWidth * this->m_scalex) - nServerGBtnWidth;
+	///float _fW = ((float)nServerGBtnWidth * this->m_scalex) - nServerGBtnWidth;
 
-	int nServerGBtnBasePosY = nYCoord + CWin::GetHeight() - ((nServerGBtnHeight * 11 + SSW_GAP_HEIGHT * 2 + nDescGgHeight) + _fScrHeight);
 	int nRServerGBtnPosX = nXCoord + nServerGBtnWidth + (nServerBtnWidth + (SSW_GAP_WIDTH * 2));
+
+	//float _fScrHeight = (float)WindowHeight - ((float)WindowHeight / this->m_scaley);
+
+	int nServerGBtnBasePosY = nYCoord + CWin::GetHeight() - ((nServerGBtnHeight * 11 + SSW_GAP_HEIGHT * 2 + nDescGgHeight)/* + _fScrHeight*/);
 	
 	int icntServreGroup = 0;
+
 	m_aServerGroupBtn[icntServreGroup++].SetPosition( nXCoord + (CWin::GetWidth() - nServerGBtnWidth) / 2, nYCoord + CWin::GetHeight() - nServerGBtnHeight - SSW_GAP_HEIGHT - nDescGgHeight);
 
 	for (i=0 ; i<SSW_LEFT_SERVER_G_MAX; i++)
 	{
 		nBtnPosY = nServerGBtnBasePosY + nServerGBtnHeight * i;	
-		m_aServerGroupBtn[icntServreGroup++].SetPosition(nXCoord - _fW / 1.8f, nBtnPosY);
+		m_aServerGroupBtn[icntServreGroup++].SetPosition(nXCoord/* - _fW / 1.75f*/, nBtnPosY);
 	}
 
 	for (i=0 ; i<SSW_RIGHT_SERVER_G_MAX; i++)

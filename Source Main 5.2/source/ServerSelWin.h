@@ -60,6 +60,9 @@ public:
 	void Show(bool bShow);
 	bool CursorInWin(int nArea);
 
+	float GetScaleX() { return m_scalex; }
+	float GetScaleY() { return m_scaley; }
+
 protected:
 	void PreRelease();
 	void SetServerBtnPosition();
