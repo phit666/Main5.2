@@ -248,14 +248,11 @@ void CUIMng::CreateLoginScene()
 	m_ServerSelWin.Create();
 	m_WinList.AddHead(&m_ServerSelWin);
 
-	float nposy = (rInput.GetScreenHeight() - m_ServerSelWin.GetHeight()) / 2;
+	float nposy = (rInput.GetScreenHeight() - m_ServerSelWin.GetHeight());
 
 	m_ServerSelWin.SetPosition(
 		(rInput.GetScreenWidth() - m_ServerSelWin.GetWidth()) / 2,
 		nposy);
-
-	g_ErrorReport.Write("> m_ServerSelWin, ypos %d %d %f", 
-		rInput.GetScreenHeight(), m_ServerSelWin.GetHeight(), nposy);
 
 
 	m_LoginWin.Create();

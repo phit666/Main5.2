@@ -15,6 +15,7 @@
 #include "UIControls.h"
 #include "GameCensorship.h"
 #include "ServerListManager.h"
+#include "wt.h"
 
 #define	SSW_GAP_WIDTH	28
 #define	SSW_GAP_HEIGHT	5
@@ -42,29 +43,23 @@ void CServerSelWin::Create()
 
 	m_iSelectServerBtnIndex = -1;
 
-#ifdef __ANDROID__
-	this->m_scalex = (float)WindowWidth / 640.0f;
-	this->m_scaley = (float)WindowHeight / 480.0f;
-#else
-	this->m_scalex = (float)WindowWidth / 640.0f;
-	this->m_scaley = (float)WindowHeight / 480.0f;
-#endif
-
 	int i;
 
 	for (i = 0; i < SSW_SERVER_G_MAX; ++i)
 	{
-		m_aServerGroupBtn[i].SetScaleX(this->m_scalex);
-		m_aServerGroupBtn[i].SetScaleY(this->m_scaley);
-		m_aServerGroupBtn[i].Create(SERVER_GROUP_BTN_WIDTH, SERVER_GROUP_BTN_HEIGHT, BITMAP_LOG_IN, 4, 2, 1, -1, 3, -1, -1, -1);
+		m_aServerGroupBtn[i].Create(
+			getScaleNewSize(BITMAP_LOG_IN, SERVER_GROUP_BTN_WIDTH), 
+			getScaleNewSize(BITMAP_LOG_IN, SERVER_GROUP_BTN_HEIGHT), getScaleTexID(BITMAP_LOG_IN), 4, 2, 1, -1, 3, -1, -1, -1);
+
 		CWin::RegisterButton(&m_aServerGroupBtn[i]);
 	}
 
 	for (i = 0; i < SSW_SERVER_MAX; ++i)
 	{
-		m_aServerBtn[i].SetScaleX(this->m_scalex);
-		m_aServerBtn[i].SetScaleY(this->m_scaley);
-		m_aServerBtn[i].Create(SERVER_BTN_WIDTH, SERVER_BTN_HEIGHT, BITMAP_LOG_IN+1, 3, 2, 1);
+		m_aServerBtn[i].Create(getScaleNewSize(BITMAP_LOG_IN + 1, SERVER_BTN_WIDTH),
+			getScaleNewSize(BITMAP_LOG_IN + 1, SERVER_BTN_HEIGHT),
+			getScaleTexID(BITMAP_LOG_IN + 1), 3, 2, 1);
+
 		CWin::RegisterButton(&m_aServerBtn[i]);
 		m_aServerGauge[i].Create(160, 4, BITMAP_LOG_IN+2);				
 	}
@@ -97,10 +92,10 @@ void CServerSelWin::Create()
 	m_winDescription.Create(aiiDescBg, 1, 10);
 	m_winDescription.SetLine(10);
 
-	int _w = (SERVER_GROUP_BTN_WIDTH + SSW_GAP_WIDTH) * 2 + SERVER_BTN_WIDTH;
-	int _h = SERVER_BTN_HEIGHT * SSW_SERVER_MAX + SSW_GAP_HEIGHT * 2 + SERVER_GROUP_BTN_HEIGHT + m_winDescription.GetHeight();
+	int _w = (getScaleNewSize(BITMAP_LOG_IN, SERVER_GROUP_BTN_WIDTH) + SSW_GAP_WIDTH) * 2 + getScaleNewSize(BITMAP_LOG_IN + 1, SERVER_BTN_WIDTH);
+	int _h = getScaleNewSize(BITMAP_LOG_IN + 1, SERVER_BTN_HEIGHT) * SSW_SERVER_MAX + SSW_GAP_HEIGHT * 2 + getScaleNewSize(BITMAP_LOG_IN, SERVER_GROUP_BTN_HEIGHT) + m_winDescription.GetHeight();
 
-	CWin::SetSize(_w * this->m_scalex, _h * this->m_scaley);
+	CWin::SetSize(_w, _h);
 }
 
 void CServerSelWin::PreRelease()
@@ -133,11 +128,8 @@ void CServerSelWin::SetPosition(int nXCoord, int nYCoord)
 	int nBtnPosY;
 	int i;
 
-	///float _fW = ((float)nServerGBtnWidth * this->m_scalex) - nServerGBtnWidth;
 
 	int nRServerGBtnPosX = nXCoord + nServerGBtnWidth + (nServerBtnWidth + (SSW_GAP_WIDTH * 2));
-
-	//float _fScrHeight = (float)WindowHeight - ((float)WindowHeight / this->m_scaley);
 
 	int nServerGBtnBasePosY = nYCoord + CWin::GetHeight() - ((nServerGBtnHeight * 11 + SSW_GAP_HEIGHT * 2 + nDescGgHeight)/* + _fScrHeight*/);
 	
@@ -160,7 +152,7 @@ void CServerSelWin::SetPosition(int nXCoord, int nYCoord)
 	m_winDescription.SetPosition( nXCoord - ((m_winDescription.GetWidth() - CWin::GetWidth()) / 2),	nYCoord + CWin::GetHeight() - m_winDescription.GetHeight());	
 
 	m_aBtnDeco[0].SetPosition(m_aServerGroupBtn[1].GetXPos(), m_aServerGroupBtn[1].GetYPos());
-	m_aBtnDeco[1].SetPosition(m_aServerGroupBtn[SSW_LEFT_SERVER_G_MAX+1].GetXPos() + SERVER_GROUP_BTN_WIDTH,m_aServerGroupBtn[SSW_LEFT_SERVER_G_MAX+1].GetYPos());
+	m_aBtnDeco[1].SetPosition(m_aServerGroupBtn[SSW_LEFT_SERVER_G_MAX+1].GetXPos() + getScaleNewSize(BITMAP_LOG_IN, SERVER_GROUP_BTN_WIDTH),m_aServerGroupBtn[SSW_LEFT_SERVER_G_MAX+1].GetYPos());
 
 	//int a = m_aServerGroupBtn[1].GetXPos();
 }
@@ -170,7 +162,7 @@ void CServerSelWin::SetServerBtnPosition()
 	if( m_iSelectServerBtnIndex == -1 )
 		return;
 
-	int nServerBtnPosX = m_aServerGroupBtn[1].GetXPos() + m_aServerGroupBtn[0].GetWidth() + SSW_GAP_WIDTH;
+	int nServerBtnPosX = m_aServerGroupBtn[1].GetXPos() + m_aServerGroupBtn[0].GetWidth() + getScaleNewSize(BITMAP_LOG_IN + 1, SSW_GAP_WIDTH);
 	
 	int nServerBtnHeight = m_aServerBtn[0].GetHeight();
 
@@ -196,7 +188,7 @@ void CServerSelWin::SetArrowSpritePosition()
 	
 	if((m_iSelectServerBtnIndex >= 0 ) && (m_iSelectServerBtnIndex <= SSW_LEFT_SERVER_G_MAX))
 	{
-		m_aArrowDeco[0].SetPosition(m_aServerGroupBtn[m_iSelectServerBtnIndex].GetXPos() + SERVER_GROUP_BTN_WIDTH,m_aServerGroupBtn[m_iSelectServerBtnIndex].GetYPos());
+		m_aArrowDeco[0].SetPosition(m_aServerGroupBtn[m_iSelectServerBtnIndex].GetXPos() + getScaleNewSize(BITMAP_LOG_IN, SERVER_GROUP_BTN_WIDTH),m_aServerGroupBtn[m_iSelectServerBtnIndex].GetYPos());
 	}
 	else if((m_iSelectServerBtnIndex > SSW_LEFT_SERVER_G_MAX ) && (m_iSelectServerBtnIndex < SSW_SERVER_G_MAX))
 	{

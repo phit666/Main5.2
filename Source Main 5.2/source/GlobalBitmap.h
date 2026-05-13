@@ -149,14 +149,14 @@ protected:
 	bool OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter = GL_NEAREST, GLuint uiWrapMode = GL_CLAMP_TO_EDGE);
 	bool OpenTga(GLuint uiBitmapIndex, const std::string& filename, GLuint uiFilter = GL_NEAREST, GLuint uiWrapMode = GL_CLAMP_TO_EDGE);
 
-	bool CGlobalBitmap::OpenTgaScaledCopy(
+	bool OpenTgaScaledCopy(
 		GLuint uiBitmapIndex,
 		const std::string& filename,
 		GLuint uiFilter,
 		GLuint uiWrapMode,
 		float scale);
 
-	bool CGlobalBitmap::OpenJpegScaledCopy(
+	bool OpenJpegScaledCopy(
 		GLuint uiBitmapIndex,
 		const std::string& filename,
 		GLuint uiFilter,

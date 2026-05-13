@@ -261,7 +261,19 @@ inline void MU_splitpath(
 #define DEFAULT_FONT_SIZE FONT_SIZE18
 #define MAX_FONTS 50
 
+struct _TexScaleMap {
+    GLuint TexID;
+    float scale;
+    bool iscopy;
+    bool isscale;
+    std::string note;
+};
+
 void setfont(int size);
+
+_TexScaleMap getTexScale(GLuint TexID);
+GLuint getScaleTexID(GLuint TexID);
+int32_t getScaleNewSize(GLuint TexID, int32_t size);
 
 extern int TextNum;
 extern char TextList[30][100];

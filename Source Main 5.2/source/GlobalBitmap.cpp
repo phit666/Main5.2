@@ -8,12 +8,58 @@
 #include "./Utilities/Log/ErrorReport.h"
 #include "./Utilities/Log/muConsoleDebug.h"
 #include "mu_sdl.h"
-
-
+#include "wt.h"
 
 #ifndef j_boolean
 #define j_boolean int
 #endif
+
+#undef SetTimer
+
+std::vector<_TexScaleMap> g_mapTexScale = {
+	{0, 0, false, false, "Default"},
+
+	{BITMAP_LOG_IN, 480.0f, true, true, "Select Server"},
+	{BITMAP_LOG_IN + 1, 480.0f, true, true, "Select Server"},
+
+	{BITMAP_LOG_IN + 7, 480.0f, true, true, "Login-Box"},
+	{BITMAP_LOG_IN + 8, 480.0f, true, true, "Login-User/Pass"},
+	{BITMAP_BUTTON, 480.0f, true, true, "Login Window"},
+	{BITMAP_BUTTON + 1, 480.0f, true, true, "Login Window"},
+
+};
+
+_TexScaleMap getTexScale(GLuint TexID) {
+	for (auto iter = g_mapTexScale.begin(); iter != g_mapTexScale.end(); iter++) {
+		if (iter->TexID == TexID) {
+			return *iter;
+		}
+	}
+	return g_mapTexScale[0];
+}
+
+GLuint getScaleTexID(GLuint TexID) {
+	for (auto iter = g_mapTexScale.begin(); iter != g_mapTexScale.end(); iter++) {
+		if (iter->TexID == TexID) {
+			if (iter->isscale) {
+				return (TexID + BITMAP_SCALED);
+			}
+		}
+	}
+	return TexID;
+}
+
+int32_t getScaleNewSize(GLuint TexID, int32_t size) {
+	for (auto iter = g_mapTexScale.begin(); iter != g_mapTexScale.end(); iter++) {
+		if (iter->TexID == TexID) {
+			if (iter->isscale) {
+				return (size * WindowHeight / iter->scale);
+			}
+		}
+	}
+	return size;
+}
+
 
 CBitmapCache::CBitmapCache() 
 {
@@ -395,31 +441,71 @@ bool CGlobalBitmap::LoadImage(GLuint uiBitmapIndex, const std::string& filename,
 #endif
 	}
 
+	_TexScaleMap _tex = getTexScale(uiBitmapIndex);
+
 	type_bitmap_map::iterator mi = m_mapBitmap.find(uiBitmapIndex);
-	if(mi != m_mapBitmap.end())
+
+	if (mi != m_mapBitmap.end())
 	{
 		BITMAP_t* pBitmap = (*mi).second;
-		if(pBitmap->Ref > 0)
+		if (pBitmap->Ref > 0)
 		{
-			if(0 == _stricmp(pBitmap->FileName, filename.c_str()))
+			if (0 == _stricmp(pBitmap->FileName, filename.c_str()))
 			{
 				pBitmap->Ref++;
-				return true;
+				if (!_tex.isscale || !_tex.iscopy)
+					return true;
 			}
 			else
 			{
-				g_ErrorReport.Write("File not found %s (%d)->%s\r\n",pBitmap->FileName, uiBitmapIndex, filename.c_str());
+				g_ErrorReport.Write("File not found %s (%d)->%s\r\n", pBitmap->FileName, uiBitmapIndex, filename.c_str());
 				UnloadImage(uiBitmapIndex, true);
+			}
+		}
+	}
+
+	if (_tex.iscopy) {
+
+		type_bitmap_map::iterator mi = m_mapBitmap.find(_tex.TexID + BITMAP_SCALED);
+
+		if (mi != m_mapBitmap.end())
+		{
+			BITMAP_t* pBitmap = (*mi).second;
+			if (pBitmap->Ref > 0)
+			{
+				if (0 == _stricmp(pBitmap->FileName, filename.c_str()))
+				{
+					pBitmap->Ref++;
+					return true;
+				}
+				else
+				{
+					g_ErrorReport.Write("File not found %s (%d)->%s\r\n", pBitmap->FileName, uiBitmapIndex, filename.c_str());
+					UnloadImage(uiBitmapIndex, true);
+				}
 			}
 		}
 	}
 	
 	std::string ext;
 	SplitExt(filename, ext, false);
-	
-	if(0 == _stricmp(ext.c_str(), "jpg"))
+
+
+	if (_tex.isscale) {
+		bool _res = false;
+		if (0 == _stricmp(ext.c_str(), "jpg"))
+			_res = OpenJpegScaledCopy(_tex.TexID + BITMAP_SCALED, filename, uiFilter, uiWrapMode, WindowHeight / _tex.scale);
+		else if (0 == _stricmp(ext.c_str(), "tga"))
+			_res = OpenTgaScaledCopy(_tex.TexID + BITMAP_SCALED, filename, uiFilter, uiWrapMode, WindowHeight / _tex.scale);
+		if (!_res)
+			return false;
+		if (!_tex.iscopy)
+			return true;
+	} 
+
+	if (0 == _stricmp(ext.c_str(), "jpg"))
 		return OpenJpeg(uiBitmapIndex, filename, uiFilter, uiWrapMode);
-	else if(0 == _stricmp(ext.c_str(), "tga"))
+	else if (0 == _stricmp(ext.c_str(), "tga"))
 		return OpenTga(uiBitmapIndex, filename, uiFilter, uiWrapMode);
 	
 	return false;
@@ -1195,14 +1281,6 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 	return true;
 }
 
-static int MU_NextPowerOfTwo(int v)
-{
-	int r = 1;
-	while (r < v)
-		r <<= 1;
-	return r;
-}
-
 bool CGlobalBitmap::OpenTgaScaledCopy(
 	GLuint uiBitmapIndex,
 	const std::string& filename,
@@ -1217,6 +1295,8 @@ bool CGlobalBitmap::OpenTgaScaledCopy(
 	ExchangeExt(filename, "ozt", filename_ozt);
 
 	MU_FILE* fp = MU_fopen(filename_ozt.c_str(), "rb");
+
+	g_ErrorReport.Write("> OpenTgaScaledCopy %s", filename_ozt.c_str());
 
 	if (fp == NULL)
 	{
@@ -1334,6 +1414,9 @@ bool CGlobalBitmap::OpenTgaScaledCopy(
 			dst += pNewBitmap->Components;
 		}
 	}
+
+	g_ErrorReport.Write("> OpenTgaScaledCopy %s done.", filename_ozt.c_str());
+
 
 	SAFE_DELETE_ARRAY(PakBuffer);
 

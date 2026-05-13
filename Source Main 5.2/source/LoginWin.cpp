@@ -19,6 +19,7 @@
 #include "ProtocolSend.h"
 #include "ServerListManager.h"
 #include "mu_sdl.h"
+#include "wt.h"
 
 #define	LIW_ACCOUNT		0
 #define	LIW_PASSWORD	1
@@ -29,6 +30,7 @@
 extern float g_fScreenRate_x;
 extern float g_fScreenRate_y;
 extern int g_iChatInputType;
+
 
 CLoginWin::CLoginWin()
 {
@@ -44,33 +46,21 @@ CLoginWin::~CLoginWin()
 
 void CLoginWin::Create()
 {
+	CWin::Create(getScaleNewSize(BITMAP_LOG_IN + 7, 329), getScaleNewSize(BITMAP_LOG_IN + 7, 245), getScaleTexID(BITMAP_LOG_IN + 7));
 
-#ifdef __ANDROID__
-	//this->scalex = (float)WindowWidth / 1600.0f;
-	//this->scaley = (float)WindowHeight / 1200.0f;
-#else
-	//this->scalex = (float)WindowWidth / 800.0f;
-	//this->scaley = (float)WindowHeight / 600.0f;
-#endif
-
-
-	CWin::Create(329, 245, BITMAP_LOG_IN + 7, false, this->scalex, this->scaley);
-
-	m_asprInputBox[LIW_ACCOUNT].Create(156, 23, BITMAP_LOG_IN + 8);
-	m_asprInputBox[LIW_PASSWORD].Create(156, 23, BITMAP_LOG_IN + 8);
+	m_asprInputBox[LIW_ACCOUNT].Create(getScaleNewSize(BITMAP_LOG_IN + 8, 156), getScaleNewSize(BITMAP_LOG_IN + 8, 23), getScaleTexID(BITMAP_LOG_IN + 8));
+	m_asprInputBox[LIW_PASSWORD].Create(getScaleNewSize(BITMAP_LOG_IN + 8, 156), getScaleNewSize(BITMAP_LOG_IN + 8, 23), getScaleTexID(BITMAP_LOG_IN + 8));
 
 	for (int i = 0; i < 2; ++i)
 	{
-		m_aBtn[i].SetScaleX(this->scalex);
-		m_aBtn[i].SetScaleX(this->scaley);
-		m_aBtn[i].Create(54, 30, BITMAP_BUTTON + i, 3, 2, 1);
+		m_aBtn[i].Create(getScaleNewSize(BITMAP_BUTTON + i, 54), getScaleNewSize(BITMAP_BUTTON + i, 30), getScaleTexID(BITMAP_BUTTON + i), 3, 2, 1);
 		CWin::RegisterButton(&m_aBtn[i]);
 	}
 
 	SAFE_DELETE(m_pIDInputBox);
 
 	m_pIDInputBox = new CUITextInputBox;
-	m_pIDInputBox->Init(g_hWnd, 140, 14, MAX_ID_SIZE);
+	m_pIDInputBox->Init(g_hWnd, getScaleNewSize(BITMAP_LOG_IN + 8, 140), getScaleNewSize(BITMAP_LOG_IN + 8, 14), MAX_ID_SIZE);
 	m_pIDInputBox->SetBackColor(0, 0, 0, 255);
 	m_pIDInputBox->SetTextColor(255, 255, 230, 210);
 	m_pIDInputBox->SetFont(g_hFixFont);
@@ -81,7 +71,7 @@ void CLoginWin::Create()
 	SAFE_DELETE(m_pPassInputBox);
 
 	m_pPassInputBox = new CUITextInputBox;
-	m_pPassInputBox->Init(g_hWnd, 140, 14, MAX_PASSWORD_SIZE, TRUE);
+	m_pPassInputBox->Init(g_hWnd, getScaleNewSize(BITMAP_LOG_IN + 8, 140), getScaleNewSize(BITMAP_LOG_IN + 8, 14), MAX_PASSWORD_SIZE, TRUE);
 	m_pPassInputBox->SetBackColor(0, 0, 0, 25);
 	m_pPassInputBox->SetTextColor(255, 255, 230, 210);
 	m_pPassInputBox->SetFont(g_hFixFont);
@@ -106,13 +96,10 @@ void CLoginWin::PreRelease()
 
 void CLoginWin::SetPosition(int nXCoord, int nYCoord)
 {
-	float _fScrHeight = (float)WindowHeight - ((float)WindowHeight / this->scaley);
-	float _fW = ((float)CWin::GetWidth() * this->scalex) - CWin::GetWidth();
+	CWin::SetPosition(nXCoord, nYCoord);
 
-	CWin::SetPosition(nXCoord - _fW * 1.4f, nYCoord - _fScrHeight);
-
-	m_asprInputBox[LIW_ACCOUNT].SetPosition(nXCoord + 109, nYCoord + 106);
-	m_asprInputBox[LIW_PASSWORD].SetPosition(nXCoord + 109, nYCoord + 131);
+	m_asprInputBox[LIW_ACCOUNT].SetPosition(nXCoord + getScaleNewSize(BITMAP_LOG_IN + 8, 109), nYCoord + getScaleNewSize(BITMAP_LOG_IN + 8, 106));
+	m_asprInputBox[LIW_PASSWORD].SetPosition(nXCoord + getScaleNewSize(BITMAP_LOG_IN + 8, 109), nYCoord + getScaleNewSize(BITMAP_LOG_IN + 8, 131));
 
 	if (g_iChatInputType == 1)
 	{
@@ -123,8 +110,8 @@ void CLoginWin::SetPosition(int nXCoord, int nYCoord)
 			int((m_asprInputBox[LIW_PASSWORD].GetYPos() + 6) / g_fScreenRate_y));
 	}
 
-	m_aBtn[LIW_OK].SetPosition(nXCoord + 150, nYCoord + 178);
-	m_aBtn[LIW_CANCEL].SetPosition(nXCoord + 211, nYCoord + 178);
+	m_aBtn[LIW_OK].SetPosition(nXCoord + getScaleNewSize(BITMAP_BUTTON + 0, 150), nYCoord + getScaleNewSize(BITMAP_BUTTON + 0, 178));
+	m_aBtn[LIW_CANCEL].SetPosition(nXCoord + getScaleNewSize(BITMAP_BUTTON + 1, 211), nYCoord + getScaleNewSize(BITMAP_BUTTON + 1, 178));
 }
 
 void CLoginWin::Show(bool bShow)
@@ -204,10 +191,10 @@ void CLoginWin::RenderControls()
 	g_pRenderText->SetFont(g_hFixFont);
 	g_pRenderText->SetBgColor(0);
 	g_pRenderText->SetTextColor(CLRDW_WHITE);
-	g_pRenderText->RenderText(int((CWin::GetXPos() + 30) / g_fScreenRate_x),
-		int((CWin::GetYPos() + 113) / g_fScreenRate_y), GlobalText[450]);
-	g_pRenderText->RenderText(int((CWin::GetXPos() + 30) / g_fScreenRate_x),
-		int((CWin::GetYPos() + 139) / g_fScreenRate_y), GlobalText[451]);	
+	g_pRenderText->RenderText(int((CWin::GetXPos() + getScaleNewSize(BITMAP_LOG_IN + 8, 30)) / g_fScreenRate_x),
+		int((CWin::GetYPos() + getScaleNewSize(BITMAP_LOG_IN + 8, 113)) / g_fScreenRate_y), GlobalText[450]);
+	g_pRenderText->RenderText(int((CWin::GetXPos() + getScaleNewSize(BITMAP_LOG_IN + 8, 30)) / g_fScreenRate_x),
+		int((CWin::GetYPos() + getScaleNewSize(BITMAP_LOG_IN + 8, 139)) / g_fScreenRate_y), GlobalText[451]);
 
 	unicode::t_char szServerName[MAX_TEXT_LENGTH];
 
@@ -216,8 +203,8 @@ void CLoginWin::RenderControls()
 	sprintf(szServerName, apszGlobalText[g_ServerListManager->GetNonPVPInfo()],
 		g_ServerListManager->GetSelectServerName(), g_ServerListManager->GetSelectServerIndex());
 
-	g_pRenderText->RenderText(int((CWin::GetXPos() + 111) / g_fScreenRate_x),
-		int((CWin::GetYPos() + 80) / g_fScreenRate_y), szServerName);
+	g_pRenderText->RenderText(int((CWin::GetXPos() + getScaleNewSize(BITMAP_LOG_IN + 8, 111)) / g_fScreenRate_x),
+		int((CWin::GetYPos() + getScaleNewSize(BITMAP_LOG_IN + 8, 80)) / g_fScreenRate_y), szServerName);
 }
 
 void CLoginWin::RequestLogin()

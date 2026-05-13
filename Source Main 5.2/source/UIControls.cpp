@@ -3303,7 +3303,7 @@ LRESULT CALLBACK EditWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void CUITextInputBox::SetIMEPosition()
 {
-#ifdef _WIN32
+#ifndef MU_USE_SDL
 	if (m_bIsReady == FALSE || m_hEditWnd == NULL) return;
 
 	int iSetPos_x = m_iPos_x * g_fScreenRate_x + WindowWidth;
@@ -3609,6 +3609,11 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 	m_szText[m_iTextLength] = '\0';
 
 
+	setfont(FONT_SIZE18);
+
+	//m_iRealWindowPos_x = (int)(m_iPos_x * g_fScreenRate_x);
+	//m_iRealWindowPos_y = (int)(m_iPos_y * g_fScreenRate_y);
+
 	struct nk_rect bounds = nk_rect(
 		(float)(m_iPos_x * g_fScreenRate_x),
 		(float)(m_iPos_y * g_fScreenRate_y) - 3,
@@ -3750,6 +3755,7 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 
 	nk_end(ctx);
 	ctx->style.window = old_style;
+	setfont(FONT_SIZE16);
 #endif
 }
 
