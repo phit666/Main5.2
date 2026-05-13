@@ -35,18 +35,20 @@ void CSprite::Create(int nOrgWidth, int nOrgHeight, int nTexID, int nMaxFrame, S
 {
 	Release();
 
-	switch (nTexID) {
-	case BITMAP_LOG_IN:
-		break;
-	}
-
-
 	m_fOrgWidth = (float)nOrgWidth;
 	m_fOrgHeight = (float)nOrgHeight;
 	m_nTexID = nTexID;
 	m_pTexture = Bitmaps.FindTexture(m_nTexID);
 
+
+	float extraButtonScale = g_fScreenRate_x;
+
 	m_fScrHeight = (float)WindowHeight / fScaleY;
+
+	m_fScaleX = fScaleX;
+	m_fScaleY = fScaleY;
+	m_fDatumX = (float)nDatumX;
+	m_fDatumY = (float)nDatumY;
 
 	m_aScrCoord[LT].fX = 0.0f;
 	m_aScrCoord[LT].fY = m_fScrHeight;
@@ -106,14 +108,14 @@ void CSprite::Create(int nOrgWidth, int nOrgHeight, int nTexID, int nMaxFrame, S
 
 	m_byAlpha = m_byRed = m_byGreen = m_byBlue = 255;
 
-	m_fDatumX = (float)nDatumX;
-	m_fDatumY = (float)nDatumY;
+	//m_fDatumX = (float)nDatumX;
+	//m_fDatumY = (float)nDatumY;
 
 	m_bRepeat = false;
 	m_dDelayTime = m_dDeltaTickSum = 0.0;
 	m_nSizingDatums = nSizingDatums;
-	m_fScaleX = fScaleX;
-	m_fScaleY = fScaleY;
+	//m_fScaleX = fScaleX;
+	//m_fScaleY = fScaleY;
 	m_bShow = false;
 }
 
@@ -215,24 +217,14 @@ BOOL CSprite::PtInSprite(long lXPos, long lYPos)
 		long((m_fScrHeight - m_aScrCoord[RB].fY) * m_fScaleY)
 	};
 
-	//char t[100] = { 0 };
-	//sprintf(t, "[SDL-DEBUG] mouse %d %d rect %ld %ld %ld %ld", lXPos, lYPos, rc.left, rc.top, rc.right, rc.bottom);
-	//OutputDebugStringA(t);
-
 
 	return ::PtInRect(&rc, pt);
 }
 
 BOOL CSprite::CursorInObject()
 {
-#ifdef MU_USE_SDL_TMP
-	int mx, my;
-	SDL_GetMouseState(&mx, &my);
-	return PtInSprite(mx, my);
-#else
 	CInput& rInput = CInput::Instance();
 	return PtInSprite(rInput.GetCursorX(), rInput.GetCursorY());
-#endif
 }
 
 
@@ -301,9 +293,6 @@ void CSprite::Update(double dDeltaTick)
 	}
 }
 
-
-
-
 void CSprite::Render()
 {
 	if (!m_bShow)
@@ -324,6 +313,7 @@ void CSprite::Render()
 		}
 
 		BindTexture(m_nTexID);
+
 
 		// 1. Pack the data from your class arrays into the struct
 		SpriteVertex vao[4]; // Assuming POS_MAX is 4

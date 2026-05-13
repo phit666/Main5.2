@@ -21,7 +21,8 @@ CButton*	CButton::m_pBtnHeld;
 
 CButton::CButton() : m_szText(NULL), m_adwTextColorMap(NULL)
 {
-
+	this->m_scalex = 1.0f;
+	this->m_scaley = 1.0f;
 }
 
 CButton::~CButton()
@@ -45,7 +46,7 @@ void CButton::Create(int nWidth, int nHeight, int nTexID, int nMaxFrame,int nDow
 		aFrameCoord[i].nY = nHeight * i;
 	}
 
-	CSprite::Create(nWidth, nHeight, nTexID, nMaxFrame, aFrameCoord);
+	CSprite::Create(nWidth, nHeight, nTexID, nMaxFrame, aFrameCoord, 0, 0, false, 0, this->m_scalex, this->m_scaley);
 
 	delete [] aFrameCoord;
 

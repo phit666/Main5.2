@@ -48,6 +48,9 @@ protected:
 	
 	unicode::t_char		m_szDescription[SSW_DESC_LINE_MAX][SSW_DESC_ROW_MAX];
 
+	float m_scalex;
+	float m_scaley;
+
 public:
 	CServerSelWin();
 	virtual ~CServerSelWin();

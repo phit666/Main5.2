@@ -1407,9 +1407,9 @@ int main(int argc, char* argv[])
 	char lpszExeVersion[256] = "unknown";
 
 #ifdef _WIN32
-	char *lpszCommandLine = GetCommandLine();
-	char lpszFile[MAX_PATH];
-	WORD wVersion[4] = { 0,};
+	//char *lpszCommandLine = GetCommandLine();
+	//char lpszFile[MAX_PATH];
+	//WORD wVersion[4] = { 0,};
 
 	//OutputDebugStringA("[SDL-DEBUG] GetFileNameOfFilePath");
 
@@ -1779,7 +1779,7 @@ int main(int argc, char* argv[])
 	glViewport(0, 0, WindowWidth, WindowHeight);
 
 
-	//UpdateProjection();
+	static bool g_GLReady = false;
 
 	while (!Destroy && gSDLRunning)
 	{
@@ -1790,38 +1790,45 @@ int main(int argc, char* argv[])
 		if (g_eventBase)
 			event_base_loop(g_eventBase, EVLOOP_NONBLOCK);
 
-		//glViewport(0, 0, WindowWidth, WindowHeight);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#if (defined WINDOWMODE)
-		if (g_bUseWindowMode == TRUE)
+		if (!g_GLReady)
+		{
+			SDL_GLContext ctx = SDL_GL_GetCurrentContext();
+			SDL_Window* win = SDL_GL_GetCurrentWindow();
+
+			if (!ctx || !win)
+			{
+				g_ErrorReport.Write("> No current OpenGL context/window");
+				continue;
+			}
+
+			const GLubyte* ver = glGetString(GL_VERSION);
+
+			if (!ver)
+			{
+				g_ErrorReport.Write("> OpenGL context not ready");
+				continue;
+			}
+
+			g_ErrorReport.Write((const char*)ver);
+
+			g_GLReady = true;
+		}
+
+		glViewport(0, 0, WindowWidth, WindowHeight);
+
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		if (g_bUseWindowMode == TRUE || g_bWndActive)
 		{
 			Scene(g_hDC); // later remove g_hDC
 		}
-		else if (g_bWndActive)
-		{
-			Scene(g_hDC);
-		}
-#else
-		if (g_bWndActive)
-		{
-			Scene(g_hDC);
-		}
-#endif
 
-#ifdef NEW_PROTOCOL_SYSTEM
-		if (SceneFlag < CHARACTER_SCENE)
-			ProtocolCompiler();
-
-		g_pChatRoomSocketList->ProtocolCompile();
-		gProtocolSend.RecvMessage();
-#else
 		ProtocolCompiler();
-		g_pChatRoomSocketList->ProtocolCompile();
-#endif
 
-
-		//SDL_Delay(1);
+		if (g_pChatRoomSocketList)
+			g_pChatRoomSocketList->ProtocolCompile();
 	}
 
 	DestroySound();

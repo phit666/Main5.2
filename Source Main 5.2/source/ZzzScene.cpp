@@ -2389,7 +2389,7 @@ void MainScene(HDC hDC)
         glClearColor(0/256.f,0/256.f,0/256.f,1.f);
     }
 		
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	int32_t DifTimer = 0;
 	uint32_t LastTimeCurrent = TimePrior;

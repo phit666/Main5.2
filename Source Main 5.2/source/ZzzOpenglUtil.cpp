@@ -827,9 +827,9 @@ void EndOpengl()
 {
 	// Force-disable the common attributes used by UI/Sprites
 
-	//safe_disable_attr(g_aPosLoc);
-	//safe_disable_attr(g_aTexLoc);
-	//safe_disable_attr(g_aColorLoc);
+	safe_disable_attr(g_aPosLoc);
+	safe_disable_attr(g_aTexLoc);
+	safe_disable_attr(g_aColorLoc);
 
 	// Standard state resets
 	//glDisable(GL_SCISSOR_TEST); // Crucial: Nuklear leaves this on!

@@ -190,7 +190,7 @@
     <Filter Include="External Object\Leaf">
       <UniqueIdentifier>{3b92a23e-4343-428e-9736-2f625e9e74b4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MU\Client\Compats">
+    <Filter Include="MU\Client\wrappers">
       <UniqueIdentifier>{e1768e54-2824-4c6c-8a39-38b3061472b5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -1180,20 +1180,11 @@
     <ClCompile Include="source\ExternalObject\Leaf\xstreambuf.cpp">
       <Filter>External Object\Leaf</Filter>
     </ClCompile>
-    <ClCompile Include="source\mu_sdl.cpp">
-      <Filter>MU\Client\core</Filter>
-    </ClCompile>
     <ClCompile Include="source\mu_2d_renderer.cpp">
-      <Filter>MU\Client\Compats</Filter>
+      <Filter>MU\Client\wrappers</Filter>
     </ClCompile>
     <ClCompile Include="source\mu_socket.cpp">
       <Filter>MU\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="source\DSPlaySound_SDL.cpp">
-      <Filter>MU\Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="source\wzAudio_SDL.cpp">
-      <Filter>MU\Sound</Filter>
     </ClCompile>
     <ClCompile Include="source\mu_wininet_curl_compat.cpp">
       <Filter>MU\GameShop\FileDownloader</Filter>
@@ -1201,11 +1192,20 @@
     <ClCompile Include="source\SimpleModulus.cpp">
       <Filter>MU\Network</Filter>
     </ClCompile>
-    <ClCompile Include="source\mu_gles2_matrix.cpp">
+    <ClCompile Include="source\glad.c">
       <Filter>MU\Client\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\glad.c">
-      <Filter>MU\Client\Compats</Filter>
+    <ClCompile Include="source\mu_gles2_matrix.cpp">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mu_sdl.cpp">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="source\wzAudio_SDL.cpp">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DSPlaySound_SDL.cpp">
+      <Filter>MU\Client\wrappers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2277,47 +2277,47 @@
     <ClInclude Include="source\ExternalObject\Leaf\xstreambuf.h">
       <Filter>External Object\Leaf</Filter>
     </ClInclude>
-    <ClInclude Include="source\mu_sdl.h">
-      <Filter>MU\Client\core</Filter>
-    </ClInclude>
     <ClInclude Include="source\mu_file.h">
-      <Filter>MU\Client\Compats</Filter>
+      <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="source\mu_gl.h">
-      <Filter>MU\Client\Compats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\w_nuklear.h">
-      <Filter>MU\Client\core</Filter>
+      <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="source\mu_2d_renderer.h">
-      <Filter>MU\Client\Compats</Filter>
+      <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="source\mu_socket.h">
       <Filter>MU\Network</Filter>
     </ClInclude>
-    <ClInclude Include="source\mu_win_compat.h">
-      <Filter>MU\Common</Filter>
-    </ClInclude>
     <ClInclude Include="source\Compats\win_compat.h">
-      <Filter>MU\Client\Compats</Filter>
+      <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="source\mu_wininet_curl_compat.h">
       <Filter>MU\GameShop\FileDownloader</Filter>
     </ClInclude>
-    <ClInclude Include="source\mu_gles2_matrix.h">
-      <Filter>MU\Client\core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\mu_gles_matrix.h">
-      <Filter>MU\Client\core</Filter>
-    </ClInclude>
     <ClInclude Include="source\glad.h">
       <Filter>MU\Client\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\mu_gles2_matrix.h">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_gles_matrix.h">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_sdl.h">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\w_nuklear.h">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClInclude>
     <ClInclude Include="source\nuklear_sdl_gles2.h">
-      <Filter>MU\Client\core</Filter>
+      <Filter>MU\Client\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\mu_win_compat.h">
+      <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="source\wt.h">
-      <Filter>MU\Common</Filter>
+      <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

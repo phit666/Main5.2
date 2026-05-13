@@ -35,13 +35,15 @@ protected:
 	DWORD*	m_adwTextColorMap;
 	DWORD	m_dwTextColor;
 	float	m_fTextAddYPos;
+	float m_scalex;
+	float m_scaley;
 
 public:
 	CButton();
 	virtual ~CButton();
 
 	void Release();
-	void Create(int nWidth, int nHeight, int nTexID, int nMaxFrame = 1,int nDownFrame = -1, int nActiveFrame = -1, int nDisableFrame = -1,int nCheckUpFrame = -1, int nCheckDownFrame = -1,int nCheckActiveFrame = -1, int nCheckDisableFrame = -1);
+	void Create(int nWidth, int nHeight, int nTexID, int nMaxFrame = 1, int nDownFrame = -1, int nActiveFrame = -1, int nDisableFrame = -1, int nCheckUpFrame = -1, int nCheckDownFrame = -1, int nCheckActiveFrame = -1, int nCheckDisableFrame = -1);
 	void Update();
 	void Render();
 	void Show(bool bShow = true);
@@ -50,6 +52,11 @@ public:
 	bool IsEnable(){ return m_bEnable; }
 	void SetActive(bool bActive = true) { m_bActive = bActive; }
 //	bool IsActive(){ return m_bActive; }
+
+	void SetScaleX(float scale) { this->m_scalex = scale; }
+	void SetScaleY(float scale) { this->m_scaley = scale; }
+	float GetScaleX() { return this->m_scalex; }
+	float GetScaleY() { return this->m_scaley; }
 
 #ifdef MU_USE_SDL
 	bool IsClick()
