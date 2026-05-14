@@ -98,13 +98,15 @@ void    CSWaterTerrain::Render ( void )
     safe_enable_attr(g_aTexLoc);
     glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
 
-    safe_disable_attr(g_aColorLoc);
-
+    glDisableVertexAttribArray(g_aColorLoc);
 
     MU_ApplyMatrices();
+
     // 4. One draw call for the entire list
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
 
+    glDisableVertexAttribArray(g_aTexLoc);
+    glDisableVertexAttribArray(g_aPosLoc);
 
     EnableAlphaBlend();
     BindTexture(BITMAP_MAPTILE + 1);
@@ -148,10 +150,16 @@ void    CSWaterTerrain::Render ( void )
     glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
 
     MU_ApplyMatrices();
+
     myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
     // 3. Draw
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
+
+    glDisableVertexAttribArray(g_aColorLoc);
+    glDisableVertexAttribArray(g_aTexLoc);
+    glDisableVertexAttribArray(g_aPosLoc);
+
 }
 
 void    CSWaterTerrain::CreateTerrain ( int x, int y )
@@ -502,5 +510,10 @@ void CSWaterTerrain::RenderWaterBitmapTile(
     // 3. Draw
     // GL_TRIANGLE_FAN is the direct GLES2 replacement for a single QUAD
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glDisableVertexAttribArray(g_aColorLoc);
+    glDisableVertexAttribArray(g_aTexLoc);
+    glDisableVertexAttribArray(g_aPosLoc);
+
 
 }

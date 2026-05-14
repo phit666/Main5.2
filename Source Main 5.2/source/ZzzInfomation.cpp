@@ -2490,7 +2490,10 @@ int MonsterKey = 0;
 
 void OpenMonsterScript(char *FileName)
 {
-	if((SMDFile= MU_fopen(FileName,"rb")) == NULL)	return;
+	if ((SMDFile = MU_fopen(FileName, "rb")) == NULL) {
+		g_ErrorReport.Write("> OpenMonsterScript, failed to open %s.", FileName);
+		return;
+	}
 	SMDToken Token;
 	while(true)
 	{
@@ -2501,6 +2504,9 @@ void OpenMonsterScript(char *FileName)
 		m->Type = (int)TokenNumber;
 		Token = (*GetToken)();
 		Token = (*GetToken)();strcpy(m->Name,TokenString);
+
+		//g_ErrorReport.Write("> OpenMonsterScript, Id %d Name %s", m->Type, m->Name);
+
 		//Token = (*GetToken)();m->Level = (int)TokenNumber;
 		//for(int i=0;i<23;i++) Token = (*GetToken)();
 	}

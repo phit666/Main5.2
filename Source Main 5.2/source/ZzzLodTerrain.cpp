@@ -1267,6 +1267,11 @@ void RenderFace(int Texture,int mx,int my)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
 }
 
 void RenderFace_After(int Texture, int mx, int my)
@@ -1321,6 +1326,11 @@ void RenderFace_After(int Texture, int mx, int my)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
 }
 
 void RenderFaceAlpha(int Texture,int mx,int my)
@@ -1381,6 +1391,10 @@ void RenderFaceAlpha(int Texture,int mx,int my)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
 }
 
 void RenderFaceBlend(int Texture,int mx,int my)
@@ -1433,6 +1447,11 @@ void RenderFaceBlend(int Texture,int mx,int my)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
 }
 
 void FaceTexture(int Texture,float xf,float yf,bool Water,bool Scale)
@@ -1642,6 +1661,9 @@ void RenderTerrainFace(float xf,float yf,int xi,int yi,float lodf)
 				// 3. Draw using GL_TRIANGLE_FAN (direct replacement for GL_QUADS)
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+				glDisableVertexAttribArray(g_aColorLoc);
+				glDisableVertexAttribArray(g_aTexLoc);
+				glDisableVertexAttribArray(g_aPosLoc);
 
 				if (gMapManager.IsPKField() || IsDoppelGanger2())
 					DisableAlphaBlend();
@@ -1821,6 +1843,11 @@ void RenderTerrainBitmapTile(float xf, float yf, float lodf, int lodi,
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
 }
 
 void RenderTerrainBitmap(int Texture,int mxi,int myi,float Rotation)

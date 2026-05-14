@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "mu_gles2_matrix.h"
+#include "Utilities/Log/ErrorReport.h"
 
 Shader myShader;
 
@@ -39,13 +40,10 @@ void MU_glColor4f(float r, float g, float b, float a)
     g_CurrentColor[1] = g;
     g_CurrentColor[2] = b;
     g_CurrentColor[3] = a;
-    //GLint isEnabled = 0;
-    //glGetVertexAttribiv(g_aColorLoc, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &isEnabled);
-    //if (isEnabled) {
-        //glDisableVertexAttribArray(g_aColorLoc);
-        //glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-    //}
+
     myShader.setVec4(g_uColorLoc, r, g, b, a);
+    //glVertexAttrib4f(g_aColorLoc, r, g, b, a);
+
 }
 
 void MU_glColor4ub(GLubyte r, GLubyte g, GLubyte b, GLubyte a)
@@ -57,6 +55,8 @@ void MU_glColor4ub(GLubyte r, GLubyte g, GLubyte b, GLubyte a)
     //glDisableVertexAttribArray(g_aColorLoc);
     //glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
     myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+    //glVertexAttrib4f(g_aColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+
 }
 
 void MU_glColor3ub(GLubyte r, GLubyte g, GLubyte b)
@@ -65,9 +65,8 @@ void MU_glColor3ub(GLubyte r, GLubyte g, GLubyte b)
     g_CurrentColor[1] = g / 255.0f;
     g_CurrentColor[2] = b / 255.0f;
     g_CurrentColor[3] = 1.0f;
-    //glDisableVertexAttribArray(g_aColorLoc);
-    //glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
     myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
+   // glVertexAttrib4f(g_aColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 }
 
 void MU_glLoadIdentity() {
@@ -145,23 +144,12 @@ void MU_Perspective(MU_Mat4& out, float fovyDeg, float aspect, float zNear, floa
 
 void MU_ApplyMatrices()
 {
-    glUseProgram(g_muProgram);
-
-    //myShader.setVec4(g_uColorLoc, 0.5f, 0.5f, 0.5f, 0.5f);
-
-
-    // 1. Sync View (ModelView) Matrix
-    // This is used by the shader for Fog (v_dist) calculation
     if (g_uMvLoc >= 0)
     {
         glUniformMatrix4fv(g_uMvLoc, 1, GL_FALSE, glm::value_ptr(modelViewStack.back()));
     }
-
-    // 2. Sync Combined MVP Matrix (Projection * ModelView)
-    // This is the "boss" matrix that handles where things appear on screen
     if (g_uMvpLoc >= 0)
     {
-        // IMPORTANT: In GLM, order is Projection * ModelView
         glm::mat4 mvp = projectionStack.back() * modelViewStack.back();
         glUniformMatrix4fv(g_uMvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
     }
@@ -394,11 +382,11 @@ void Shader::setFloat(GLuint iID, float value){
 }
 void Shader::setVec4(GLuint iID, float x, float y, float z, float w){
 
-    if (g_uColorLoc == iID) {
-        if (uColor.m[0] == x && uColor.m[1] == y && uColor.m[2] == z && uColor.m[3] == w) {
-            return;
-        }
-    }
+    //if (g_uColorLoc == iID) {
+        //if (uColor.m[0] == x && uColor.m[1] == y && uColor.m[2] == z && uColor.m[3] == w) {
+           // return;
+        //}
+   // }
 
     glUniform4f(iID, x, y, z, w);
 
@@ -414,14 +402,19 @@ void Shader::setMat4(GLuint iID, const glm::mat4& mat){
 }
 
 void testprogram() {
-    char t[100] = { 0 };
-    //GLint currentProgram = 0;
-    //glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
-    float f1, f2; // Buffer for a vec4 color
-    glGetUniformfv(g_muProgram, g_uAlphaTestLoc, &f1);
-    glGetUniformfv(g_muProgram, g_uAlphaThresholdLoc, &f2);
-   // sprintf(t, "[SDL-DEBUG2] Current Program = %d (alphatest:%f), myProgram = %d (threshold:%f)",
-     //   g_muProgram, f1,
-     //   g_muProgram, f2);
-    //OutputDebugStringA(t);
+    GLfloat aColor[4] = { 0 };
+    GLfloat uColor[4] = { 0 };
+    GLint enabled = 0;
+
+    glGetVertexAttribiv(g_aColorLoc, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &enabled);
+    glGetVertexAttribfv(g_aColorLoc, GL_CURRENT_VERTEX_ATTRIB, aColor);
+
+    glGetUniformfv(g_muProgram, g_uColorLoc, uColor);
+
+    g_ErrorReport.Write("> [debugcolor] aColor enabled: %d\n", enabled);
+    g_ErrorReport.Write("> [debugcolor] aColor current: %.3f %.3f %.3f %.3f\n",
+        aColor[0], aColor[1], aColor[2], aColor[3]);
+
+    g_ErrorReport.Write("> [debugcolor] uColor: %.3f %.3f %.3f %.3f\n",
+        uColor[0], uColor[1], uColor[2], uColor[3]);
 }

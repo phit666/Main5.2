@@ -14,6 +14,7 @@
 #include "wsctlc_addon.h"
 #include "mu_gles2_matrix.h"
 #include "wt.h"
+#include "ZzzInterface.h"
 
 #ifndef _WIN32
 #include <sys/socket.h>
@@ -21,6 +22,8 @@
 #include <arpa/inet.h>
 #include <clocale>
 #endif
+
+#include "Winmain.h"
 
 typedef struct
 {
@@ -403,9 +406,9 @@ static Sint64 fontrawsize;
 struct nk_font* font[MAX_FONTS];
 static bool iscustomfontfailed = false;
 
-bool loadfont()
+bool loadfont(char* fontpath)
 {
-    SDL_RWops* rw = SDL_RWFromFile("data/fonts/segoeuib.ttf", "rb");
+    SDL_RWops* rw = SDL_RWFromFile(fontpath, "rb");
     if (!rw) {
         g_ErrorReport.Write("SDL_RWFromFile failed: %s", SDL_GetError());
         return false;
@@ -433,6 +436,10 @@ void setfont(int size) {
     if (font[size] == nullptr)
         return;
     nk_style_set_font(g_nk_ctx, &font[size]->handle);
+
+#ifdef __ANDROID__
+    FontHeight = size * g_fScreenRate_y;
+#endif
 }
 
 
@@ -497,16 +504,19 @@ bool MU_InitSDL(int width, int height)
     }
 #endif
 
-#ifdef __ANDROID__
+//#ifdef __ANDROID__
     int _screen_w, _screen_h;
     SDL_GL_GetDrawableSize(gSDLWindow, &_screen_w, &_screen_h);
     float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
+
     WindowWidth = _screen_w;
     WindowHeight = _screen_h;
+
     g_fScreenRate_x = WindowWidth / 640.0f;
     g_fScreenRate_y = WindowHeight / 480.0f;
+
     g_ErrorReport.Write("> SDL_GL_GetDrawableSize, Screen Width %d Height %d", WindowWidth, WindowHeight);
-#endif
+//#endif
 
     InitShader();
 
@@ -515,7 +525,7 @@ bool MU_InitSDL(int width, int height)
     g_nk_ctx = nk_sdl_init(gSDLWindow);
 
 
-    if (loadfont()) {
+    if (loadfont("data/fonts/gulim.ttf")) {
 
         struct nk_font_atlas* atlas = nullptr;
 
@@ -531,12 +541,50 @@ bool MU_InitSDL(int width, int height)
 
         for (int n = 0; n < MAX_FONTS; n++) font[n] = nullptr;
 
-        font[FONT_SIZE14] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE14 * g_fScreenRate_y, &cfg);
-        font[FONT_SIZE16] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE16 * g_fScreenRate_y, &cfg);
-        font[FONT_SIZE18] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE18 * g_fScreenRate_y, &cfg);
-        font[FONT_SIZE20] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE20 * g_fScreenRate_y, &cfg);
-        font[FONT_SIZE22] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE22 * g_fScreenRate_y, &cfg);
-        font[FONT_SIZE30] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, FONT_SIZE30 * g_fScreenRate_y, &cfg);
+        float multi = 1.0f;
+
+#ifdef __ANDROID__
+        multi = g_fScreenRate_y;
+#endif
+
+#ifdef _WIN32
+        switch (WindowWidth)
+        {
+        case 640:FontHeight = 12; break;
+        case 800:FontHeight = 13; break;
+        case 1024:FontHeight = 14; break;
+        case 1280:FontHeight = 15; break;
+        }
+
+        int nFixFontHeight = 13;
+        int nFixFontSize;
+        int iFontSize;
+
+        iFontSize = FontHeight - 1;
+        nFixFontSize = nFixFontHeight - 1;
+
+        font[FONT_SIZE12] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, iFontSize, &cfg);
+        font[FONT_SIZE15] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, nFixFontSize, &cfg);
+
+        SDL_free(fontrawdata);
+
+        if (loadfont("data/fonts/verdana.ttf")) {
+            font[FONT_SIZE13] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, iFontSize, &cfg);
+            font[FONT_SIZE14] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, iFontSize * 2, &cfg);
+            SDL_free(fontrawdata);
+        }
+#endif
+        g_hFont = FONT_SIZE12;
+        g_hFontBold = FONT_SIZE13;
+        g_hFontBig = FONT_SIZE14;
+        g_hFixFont = FONT_SIZE15;
+
+#ifndef MU_USE_SDL
+        g_hFont = CreateFontA(iFontSize, 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, GlobalText[0][0] ? GlobalText[0] : NULL);
+        g_hFontBold = CreateFontA(iFontSize, 0, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, GlobalText[0][0] ? GlobalText[0] : NULL);
+        g_hFontBig = CreateFontA(iFontSize * 2, 0, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, GlobalText[0][0] ? GlobalText[0] : NULL);
+        g_hFixFont = CreateFontA(nFixFontSize, 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, GlobalText[18][0] ? GlobalText[18] : NULL);
+#endif
 
         nk_sdl_font_stash_end();
 
@@ -550,8 +598,9 @@ bool MU_InitSDL(int width, int height)
             iscustomfontfailed = false;
         }
 
-        setfont(FONT_SIZE14);
     }
+
+    setfont(g_hFont);
 
     //struct nk_style_item old_bg = g_nk_ctx->style.window.fixed_background;
 

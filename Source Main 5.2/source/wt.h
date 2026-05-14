@@ -252,14 +252,13 @@ inline void MU_splitpath(
     }
 }
 
+#define FONT_SIZE12 12
+#define FONT_SIZE13 13
 #define FONT_SIZE14 14
-#define FONT_SIZE16 16
-#define FONT_SIZE18 18
-#define FONT_SIZE20 20
-#define FONT_SIZE22 22
-#define FONT_SIZE30 30
-#define DEFAULT_FONT_SIZE FONT_SIZE18
-#define MAX_FONTS 50
+#define FONT_SIZE15 15
+#define DEFAULT_FONT_SIZE FONT_SIZE13
+#define MAX_FONTS 20
+
 
 struct _TexScaleMap {
     GLuint TexID;

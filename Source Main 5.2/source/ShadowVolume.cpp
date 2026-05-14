@@ -320,6 +320,9 @@ void CShadowVolume::RenderShadowVolume( void)
 	// 4. Draw all triangles in one command
 	glDrawArrays(GL_TRIANGLES, 0, m_nNumVertices);
 
+	glDisableVertexAttribArray(g_aPosLoc);
+
+
 }
 
 void CShadowVolume::Shade( void)

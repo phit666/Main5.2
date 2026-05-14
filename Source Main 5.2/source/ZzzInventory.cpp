@@ -352,13 +352,16 @@ void RenderTipTextList(const int sx, const int sy, int TextNum, int Tab, int iSo
 	if (bUseBG == TRUE && TextNum > 0)
 	{
 		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-		RenderColor ((float)iPos_x-1, fsy - 1, (float)fWidth + 1, (float)1);
-		RenderColor ((float)iPos_x-1, fsy - 1, (float)1, (float)fHeight + 1);
-		RenderColor ((float)iPos_x-1 + fWidth + 1, (float)fsy - 1, (float)1, (float)fHeight + 1);	
-		RenderColor ((float)iPos_x-1, fsy - 1 + fHeight + 1, (float)fWidth + 2, (float)1);
+
+		RenderColor ((float)iPos_x-1, fsy - 1, (float)fWidth + 1, (float)1,0 , 10);
+		RenderColor ((float)iPos_x-1, fsy - 1, (float)1, (float)fHeight + 1, 0, 10);
+		RenderColor ((float)iPos_x-1 + fWidth + 1, (float)fsy - 1, (float)1, (float)fHeight + 1, 0, 10);	
+		RenderColor ((float)iPos_x-1, fsy - 1 + fHeight + 1, (float)fWidth + 2, (float)1, 0, 10);
 
 		glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
-		RenderColor ((float)iPos_x, fsy, (float)fWidth, (float)fHeight);
+
+		RenderColor ((float)iPos_x, fsy, (float)fWidth, (float)fHeight, 0, 10);
+
 		glEnable_TEXTURE_2D();
 	}
 
@@ -381,7 +384,8 @@ void RenderTipTextList(const int sx, const int sy, int TextNum, int Tab, int iSo
 		}
 		else
 		{
-		g_pRenderText->SetTextColor(0xffffffff);
+			g_pRenderText->SetTextColor(0xffffffff);
+
 			switch(TextListColor[i])
 			{
 			case TEXT_COLOR_WHITE:
@@ -421,6 +425,7 @@ void RenderTipTextList(const int sx, const int sy, int TextNum, int Tab, int iSo
 				glColor3f(0.9f, 0.42f, 0.04f );
 				break;
 			}
+
 			if ( TEXT_COLOR_DARKRED == TextListColor[i])
 			{
 				g_pRenderText->SetBgColor(160, 0, 0, 255);
@@ -442,14 +447,20 @@ void RenderTipTextList(const int sx, const int sy, int TextNum, int Tab, int iSo
 			{
 				g_pRenderText->SetBgColor(0);
 			}
+
 			SIZE TextSize;
+
+			//g_ErrorReport.Write("> RenderTip %s / %u", TextList[i], g_pRenderText->GetBgColor());
+
 			g_pRenderText->RenderText(fsx,fsy,TextList[i],(fWidth-2),0,iSort, &TextSize);
+
 			fHeight = TextSize.cy;
 		}
 		fsy += fHeight * 1.1f;
 	}
 
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
 	DisableAlphaBlend();
 }
 

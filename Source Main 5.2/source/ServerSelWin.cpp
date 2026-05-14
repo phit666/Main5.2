@@ -508,9 +508,9 @@ void CServerSelWin::RenderControls()
 		if( m_pSelectServerGroup->m_bPvPServer == true )
 		{
 			g_pRenderText->SetTextColor(ARGB(255, 255, 255, 255));
-			g_pRenderText->RenderText(90, 164 - 60, GlobalText[565]);
-			g_pRenderText->RenderText(90, 164 - 45, GlobalText[566]);
-			g_pRenderText->RenderText(90, 164 - 30, GlobalText[567]);
+			g_pRenderText->RenderText(getScaleNewSize(BITMAP_LOG_IN, 90), getScaleNewSize(BITMAP_LOG_IN, 164 - 60), GlobalText[565]);
+			g_pRenderText->RenderText(getScaleNewSize(BITMAP_LOG_IN, 90), getScaleNewSize(BITMAP_LOG_IN, 164 - 45), GlobalText[566]);
+			g_pRenderText->RenderText(getScaleNewSize(BITMAP_LOG_IN, 90), getScaleNewSize(BITMAP_LOG_IN, 164 - 30), GlobalText[567]);
 		}
 	}
 }

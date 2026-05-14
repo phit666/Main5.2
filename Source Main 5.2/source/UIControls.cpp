@@ -2564,6 +2564,9 @@ CUIRenderText* CUIRenderText::GetInstance()
 
 bool CUIRenderText::Create(int iRenderTextType, HDC hDC)
 {
+#ifdef MU_USE_SDL
+	m_pRenderText = new CUIRenderTextOriginal;
+#else
 	if(iRenderTextType == 0)
 	{
 		m_pRenderText = new CUIRenderTextOriginal;
@@ -2574,6 +2577,7 @@ bool CUIRenderText::Create(int iRenderTextType, HDC hDC)
 	{
 		//m_pRenderText = new CUIRenderTextAdvance;
 	}
+#endif
 	return true;
 }
 void CUIRenderText::Release()
@@ -2635,8 +2639,12 @@ void CUIRenderText::SetBgColor(DWORD dwColor)
 
 void CUIRenderText::SetFont(HFONT hFont)
 {
+#ifdef MU_USE_SDL
+	setfont(hFont); // nuklear
+#else
 	if(m_pRenderText)
 		m_pRenderText->SetFont(hFont);
+#endif
 }
 
 void CUIRenderText::RenderText(int iPos_x, int iPos_y, const char* pszText, int iBoxWidth /* = 0 */, int iBoxHeight /* = 0 */, int iSort /* = RT3_SORT_LEFT */, OUT SIZE* lpTextSize /* = NULL */)
@@ -2720,7 +2728,9 @@ void CUIRenderTextOriginal::SetBgColor(BYTE byRed, BYTE byGreen, BYTE byBlue, BY
 void CUIRenderTextOriginal::SetBgColor(DWORD dwColor) { m_dwBackColor = dwColor; }
 
 void CUIRenderTextOriginal::SetFont(HFONT hFont) { 
+#ifndef MU_USE_SDL
 	SelectObject(m_hFontDC, hFont); 
+#endif
 }
 
 void CUIRenderTextOriginal::WriteText(int iOffset, int iWidth, int iHeight)
@@ -2844,6 +2854,18 @@ void CUIRenderTextOriginal::UploadText(int sx, int sy, int Width, int Height)
 
 static uint32_t canvasctr = 1;
 
+static nk_color GetNkColor(DWORD color)
+{
+	nk_color c;
+
+	c.r = (color) & 0xFF;
+	c.g = (color >> 8) & 0xFF;
+	c.b = (color >> 16) & 0xFF;
+	c.a = (color >> 24) & 0xFF;
+
+	return c;
+}
+
 
 void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_char* pszText, 
 										int iBoxWidth /* = 0 */, int iBoxHeight /* = 0 */, 
@@ -2937,6 +2959,7 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 
 	const int LIMIT_WIDTH = 256;
 
+#ifndef MU_USE_SDL
 	if(m_dwBackColor != 0)
 	{
 		EnableAlphaTest();
@@ -2946,8 +2969,9 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 			RealBoxSize.cx/g_fScreenRate_x, RealBoxSize.cy/g_fScreenRate_y);
 		EndRenderColor();
 	}
+#endif
 
-	if(pszText[0] != 0x0a)
+	//if(pszText[0] != 0x0a)
 	{
 #ifdef MU_USE_SDL
 
@@ -2955,24 +2979,43 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 
 			std::string canvastitle = std::to_string(canvasctr++); if (canvasctr >= 2000000000)canvasctr = 1;
 
-			float textWidth = g_nk_ctx->style.font->width(
+			/*float textWidth = g_nk_ctx->style.font->width(
 				g_nk_ctx->style.font->userdata,
 				g_nk_ctx->style.font->height,
 				pszText,
 				strlen(pszText)
 			);
-			float textHeight = g_nk_ctx->style.font->height;
+			float textHeight = g_nk_ctx->style.font->height;*/
 
-			struct nk_rect bounds = nk_rect((float)(RealBoxPos.x + iTab), (float)RealBoxPos.y, textWidth, textHeight);
+			struct nk_rect bounds = nk_rect( (float)RealBoxPos.x, (float)RealBoxPos.y, (float)RealBoxSize.cx, (float)RealBoxSize.cy );
+			
+			// (float)(RealBoxPos.x + iTab), (float)RealBoxPos.y, textWidth, textHeight);
 
 			if (nk_begin(g_nk_ctx, canvastitle.c_str(), bounds, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NO_INPUT)) {
 
 				struct nk_command_buffer* canvas = nk_window_get_canvas(g_nk_ctx);
 
-				struct nk_rect text_rect = nk_rect(bounds.x, bounds.y, bounds.w, bounds.h);
+				struct nk_rect text_rect = nk_rect(bounds.x + iTab, bounds.y, bounds.w, bounds.h);
 
-				nk_draw_text(canvas, text_rect, pszText, strlen(pszText), g_nk_ctx->style.font,
-					nk_rgb(0, 0, 0), nk_rgba(255, 255, 255, 240));
+				nk_color bgcolor = nk_rgba(0, 0, 0, 240);
+				nk_color textcolor = nk_rgba(255, 255, 255, 240);
+
+				if (m_dwBackColor) {
+					bgcolor = GetNkColor(m_dwBackColor);
+					struct nk_rect bg_rect = nk_rect(RealBoxPos.x, RealBoxPos.y,
+						RealBoxSize.cx, RealBoxSize.cy);
+					nk_fill_rect(canvas, bounds, 0, bgcolor);
+				}
+
+				if (m_dwTextColor) {
+					textcolor = GetNkColor(m_dwTextColor);
+				}
+
+				if (pszText[0] != 0x0a) {
+
+					nk_draw_text(canvas, text_rect, pszText, strlen(pszText), g_nk_ctx->style.font,
+						nk_rgb(0, 0, 0), textcolor);
+				}
 			}
 
 			nk_end(g_nk_ctx);
@@ -3608,9 +3651,6 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 
 	m_szText[m_iTextLength] = '\0';
 
-
-	setfont(FONT_SIZE18);
-
 	//m_iRealWindowPos_x = (int)(m_iPos_x * g_fScreenRate_x);
 	//m_iRealWindowPos_y = (int)(m_iPos_y * g_fScreenRate_y);
 
@@ -3755,7 +3795,6 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 
 	nk_end(ctx);
 	ctx->style.window = old_style;
-	setfont(FONT_SIZE16);
 #endif
 }
 

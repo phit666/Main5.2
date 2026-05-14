@@ -18,7 +18,7 @@
 
 std::vector<_TexScaleMap> g_mapTexScale = {
 	{0, 0, false, false, "Default"},
-
+#ifdef __ANDROID__
 	{BITMAP_LOG_IN, 480.0f, true, true, "Select Server"},
 	{BITMAP_LOG_IN + 1, 480.0f, true, true, "Select Server"},
 
@@ -26,7 +26,7 @@ std::vector<_TexScaleMap> g_mapTexScale = {
 	{BITMAP_LOG_IN + 8, 480.0f, true, true, "Login-User/Pass"},
 	{BITMAP_BUTTON, 480.0f, true, true, "Login Window"},
 	{BITMAP_BUTTON + 1, 480.0f, true, true, "Login Window"},
-
+#endif
 };
 
 _TexScaleMap getTexScale(GLuint TexID) {

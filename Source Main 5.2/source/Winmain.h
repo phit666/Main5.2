@@ -55,6 +55,10 @@
 #define WM_USER_MEMORYHACK	( WM_USER + 1)
 #define WM_NPROTECT_EXIT_TWO  (WM_USER + 10001)
 
+#ifndef HFONT
+#define HFONT int
+#endif
+
 extern bool ashies;
 extern int weather;
 extern int Time_Effect;

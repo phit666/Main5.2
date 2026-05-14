@@ -82,7 +82,7 @@ typedef void*               HMODULE;
 typedef void*               HDC;
 typedef void*               HGLRC;
 typedef void*               HBITMAP;
-typedef void*               HFONT;
+typedef int               HFONT;
 typedef void*               HICON;
 typedef void*               HCURSOR;
 typedef void*               HMENU;
@@ -787,12 +787,12 @@ inline BOOL GetTextExtentPoint32A(HDC, LPCSTR, int, LPSIZE lpSize)
 
 inline HFONT CreateFontA(...)
 {
-    return nullptr;
+    return NULL;
 }
 
 inline HFONT CreateFontIndirectA(...)
 {
-    return nullptr;
+    return NULL;
 }
 
 // ======================================================
@@ -1193,7 +1193,7 @@ inline void glColorPointer(GLint size, GLenum type, GLsizei stride, const void* 
 
 inline HFONT CreateFont(...)
 {
-    return nullptr;
+    return NULL;
 }
 
 inline BOOL SetWindowPos(...)

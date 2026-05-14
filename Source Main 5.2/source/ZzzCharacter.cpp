@@ -12705,6 +12705,7 @@ CHARACTER *CreateMonster(int Type,int PositionX,int PositionY,int Key)
 	}
 
 	c = TheMapProcess().CreateMonster( Type, PositionX, PositionY, Key );
+
 	if(c != NULL)
 	{
 		Setting_Monster(c, Type, PositionX, PositionY);

@@ -99,6 +99,11 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 		// 3. Draw
 		// GL_TRIANGLE_FAN is the direct GLES2 replacement for GL_QUADS
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+		glDisableVertexAttribArray(g_aColorLoc);
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aPosLoc);
+
 	}
 }
 /*

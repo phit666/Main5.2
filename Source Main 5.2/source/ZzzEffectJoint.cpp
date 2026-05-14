@@ -7215,6 +7215,10 @@ void RenderJoints( BYTE bRenderOneMore )
 					MU_ApplyMatrices();
 					// 3. Draw
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+					glDisableVertexAttribArray(g_aTexLoc);
+					glDisableVertexAttribArray(g_aPosLoc);
+
 				}
 				else
 				{
@@ -7435,6 +7439,10 @@ void RenderJoints( BYTE bRenderOneMore )
 						MU_ApplyMatrices();
 						// 3. Draw
 						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+						glDisableVertexAttribArray(g_aTexLoc);
+						glDisableVertexAttribArray(g_aPosLoc);
+
 					}
 
 					if ((o->RenderFace & RENDER_FACE_TWO) == RENDER_FACE_TWO)
@@ -7477,6 +7485,10 @@ void RenderJoints( BYTE bRenderOneMore )
 						MU_ApplyMatrices();
 						// 3. Draw
 						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+						glDisableVertexAttribArray(g_aTexLoc);
+						glDisableVertexAttribArray(g_aPosLoc);
+
 					}
 				}
 			}

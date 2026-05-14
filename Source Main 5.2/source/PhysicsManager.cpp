@@ -874,6 +874,10 @@ void CPhysicsCloth::RenderFace(BOOL bFront, int iTexture, vec3_t* pvRenderPos)
 		for (int q = 0; q < clothBuffer.size() / 4; q++) {
 			glDrawArrays(GL_TRIANGLE_FAN, q * 4, 4);
 		}
+
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aPosLoc);
+
 	}
 
 }

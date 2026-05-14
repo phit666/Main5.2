@@ -196,6 +196,11 @@ void RenderBlurs()
 				for (int i = 0; i < (b->Number - 1); i++) {
 					glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
 				}
+
+				glDisableVertexAttribArray(g_aColorLoc);
+				glDisableVertexAttribArray(g_aTexLoc);
+				glDisableVertexAttribArray(g_aPosLoc);
+
 			}
 		}
 	}
@@ -394,6 +399,11 @@ void RenderObjectBlurs()
 
 					// 3. Draw
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+					glDisableVertexAttribArray(g_aColorLoc);
+					glDisableVertexAttribArray(g_aTexLoc);
+					glDisableVertexAttribArray(g_aPosLoc);
+
 				}
 			}
 		}
@@ -702,6 +712,11 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, n);
 
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
+
 	BindTexture(Tex1);
 
 
@@ -753,6 +768,11 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 
 	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, count2);
+
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
 
 }
 

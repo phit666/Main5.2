@@ -106,7 +106,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.100.111";
+char *szServerIpAddress = "192.168.254.117";
 WORD g_ServerPort = 44405;
 
 #ifdef MOVIE_DIRECTSHOW
@@ -603,7 +603,7 @@ void RenderInfomation()
 	}
 #endif
 	
-    RenderInfomation3D();
+	RenderInfomation3D();
 }
 
 BOOL ShowCheckBox( int num, int index, int message )
@@ -1065,11 +1065,14 @@ bool NewRenderCharacterScene(HDC hDC)
 	int Width,Height;
 
 	glColor3f(1.f,1.f,1.f);
+	//glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
 
 	Height = 480;
 	Width = GetScreenWidth();
 
 	glClearColor(0.f,0.f,0.f,1.f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 	BeginOpengl(0,25,640,430);
@@ -1153,11 +1156,11 @@ bool NewRenderCharacterScene(HDC hDC)
 		g_csMapServer.SetHeroID ( (char *)CharactersClient[SelectedHero].ID );
 	}
 
-	BeginSprite();
-	RenderSprites();
-	RenderParticles();
-	RenderPoints();
-	EndSprite();
+	//BeginSprite();
+	//RenderSprites();
+	//RenderParticles();
+	//RenderPoints();
+	//EndSprite();
 	BeginBitmap();
 	RenderInfomation();
 
@@ -1335,14 +1338,16 @@ bool NewRenderLogInScene(HDC hDC)
 
 	int Width,Height;
 
-	glColor3f(1.f,1.f,1.f);
+	//glColor3f(1.f,1.f,1.f);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
 
 	Height = 480;
     Width = GetScreenWidth();
 
 	glClearColor(0.f,0.f,0.f,1.f);
 
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//g_ErrorReport.Write( "> RenderLoginScene, BeginOpengl...");
 
@@ -1382,27 +1387,14 @@ bool NewRenderLogInScene(HDC hDC)
 	if (CCameraMove::GetInstancePtr()->IsTourMode())
 	{
 		g_fMULogoAlpha += 0.02f;
-		if (g_fMULogoAlpha > 10.0f) g_fMULogoAlpha = 10.0f;
+		if (g_fMULogoAlpha > 2.0f) g_fMULogoAlpha = 2.0f;
 
 		EnableAlphaBlend();
 		glColor4f(g_fMULogoAlpha - 0.3f, g_fMULogoAlpha - 0.3f, g_fMULogoAlpha - 0.3f, g_fMULogoAlpha - 0.3f);
-#ifdef PBG_ADD_MUBLUE_LOGO
-		BITMAP_t* pImage = NULL;
-		pImage = &Bitmaps[BITMAP_LOG_IN + 17];
-		RenderBitmap(BITMAP_LOG_IN + 17, 320.0f - 432 * 0.4f * 0.5f, 25.0f, 432 * 0.4f, 384 * 0.4f, 0, 0, (432 - 0.5f) / pImage->Width, (384 - 0.5f) / pImage->Height);
-#else //PBG_ADD_MUBLUE_LOGO
 		RenderBitmap(BITMAP_LOG_IN + 17, 320.0f - 128.0f * 0.8f, 25.0f, 256.0f * 0.8f, 128.0f * 0.8f);
-#endif //PBG_ADD_MUBLUE_LOGO
 		EnableAlphaTest();
 		glColor4f(g_fMULogoAlpha, g_fMULogoAlpha, g_fMULogoAlpha, g_fMULogoAlpha);
-#ifdef PBG_ADD_MUBLUE_LOGO
-		pImage = &Bitmaps[BITMAP_LOG_IN + 16];
-		RenderBitmap(BITMAP_LOG_IN + 16, 320.0f - 432 * 0.4f * 0.5f, 25.0f, 432 * 0.4f, 384 * 0.4f, 0, 0, 432 / pImage->Width, 384 / pImage->Height);
-#else //PBG_ADD_MUBLUE_LOGO
 		RenderBitmap(BITMAP_LOG_IN + 16, 320.0f - 128.0f * 0.8f, 25.0f, 256.0f * 0.8f, 128.0f * 0.8f);
-#endif //PBG_ADD_MUBLUE_LOGO
-
-		//g_ErrorReport.Write( "> RenderLoginScene, GetInstancePtr()->IsTourMode()...");
 	}
 
 	SIZE Size;
@@ -1415,19 +1407,19 @@ bool NewRenderLogInScene(HDC hDC)
 	g_pRenderText->SetTextColor(255, 255, 255, 255);
 	g_pRenderText->SetBgColor(0, 0, 0, 128);
 	
-	strcpy(Text,GlobalText[454]);
-	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), Text,lstrlen(Text),&Size);
-	g_pRenderText->RenderText(335-Size.cx*640/WindowWidth,480-Size.cy*640/WindowWidth-1,Text);
+	strcpy(Text, GlobalText[454]);
+	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), Text, lstrlen(Text), &Size);
+	g_pRenderText->RenderText(getScaleNewSize(1, 335) - Size.cx * 640 / WindowWidth, getScaleNewSize(1, 480) - Size.cy * 640 / WindowWidth - 1, Text);
 
-	strcpy(Text,GlobalText[455]);
-	
-	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), Text,lstrlen(Text),&Size);
-	g_pRenderText->RenderText(335,480-Size.cy*640/WindowWidth-1,Text);
+	strcpy(Text, GlobalText[455]);
 
-	sprintf(Text,GlobalText[456],m_ExeVersion);
-	
-	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), Text,lstrlen(Text),&Size);
-	g_pRenderText->RenderText(0, 480-Size.cy*640/WindowWidth-1,Text);
+	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), Text, lstrlen(Text), &Size);
+	g_pRenderText->RenderText(getScaleNewSize(1, 335), getScaleNewSize(1, 480) - Size.cy * 640 / WindowWidth - 1, Text);
+
+	sprintf(Text, GlobalText[456], m_ExeVersion);
+
+	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), Text, lstrlen(Text), &Size);
+	g_pRenderText->RenderText(0, getScaleNewSize(1, 480) - Size.cy * 640 / WindowWidth - 1, Text);
 
     RenderInfomation();
 	
@@ -2075,6 +2067,8 @@ bool RenderMainScene()
 	{
 		glClearColor(0/256.f,0/256.f,0/256.f,1.f);
 	}
+
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	BeginOpengl(0,0,Width,Height);
 

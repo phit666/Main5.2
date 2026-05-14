@@ -1390,6 +1390,11 @@ void BMD::RenderMesh(int i, int RenderFlag, float Alpha, int BlendMesh, float Bl
 		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 		
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
+
+		glDisableVertexAttribArray(g_aColorLoc);
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aPosLoc);
+
 	}
 
 }
@@ -1864,6 +1869,11 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
+
+		glDisableVertexAttribArray(g_aColorLoc);
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aPosLoc);
+
 	}
 
 }
@@ -1968,6 +1978,9 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 					MU_ApplyMatrices();
 					// 5. Draw the entire list of triangles
 					glDrawArrays(GL_TRIANGLES, 0, (GLsizei)shadowVao.size());
+
+					glDisableVertexAttribArray(g_aPosLoc);
+
 				}
 
 

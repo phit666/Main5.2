@@ -7,6 +7,7 @@
 #include "NewUICustomMessageBox.h"
 #include "wsclientinline.h"
 #include "PersonalShopTitleImp.h"
+#include "wt.h"
 
 const int iMAX_SHOPTITLE_MULTI = 26;
 

@@ -1581,14 +1581,15 @@ int main(int argc, char* argv[])
 	//g_ErrorReport.WriteImeInfo( g_hWnd);
 	g_ErrorReport.AddSeparator();
 	
-	switch(WindowWidth)
+#ifndef MU_USE_SDL
+	switch (WindowWidth)
 	{
-	case 640 :FontHeight = 12;break;
-	case 800 :FontHeight = 13;break;
-	case 1024:FontHeight = 14;break;
-	case 1280:FontHeight = 15;break;
+	case 640:FontHeight = 12; break;
+	case 800:FontHeight = 13; break;
+	case 1024:FontHeight = 14; break;
+	case 1280:FontHeight = 15; break;
 	}
-	
+
 	int nFixFontHeight = 13;
 	int nFixFontSize;
 	int iFontSize;
@@ -1596,10 +1597,11 @@ int main(int argc, char* argv[])
 	iFontSize = FontHeight - 1;
 	nFixFontSize = nFixFontHeight - 1;
 
-	g_hFont		= CreateFont(iFontSize,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH|FF_DONTCARE,GlobalText[0][0] ? GlobalText[0] : NULL);
-	g_hFontBold = CreateFont(iFontSize,0,0,0,FW_BOLD,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH|FF_DONTCARE,GlobalText[0][0] ? GlobalText[0] : NULL);
-	g_hFontBig	= CreateFont(iFontSize*2,0,0,0,FW_BOLD,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH|FF_DONTCARE,GlobalText[0][0] ? GlobalText[0] : NULL);
-	g_hFixFont	= CreateFont(nFixFontSize,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH | FF_DONTCARE,GlobalText[18][0] ? GlobalText[18] : NULL);
+	g_hFont		= CreateFontA(iFontSize,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH|FF_DONTCARE,GlobalText[0][0] ? GlobalText[0] : NULL);
+	g_hFontBold = CreateFontA(iFontSize,0,0,0,FW_BOLD,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH|FF_DONTCARE,GlobalText[0][0] ? GlobalText[0] : NULL);
+	g_hFontBig	= CreateFontA(iFontSize*2,0,0,0,FW_BOLD,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH|FF_DONTCARE,GlobalText[0][0] ? GlobalText[0] : NULL);
+	g_hFixFont	= CreateFontA(nFixFontSize,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY,DEFAULT_PITCH | FF_DONTCARE,GlobalText[18][0] ? GlobalText[18] : NULL);
+#endif
 
 	setlocale( LC_ALL, "english");
 
@@ -1818,10 +1820,13 @@ int main(int argc, char* argv[])
 		glViewport(0, 0, WindowWidth, WindowHeight);
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		if (g_bUseWindowMode == TRUE || g_bWndActive)
 		{
+			glUniform4f(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			Scene(g_hDC); // later remove g_hDC
 		}
 

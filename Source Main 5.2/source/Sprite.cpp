@@ -341,14 +341,19 @@ void CSprite::Render()
 		safe_enable_attr(g_aTexLoc);
 		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
 
-		// Ensure per-vertex color is disabled (we are using the uniform above)
-		safe_disable_attr(g_aColorLoc, true, cr, cg, cb, ca);
-		//glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
+		safe_disable_attr(g_aColorLoc);
+		//glColor4f(cr, cg, cb, ca);
+
+		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
 
 		MU_ApplyMatrices();
 
 		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
+
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aPosLoc);
+
 	}
 	else
 	{
@@ -376,14 +381,16 @@ void CSprite::Render()
 
 		safe_disable_attr(g_aTexLoc);
 
-		safe_disable_attr(g_aColorLoc, true, cr, cg, cb, ca);
-		//glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
+		safe_disable_attr(g_aColorLoc);
+
+		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
 
 		MU_ApplyMatrices();
 
 		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
 
+		glDisableVertexAttribArray(g_aPosLoc);
 
 	}
 }

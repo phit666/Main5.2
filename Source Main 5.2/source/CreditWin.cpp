@@ -16,6 +16,7 @@
 #include "./Utilities/Log/ErrorReport.h"
 #include "wsclientinline.h"
 #include "UIControls.h"
+#include "wt.h"
 
 #define	CRW_ILLUST_FADE_TIME	2000.0
 #define	CRW_ILLUST_SHOW_TIME	22000.0
@@ -86,7 +87,12 @@ void CCreditWin::Create()
 	case 1024:	nFontSize = 18;	break;
 	case 1280:	nFontSize = 24;	break;
 	}
+
+#ifdef MU_USE_SDL
+	m_hFont = FONT_SIZE14;
+#else
 	m_hFont = CreateFont(nFontSize, 0, 0, 0, FW_BOLD, 0, 0, 0,DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE,GlobalText[0][0] ? GlobalText[0] : NULL);
+#endif
 
 	LoadText();
 	SetPosition();
