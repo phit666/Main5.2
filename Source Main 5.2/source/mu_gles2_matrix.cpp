@@ -41,8 +41,8 @@ void MU_glColor4f(float r, float g, float b, float a)
     g_CurrentColor[2] = b;
     g_CurrentColor[3] = a;
 
-    myShader.setVec4(g_uColorLoc, r, g, b, a);
-    //glVertexAttrib4f(g_aColorLoc, r, g, b, a);
+    //myShader.setVec4(g_uColorLoc, r, g, b, a);
+    glVertexAttrib4f(g_aColorLoc, r, g, b, a);
 
 }
 
@@ -54,8 +54,8 @@ void MU_glColor4ub(GLubyte r, GLubyte g, GLubyte b, GLubyte a)
     g_CurrentColor[3] = a / 255.0f;
     //glDisableVertexAttribArray(g_aColorLoc);
     //glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-    myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
-    //glVertexAttrib4f(g_aColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+    //myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+    glVertexAttrib4f(g_aColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 
 }
 
@@ -65,8 +65,8 @@ void MU_glColor3ub(GLubyte r, GLubyte g, GLubyte b)
     g_CurrentColor[1] = g / 255.0f;
     g_CurrentColor[2] = b / 255.0f;
     g_CurrentColor[3] = 1.0f;
-    myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
-   // glVertexAttrib4f(g_aColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
+    //myShader.setVec4(g_uColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
+    glVertexAttrib4f(g_aColorLoc, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 }
 
 void MU_glLoadIdentity() {

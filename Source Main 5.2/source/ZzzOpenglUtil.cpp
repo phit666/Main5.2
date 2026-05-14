@@ -1369,7 +1369,7 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 	safe_disable_attr(g_aTexLoc);
 
 	glDisableVertexAttribArray(g_aColorLoc);
-	glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	if (Alpha > 0.0f)
 	{
