@@ -10616,6 +10616,39 @@ void RenderObjectScreen(int Type,int ItemLevel,int Option1,int ExtOption,vec3_t 
     RenderPartObject(o,Type,NULL,Light,alpha,ItemLevel,Option1,ExtOption,true,true,true);
 }
 
+
+struct PickState
+{
+	int ScreenCenterX;
+	int ScreenCenterY;
+	int ScreenCenterYFlip;
+	float PerspectiveX;
+	float PerspectiveY;
+	float CameraMatrix[3][4];
+};
+
+PickState SavePickState()
+{
+	PickState s;
+	s.ScreenCenterX = ScreenCenterX;
+	s.ScreenCenterY = ScreenCenterY;
+	s.ScreenCenterYFlip = ScreenCenterYFlip;
+	s.PerspectiveX = PerspectiveX;
+	s.PerspectiveY = PerspectiveY;
+	memcpy(s.CameraMatrix, CameraMatrix, sizeof(CameraMatrix));
+	return s;
+}
+
+void RestorePickState(const PickState& s)
+{
+	ScreenCenterX = s.ScreenCenterX;
+	ScreenCenterY = s.ScreenCenterY;
+	ScreenCenterYFlip = s.ScreenCenterYFlip;
+	PerspectiveX = s.PerspectiveX;
+	PerspectiveY = s.PerspectiveY;
+	memcpy(CameraMatrix, s.CameraMatrix, sizeof(CameraMatrix));
+}
+
 void RenderItem3D(float sx,float sy,float Width,float Height,int Type,int Level,int Option1,int ExtOption,bool PickUp)
 {
 	bool Success = false;
@@ -10984,7 +11017,7 @@ void RenderItem3D(float sx,float sy,float Width,float Height,int Type,int Level,
 		sy -= Height*0.25f;
 	}
 #endif //PBG_ADD_NEWCHAR_MONK_ITEM
-
+	//PickState savedPick = SavePickState();
 	vec3_t Position;
 	CreateScreenVector((int)(sx),(int)(sy),Position, false);
 	//RenderObjectScreen(Type+MODEL_ITEM,Level,Option1,Position,Success,PickUp);
@@ -11187,6 +11220,7 @@ void RenderItem3D(float sx,float sy,float Width,float Height,int Type,int Level,
 	{
 		RenderObjectScreen(Type+MODEL_ITEM,Level,Option1,ExtOption,Position,Success,PickUp);
 	}
+	//RestorePickState(savedPick);
 }
 
 void InventoryColor(ITEM *p)

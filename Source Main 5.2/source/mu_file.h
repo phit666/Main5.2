@@ -365,3 +365,5 @@ using MU_FILE = FILE;
 #define MU_jpeg_stdio_dest jpeg_stdio_dest
 
 #endif
+
+extern int g_TestMouseClick;

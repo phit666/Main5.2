@@ -106,48 +106,34 @@ namespace SEASON3B
 		width = LUCKYCOIN_REG_WIDTH;
 		height = LUCKYCOIN_REG_HEIGHT;
 
-		// 1. Close current Bitmap pass
 		EndBitmap();
 
-		// 2. PROJECTION RESET (Mini-3D Scene)
-		projectionStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
 		glViewport2(0, 0, WindowWidth, WindowHeight);
-
-		float aspect = (float)WindowWidth / (float)WindowHeight;
-		// Note: 1.0f degree FOV is a massive zoom (Telephoto effect)
-		projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
 		gluPerspective2(1.f, (float)(WindowWidth) / (float)(WindowHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		GetOpenGLMatrix(CameraMatrix);
+		EnableDepthTest();
+		EnableDepthMask();
 
-		// 3. MODELVIEW RESET
-		modelViewStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
-		GetOpenGLMatrix(CameraMatrix); // Snapshot Identity
-
-		// 4. HARDWARE STATES
-		glEnable(GL_DEPTH_TEST);
-		glDepthMask(GL_TRUE);
-		glClear(GL_DEPTH_BUFFER_BIT); // Clear depth so item draws over UI
-
-		// 5. SHADER SYNC & RENDER
-		myShader.use();
-		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-		myShader.setFloat(g_uFogEnabledLoc, 0.0f); // No fog for UI items
+		glClear(GL_DEPTH_BUFFER_BIT);
 
 		SetItemRotation(true);
 		RenderItem3D(x, y, width, height, m_CoinItem->Type, m_CoinItem->Level, 0, 0, true);
 		SetItemRotation(false);
 
-		// 6. UPDATE MOUSE
-		// This function will use the identity CameraMatrix we just snapped
 		UpdateMousePositionn();
 
-		// 7. RESTORE MATRICES (glPopMatrix equivalents)
-		if (modelViewStack.size() > 1) modelViewStack.pop_back();
-		if (projectionStack.size() > 1) projectionStack.pop_back();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
 
-		// 8. RESTART BITMAP PASS
 		BeginBitmap();
-		// Note: BeginBitmap() internally updates g_uMvpLoc back to Ortho, 
-		// so the rest of your UI will draw correctly.
 
 	}
 	

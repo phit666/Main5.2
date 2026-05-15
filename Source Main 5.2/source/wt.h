@@ -281,3 +281,26 @@ extern int  TextBold[30];
 //extern int g_iItemInfo[12][17];
 extern float g_fScreenRate_x;
 extern float g_fScreenRate_y;
+
+extern int   ScreenCenterX;
+extern int   ScreenCenterY;
+extern int   ScreenCenterYFlip;
+extern float Distance;
+
+extern int g_WorldViewX;
+extern int g_WorldViewY;
+extern int g_WorldViewW;
+extern int g_WorldViewH;
+
+
+void BeginWorldOpenGL(int x, int y, int w, int h);
+void RestoreWorldPickingViewport();
+bool CreateScreenRayGLM(
+    int mouseX,
+    int mouseY,
+    int viewportX,
+    int viewportY,
+    int viewportW,
+    int viewportH,
+    glm::vec3& rayStart,
+    glm::vec3& rayEnd);

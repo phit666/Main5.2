@@ -12,6 +12,7 @@
 #include "NewUISystem.h"
 #include "mu_gles2_matrix.h"
 #include "wt.h"
+#include "Utilities/Log/ErrorReport.h"
 
 int     OpenglWindowX;
 int     OpenglWindowY;
@@ -239,15 +240,15 @@ void gluPerspective2TEST(float Fov, float Aspect, float ZNear, float ZFar)
 	PerspectiveY = tanFov / (OpenglWindowHeight * 0.5f);
 }
 
-void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
+void gluPerspective222(float Fov, float Aspect, float ZNear, float ZFar)
 {
 	projectionStack.back() =
 		glm::perspective(glm::radians(Fov), Aspect, ZNear, ZFar);
 
-	MU_ApplyMatrices();
+	//MU_ApplyMatrices();
 
-	ScreenCenterX = OpenglWindowX + OpenglWindowWidth * 0.5f;
-	ScreenCenterY = OpenglWindowY + OpenglWindowHeight * 0.5f;
+	ScreenCenterX = (int)(OpenglWindowX + ((float)OpenglWindowWidth * 0.5f));
+	ScreenCenterY = (int)(OpenglWindowY + ((float)OpenglWindowHeight * 0.5f));
 	ScreenCenterYFlip = WindowHeight - ScreenCenterY;
 
 	float tanFov = tanf(glm::radians(Fov) * 0.5f);
@@ -256,7 +257,7 @@ void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 	PerspectiveY = tanFov / (OpenglWindowHeight * 0.5f);
 }
 
-void gluPerspective22(float Fov, float Aspect, float ZNear, float ZFar)
+void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 {
 	// 1. Update the manual Projection Stack
 	// glm::perspective uses radians, so we convert Fov
@@ -265,18 +266,13 @@ void gluPerspective22(float Fov, float Aspect, float ZNear, float ZFar)
 	// 2. Sync the Shader (Ensures the world looks right)
 	MU_ApplyMatrices();
 
-	// 3. Keep your Legacy Mouse-to-World Math
-	// These variables are critical for your Click-to-Move and Object Picking
 	ScreenCenterX = OpenglWindowX + OpenglWindowWidth / 2;
 	ScreenCenterY = OpenglWindowY + OpenglWindowHeight / 2;
-	ScreenCenterYFlip = WindowHeight - ScreenCenterY; // Fixed: WindowHeight is standard for flipping Y
+	ScreenCenterYFlip = WindowWidth - ScreenCenterY;
 
 	float AspectY = (float)(WindowHeight) / (float)(OpenglWindowHeight);
-
-	// This calculates how much the 3D ray expands per pixel away from center
-	float tanFov = tanf(Fov * 0.5f * 3.141592f / 180.f);
-	PerspectiveX = tanFov / (float)(OpenglWindowWidth / 2) * Aspect;
-	PerspectiveY = tanFov / (float)(OpenglWindowHeight / 2) * AspectY;
+	PerspectiveX = tanf(Fov * 0.5f * 3.141592f / 180.f) / (float)(OpenglWindowWidth / 2) * Aspect;
+	PerspectiveY = tanf(Fov * 0.5f * 3.141592f / 180.f) / (float)(OpenglWindowHeight / 2) * AspectY;
 }
 
 void CreateScreenVectorTEST(int sx, int sy, vec3_t Target, bool bFixView)
@@ -724,6 +720,7 @@ void glViewport2(int x, int y, int Width, int Height)
 	OpenglWindowY = y;
 	OpenglWindowWidth = Width;
 	OpenglWindowHeight = Height;
+
 	glViewport(x, WindowHeight - (y + Height), Width, Height);
 }
 
@@ -737,6 +734,75 @@ float ConvertY(float y)
 	return y * g_fScreenRate_y;
 }
 
+int g_WorldViewX = 0;
+int g_WorldViewY = 0;
+int g_WorldViewW = 0;
+int g_WorldViewH = 0;
+
+
+bool CreateScreenRayGLM(
+	int mouseX,
+	int mouseY,
+	int viewportX,
+	int viewportY,
+	int viewportW,
+	int viewportH,
+	glm::vec3& rayStart,
+	glm::vec3& rayEnd)
+{
+	float x = (2.0f * (mouseX - viewportX)) / viewportW - 1.0f;
+	float y = 1.0f - (2.0f * (mouseY - viewportY)) / viewportH;
+
+	//float x = (2.0f * mouseX) / WindowWidth - 1.0f;
+	//float y = 1.0f - (2.0f * mouseY) / WindowHeight;
+
+	glm::vec4 nearPointNDC(x, y, -1.0f, 1.0f);
+	glm::vec4 farPointNDC(x, y, 1.0f, 1.0f);
+
+	glm::mat4 invVP = glm::inverse(projectionStack.back() * modelViewStack.back());
+
+	glm::vec4 nearWorld = invVP * nearPointNDC;
+	glm::vec4 farWorld = invVP * farPointNDC;
+
+	if (nearWorld.w == 0.0f || farWorld.w == 0.0f)
+		return false;
+
+	nearWorld /= nearWorld.w;
+	farWorld /= farWorld.w;
+
+	rayStart = glm::vec3(nearWorld);
+	rayEnd = glm::vec3(farWorld);
+
+	return true;
+}
+
+void BeginWorldOpenGL(int x, int y, int w, int h)
+{
+	BeginOpengl(x, y, w, h);
+
+	g_WorldViewX = OpenglWindowX;
+	g_WorldViewY = OpenglWindowY;
+	g_WorldViewW = OpenglWindowWidth;
+	g_WorldViewH = OpenglWindowHeight;
+}
+
+void RestoreWorldPickingViewport()
+{
+	OpenglWindowX = g_WorldViewX;
+	OpenglWindowY = g_WorldViewY;
+	OpenglWindowWidth = g_WorldViewW;
+	OpenglWindowHeight = g_WorldViewH;
+
+	ScreenCenterX = OpenglWindowX + OpenglWindowWidth * 0.5f;
+	ScreenCenterY = OpenglWindowY + OpenglWindowHeight * 0.5f;
+	ScreenCenterYFlip = WindowHeight - ScreenCenterY;
+
+	float aspect = (float)OpenglWindowWidth / (float)OpenglWindowHeight;
+	float tanFov = tanf(glm::radians(CameraFOV) * 0.5f);
+
+	PerspectiveX = tanFov * aspect / (OpenglWindowWidth * 0.5f);
+	PerspectiveY = tanFov / (OpenglWindowHeight * 0.5f);
+}
 
 void BeginOpengl(int x, int y, int Width, int Height)
 {
@@ -750,10 +816,9 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
+
 	glViewport2(x, y, Width, Height);
 
-	float aspect = (float)Width / (float)Height;
-	projectionStack.back() = glm::perspective(glm::radians(CameraFOV), aspect, CameraViewNear, CameraViewFar * 1.4f);
 	gluPerspective2(CameraFOV, (float)Width / (float)Height, CameraViewNear, CameraViewFar * 1.4f);
 
 	// --- MODELVIEW ---
@@ -808,12 +873,6 @@ void BeginOpengl(int x, int y, int Width, int Height)
 
 void EndOpengl()
 {
-	// Standard state resets
-	//glDisable(GL_SCISSOR_TEST); // Crucial: Nuklear leaves this on!
-	//glDisable(GL_BLEND);        // Most 3D shouldn't have UI-blending active
-	//glEnable(GL_DEPTH_TEST);    // UI usually turns this off
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
@@ -821,6 +880,18 @@ void EndOpengl()
 }
 
 void UpdateMousePositionn()
+{
+	vec3_t vPos;
+
+	glLoadIdentity();
+	glTranslatef(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]);
+	GetOpenGLMatrix(CameraMatrix);
+
+	Vector(-CameraMatrix[0][3], -CameraMatrix[1][3], -CameraMatrix[2][3], vPos);
+	VectorIRotate(vPos, CameraMatrix, MousePosition);
+}
+
+void UpdateMousePositionn2()
 {
 	// 1. Calculate the View Matrix (Manual glLoadIdentity + glTranslatef)
 	// We create a fresh matrix and translate it by the negative camera position.

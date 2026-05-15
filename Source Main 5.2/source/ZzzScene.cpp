@@ -106,7 +106,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.254.117";
+char *szServerIpAddress = "192.168.1.19";
 WORD g_ServerPort = 44405;
 
 #ifdef MOVIE_DIRECTSHOW
@@ -532,38 +532,34 @@ void RenderInfomation3D()
 
 	if (Success)
 	{
-
-		// 1. PROJECTION RESET
-		projectionStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
 		glViewport2(0, 0, WindowWidth, WindowHeight);
-
-		float aspect = (float)WindowWidth / (float)WindowHeight;
-		// gluPerspective2(1.f, ...) -> Note: 1.0f degree is a massive zoom
-		projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, CameraViewNear, CameraViewFar);
 		gluPerspective2(1.f, (float)(WindowWidth) / (float)(WindowHeight), CameraViewNear, CameraViewFar);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		GetOpenGLMatrix(CameraMatrix);
+		EnableDepthTest();
+		EnableDepthMask();
 
-		// 2. MODELVIEW RESET
-		modelViewStack.push_back(glm::mat4(1.0f)); // glPushMatrix + glLoadIdentity
+		float Width, Height;
+		float x = (640 - 150) / 2;
+		float y;
+		if (ErrorMessage == MESSAGE_TRADE_CHECK)
+		{
+			y = 60 + 55;
+		}
+		else
+		{
+			y = 60 + 55;
+		}
 
-		// 3. SNAPSHOT & STATES
-		GetOpenGLMatrix(CameraMatrix); // Snapshot the Identity matrix
-		glEnable(GL_DEPTH_TEST);
-		glDepthMask(GL_TRUE);
-
-		// 4. SHADER SYNC (Crucial for GLES2)
-		myShader.use();
-		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-		myShader.setFloat(g_uFogEnabledLoc, 0.0f); // UI items usually don't have fog
-
-		// 5. COORDINATE LOGIC
-		float Width = 40.0f;
-		float Height = 60.0f;
-		float x = (640.0f - 150.0f) / 2.0f;
-		float y = 60.0f + 55.0f; // Simplified based on your logic
-
-		// 6. RENDER LOGIC
-		int iRenderType = (AskYesOrNo == 5) ? MESSAGE_USE_STATE : ErrorMessage;
-
+		Width = 40.f; Height = 60.f;
+		int iRenderType = ErrorMessage;
+		if (AskYesOrNo == 5)
+			iRenderType = MESSAGE_USE_STATE;
 		switch (iRenderType)
 		{
 		case MESSAGE_USE_STATE:
@@ -571,22 +567,17 @@ void RenderInfomation3D()
 		case MESSAGE_PERSONALSHOP_WARNING:
 			RenderItem3D(x, y, Width, Height, TargetItem.Type, TargetItem.Level, TargetItem.Option1, TargetItem.ExtOption, true);
 			break;
+
 		default:
 			RenderItem3D(x, y, Width, Height, PickItem.Type, PickItem.Level, PickItem.Option1, PickItem.ExtOption, true);
 			break;
 		}
 
-		// 7. RESTORE MATRICES (glPopMatrix equivalent)
-		if (modelViewStack.size() > 1) modelViewStack.pop_back();
-		if (projectionStack.size() > 1) projectionStack.pop_back();
-
-		// 8. UPDATE MOUSE & SHADER SYNC
-		// Restore the Ortho matrix to the shader so the rest of the UI draws correctly
-		myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-
-		// This function now uses the updated modelViewStack.back()
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
 		UpdateMousePositionn();
-
 	}
 }
 
@@ -1075,17 +1066,36 @@ bool NewRenderCharacterScene(HDC hDC)
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #ifdef __ANDROID__
-	CameraFOV -= 5;
+	CameraFOV -= 10;
 	//CameraAngle[0] -= 3.0f;
 #endif
 
-	BeginOpengl(0,25,640,430);
+	//BeginOpengl(0,25,640,430);
+	BeginWorldOpenGL(0, 25, 640, 430);
 	
 	CreateFrustrum((float)Width/(float)640, pos);
 
 	OBJECT* o = &CharactersClient[SelectedHero].Object;
 	
 	CreateScreenVector(MouseX,MouseY,MouseTarget);
+
+	/*glm::vec3 start, end;
+
+	if (CreateScreenRayGLM(MouseX, MouseY,
+		g_WorldViewX,
+		g_WorldViewY,
+		g_WorldViewW,
+		g_WorldViewH,
+		start, end))
+	{
+		MousePosition[0] = start.x;
+		MousePosition[1] = start.y;
+		MousePosition[2] = start.z;
+
+		MouseTarget[0] = end.x;
+		MouseTarget[1] = end.y;
+		MouseTarget[2] = end.z;
+	}*/
 
 	for(int i = 0; i < 5; i++)
 	{
@@ -2076,11 +2086,12 @@ bool RenderMainScene()
 
 
 #ifdef __ANDROID__
-	CameraFOV -= 10;
-	CameraAngle[0] -= 3.0f;
+	CameraFOV -= 13;
+	CameraAngle[0] -= 4.0f;
 #endif
 
-	BeginOpengl(0,0,Width,Height);
+	//BeginOpengl(0,0,Width,Height);
+	BeginWorldOpenGL(0, 0, Width, Height);
 
 	CreateFrustrum((float)Width/(float)640, pos);
 
@@ -2098,7 +2109,26 @@ bool RenderMainScene()
         }
     }
 
+	//Distance = CameraViewFar;
 	CreateScreenVector(MouseX,MouseY,MouseTarget);
+
+	//glm::vec3 start, end;
+
+	/*if (CreateScreenRayGLM(MouseX, MouseY,
+		g_WorldViewX,
+		g_WorldViewY,
+		g_WorldViewW,
+		g_WorldViewH,
+		start, end))
+	{
+		MousePosition[0] = start.x;
+		MousePosition[1] = start.y;
+		MousePosition[2] = start.z;
+
+		MouseTarget[0] = end.x;
+		MouseTarget[1] = end.y;
+		MouseTarget[2] = end.z;
+	}*/
 
     if ( IsWaterTerrain()==false )
     {

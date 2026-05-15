@@ -260,53 +260,35 @@ float CNewUIGoldBowmanLena::GetLayerDepth()	// 3.4f
 
 void CNewUIGoldBowmanLena::Render3D()
 {
-	// 1. Exit 2D Mode
 	EndBitmap();
 
-	// 2. PROJECTION RESET (Mini-3D Scene)
-	projectionStack.push_back(glm::mat4(1.0f)); // Equivalent to glPushMatrix + glLoadIdentity
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
 	glViewport2(0, 0, WindowWidth, WindowHeight);
-
-	float aspect = (float)WindowWidth / (float)WindowHeight;
-	// gluPerspective2(1.f, ...) -> Zoomed 3D View
-	projectionStack.back() = glm::perspective(glm::radians(1.0f), aspect, RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
 	gluPerspective2(1.f, (float)(WindowWidth) / (float)(WindowHeight), RENDER_ITEMVIEW_NEAR, RENDER_ITEMVIEW_FAR);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	GetOpenGLMatrix(CameraMatrix);
+	EnableDepthTest();
+	EnableDepthMask();
 
-	// 3. MODELVIEW RESET
-	modelViewStack.push_back(glm::mat4(1.0f)); // Equivalent to glPushMatrix + glLoadIdentity
-	GetOpenGLMatrix(CameraMatrix); // Snapshot Identity state for mouse logic
-
-	// 4. HARDWARE STATES
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-
-	// 5. SHADER SYNC
-	myShader.use();
-	myShader.setMat4(g_uMvpLoc, projectionStack.back() * modelViewStack.back());
-	myShader.setFloat(g_uFogEnabledLoc, 0.0f); // No fog for UI elements
-
-	// 6. RENDER ITEMS
 	int Type = ITEM_POTION + 21;
 	int Level = 0;
-	float x = 640.0f - 120.0f;
-	float y = 200.0f;
+	float x = 640.f - 120.f;
+	float y = 200.f;
 	float Width = (float)ItemAttribute[Type].Width * INVENTORY_SCALE;
 	float Height = (float)ItemAttribute[Type].Height * INVENTORY_SCALE;
-
-	// Draw the two potions
 	RenderItem3D(x, y, Width, Height, Type, Level, 0, 0, false);
-	RenderItem3D(x, y + 42.0f, Width, Height, Type, Level, 0, 0, false);
+	RenderItem3D(x, y + 42, Width, Height, Type, Level, 0, 0, false);
 
-	// 7. UPDATE MOUSE
 	UpdateMousePositionn();
 
-	// 8. RESTORE MATRICES
-	if (modelViewStack.size() > 1) modelViewStack.pop_back();
-	if (projectionStack.size() > 1) projectionStack.pop_back();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 
-	// 9. RE-ENTER 2D MODE
 	BeginBitmap();
-	// Note: BeginBitmap() must call setMat4(g_uMvpLoc, ...) internally 
-	// to restore the Ortho view to the shader.
-
 }

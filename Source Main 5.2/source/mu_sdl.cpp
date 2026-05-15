@@ -654,22 +654,6 @@ short MU_GetAsyncKeyState(int key) {
     // Mouse buttons
     Uint32 mouse = SDL_GetMouseState(nullptr, nullptr);
 
-#ifdef __ANDROID__
-
-    switch (key)
-    {
-    case VK_LBUTTON:
-        return MouseLButton ? (short)0x8000 : 0;
-
-    case VK_RBUTTON:
-        return MouseRButton ? (short)0x8000 : 0;
-
-    case VK_MBUTTON:
-        return MouseMButton ? (short)0x8000 : 0;
-    }
-
-#else
-
     switch (key)
     {
     case VK_LBUTTON:
@@ -682,7 +666,6 @@ short MU_GetAsyncKeyState(int key) {
         return (mouse & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? (short)0x8000 : 0;
     }
 
-#endif
     // Keyboard
     const Uint8* state = SDL_GetKeyboardState(nullptr);
 

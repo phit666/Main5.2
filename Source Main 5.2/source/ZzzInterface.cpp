@@ -7353,302 +7353,303 @@ void MoveHero()
 	}
 		
 	CheckGate();
-		
-		if(!MouseOnWindow && false == g_pNewUISystem->CheckMouseUse())
+
+	if (!MouseOnWindow && false == g_pNewUISystem->CheckMouseUse())
+	{
+		bool Success = false;
+		if (MouseUpdateTime >= MouseUpdateTimeMax)
 		{
-			bool Success = false;
-			if(MouseUpdateTime >= MouseUpdateTimeMax)
+			if (!EnableFastInput)
 			{
-				if(!EnableFastInput)
+				if (MouseLButtonPush)
 				{
-					if(MouseLButtonPush)
-					{
-						MouseLButtonPush = false;
-						Success = true;
-					}
-					if(MouseLButton)
-					{
-						Success = true;
-					}
-						
-					if( ( 
-						g_pOption->IsAutoAttack()
-						&& gMapManager.WorldActive!=WD_6STADIUM 
-						&& gMapManager.InChaosCastle()==false ) 
-						&& ( Attacking==1 && SelectedCharacter!=-1 ) )
-					{
-						Success = true;
-					}
-					
-					if( Success && !g_isCharacterBuff(o, eDeBuff_Stun) && !g_isCharacterBuff(o, eDeBuff_Sleep) )
-					{
-						g_iFollowCharacter = -1;
-							
-						LButtonPressTime = ((WorldTime - LButtonPopTime)/CLOCKS_PER_SEC);
-							
-						if ( LButtonPressTime>=AutoMouseLimitTime )
-						{
-							MouseLButtonPush = false;
-							MouseLButton = false;
-							Success = FALSE;
-						}
-					}
-					else
-					{
-						LButtonPopTime = WorldTime;
-						LButtonPressTime = 0.f;
-					}
+					MouseLButtonPush = false;
+					Success = true;
 				}
-			}
-			if( g_iFollowCharacter!=-1 )
-			{
-				CHARACTER* followCharacter = &CharactersClient[g_iFollowCharacter];
-				if( followCharacter->Object.Live==0 )
+				if (MouseLButton)
+				{
+					Success = true;
+				}
+
+				if ((
+					g_pOption->IsAutoAttack()
+					&& gMapManager.WorldActive != WD_6STADIUM
+					&& gMapManager.InChaosCastle() == false)
+					&& (Attacking == 1 && SelectedCharacter != -1))
+				{
+					Success = true;
+				}
+
+				if (Success && !g_isCharacterBuff(o, eDeBuff_Stun) && !g_isCharacterBuff(o, eDeBuff_Sleep))
 				{
 					g_iFollowCharacter = -1;
+
+					LButtonPressTime = ((WorldTime - LButtonPopTime) / CLOCKS_PER_SEC);
+
+					if (LButtonPressTime >= AutoMouseLimitTime)
+					{
+						MouseLButtonPush = false;
+						MouseLButton = false;
+						Success = FALSE;
+					}
 				}
 				else
 				{
-					//
-					c->MovementType = MOVEMENT_MOVE;
-					ActionTarget = g_iFollowCharacter;
-					TargetX = (int)(followCharacter->Object.Position[0]/TERRAIN_SCALE);
-					TargetY = (int)(followCharacter->Object.Position[1]/TERRAIN_SCALE);
-					if(PathFinding2(( c->PositionX),( c->PositionY),TargetX,TargetY,&c->Path))
-						SendMove(c,o);
+					LButtonPopTime = WorldTime;
+					LButtonPressTime = 0.f;
 				}
 			}
-			else if ( Success && 
-				( ( o->CurrentAction!=PLAYER_SHOCK && ( o->Teleport!=TELEPORT_BEGIN && o->Teleport!=TELEPORT && o->Alpha>=0.7f ) &&
-				( o->CurrentAction<PLAYER_ATTACK_FIST || o->CurrentAction>PLAYER_RIDE_SKILL )
-				&& ( o->CurrentAction<PLAYER_SKILL_SLEEP || o->CurrentAction>PLAYER_SKILL_LIGHTNING_SHOCK )
-				&& o->CurrentAction!=PLAYER_RECOVER_SKILL
+		}
+		if (g_iFollowCharacter != -1)
+		{
+			CHARACTER* followCharacter = &CharactersClient[g_iFollowCharacter];
+			if (followCharacter->Object.Live == 0)
+			{
+				g_iFollowCharacter = -1;
+			}
+			else
+			{
+				//
+				c->MovementType = MOVEMENT_MOVE;
+				ActionTarget = g_iFollowCharacter;
+				TargetX = (int)(followCharacter->Object.Position[0] / TERRAIN_SCALE);
+				TargetY = (int)(followCharacter->Object.Position[1] / TERRAIN_SCALE);
+				if (PathFinding2((c->PositionX), (c->PositionY), TargetX, TargetY, &c->Path))
+					SendMove(c, o);
+			}
+		}
+		else if (Success &&
+			((o->CurrentAction != PLAYER_SHOCK && (o->Teleport != TELEPORT_BEGIN && o->Teleport != TELEPORT && o->Alpha >= 0.7f) &&
+				(o->CurrentAction<PLAYER_ATTACK_FIST || o->CurrentAction>PLAYER_RIDE_SKILL)
+				&& (o->CurrentAction<PLAYER_SKILL_SLEEP || o->CurrentAction>PLAYER_SKILL_LIGHTNING_SHOCK)
+				&& o->CurrentAction != PLAYER_RECOVER_SKILL
 #ifdef PBG_ADD_NEWCHAR_MONK_SKILL
-				&& (o->CurrentAction<PLAYER_SKILL_THRUST || 
+				&& (o->CurrentAction<PLAYER_SKILL_THRUST ||
 #ifdef PBG_FIX_NEWCHAR_MONK_UNIANI
-				o->CurrentAction>PLAYER_RAGE_UNI_ATTACK_ONE_RIGHT
+					o->CurrentAction>PLAYER_RAGE_UNI_ATTACK_ONE_RIGHT
 #else //PBG_FIX_NEWCHAR_MONK_UNIANI
-				o->CurrentAction>PLAYER_SKILL_HP_UP_OURFORCES
+					o->CurrentAction > PLAYER_SKILL_HP_UP_OURFORCES
 #endif //PBG_FIX_NEWCHAR_MONK_UNIANI
-				)
+					)
 #endif //PBG_ADD_NEWCHAR_MONK_SKILL
 				)
-				||( o->CurrentAction>=PLAYER_STOP_TWO_HAND_SWORD_TWO && o->CurrentAction<=PLAYER_RUN_TWO_HAND_SWORD_TWO )
-				||( o->CurrentAction>=PLAYER_DARKLORD_STAND && o->CurrentAction<=PLAYER_RUN_RIDE_HORSE )
+				|| (o->CurrentAction >= PLAYER_STOP_TWO_HAND_SWORD_TWO && o->CurrentAction <= PLAYER_RUN_TWO_HAND_SWORD_TWO)
+				|| (o->CurrentAction >= PLAYER_DARKLORD_STAND && o->CurrentAction <= PLAYER_RUN_RIDE_HORSE)
 				|| (o->CurrentAction >= PLAYER_FENRIR_RUN && o->CurrentAction <= PLAYER_FENRIR_WALK_ONE_LEFT)
 #ifdef PBG_ADD_NEWCHAR_MONK_ANI
 				|| (o->CurrentAction >= PLAYER_RAGE_FENRIR_WALK && o->CurrentAction <= PLAYER_RAGE_FENRIR_STAND_ONE_LEFT)
 #endif //PBG_ADD_NEWCHAR_MONK_ANI
-				) )
+				))
+		{
+			int RightType = CharacterMachine->Equipment[EQUIPMENT_WEAPON_RIGHT].Type;
+			int LeftType = CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT].Type;
+
+			SEASON3B::CNewUIPickedItem* pPickedItem = SEASON3B::CNewUIInventoryCtrl::GetPickedItem();
+
+			if (!pPickedItem && RightType == -1 &&
+				((LeftType >= ITEM_SWORD && LeftType < ITEM_MACE + MAX_ITEM_INDEX)
+					|| (LeftType >= ITEM_STAFF && LeftType < ITEM_STAFF + MAX_ITEM_INDEX
+						&& !(LeftType >= ITEM_STAFF + 21 && LeftType <= ITEM_STAFF + 29)
+						)))
 			{
-				int RightType = CharacterMachine->Equipment[EQUIPMENT_WEAPON_RIGHT].Type;
-				int LeftType = CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT].Type;
-				
-				SEASON3B::CNewUIPickedItem* pPickedItem = SEASON3B::CNewUIInventoryCtrl::GetPickedItem();
+				if (g_pMyInventory->IsEquipable(EQUIPMENT_WEAPON_LEFT, &CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT]))
+				{
+					memcpy(&PickItem, &CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT], sizeof(ITEM));
+					CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT].Type = -1;
+					CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT].Level = 0;
+					SetCharacterClass(Hero);
+					SrcInventory = Inventory;
+					SrcInventoryIndex = EQUIPMENT_WEAPON_LEFT;
+					DstInventoryIndex = EQUIPMENT_WEAPON_RIGHT;
+					SendRequestEquipmentItem(0, SrcInventoryIndex, 0, DstInventoryIndex);
+				}
+			}
+			MouseUpdateTime = 0;
+			Success = false;
 
-				if ( !pPickedItem && RightType==-1 &&
-					((LeftType>=ITEM_SWORD && LeftType<ITEM_MACE+MAX_ITEM_INDEX)
-					|| (LeftType>=ITEM_STAFF && LeftType<ITEM_STAFF+MAX_ITEM_INDEX
-					&& !(LeftType >= ITEM_STAFF+21 && LeftType <= ITEM_STAFF+29)
-					)))	
+			if (!c->SafeZone)
+			{
+				Success = CheckAttack();
+			}
+
+			if (Success)
+			{
+				if (c->Movement && c->MovementType == MOVEMENT_MOVE && gCharacterManager.GetBaseClass(c->Class) == CLASS_ELF)
+				{
+					if (gCharacterManager.GetEquipedBowType(CharacterMachine->Equipment) != BOWTYPE_NONE)
 					{
-						if( g_pMyInventory->IsEquipable(EQUIPMENT_WEAPON_LEFT, &CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT]) )
-						{
-							memcpy(&PickItem,&CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT],sizeof(ITEM));
-							CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT].Type  = -1;
-							CharacterMachine->Equipment[EQUIPMENT_WEAPON_LEFT].Level = 0;
-							SetCharacterClass(Hero);
-							SrcInventory = Inventory;
-							SrcInventoryIndex = EQUIPMENT_WEAPON_LEFT;
-							DstInventoryIndex = EQUIPMENT_WEAPON_RIGHT;
-							SendRequestEquipmentItem(0,SrcInventoryIndex,0,DstInventoryIndex);
-						}
+#ifdef NEW_PROTOCOL_SYSTEM
+						gProtocolSend.SendPositionNew(c->PositionX, c->PositionY);
+#else
+						SendPosition((c->PositionX), (c->PositionY));
+#endif
 					}
-					MouseUpdateTime = 0;
-					Success = false;
+				}
 
-					if(!c->SafeZone)
-					{
-						Success = CheckAttack();
-					}
+				if (SelectedCharacter >= -1)
+				{
+					Attacking = 1;
 
-					if(Success)
+					c->MovementType = MOVEMENT_ATTACK;
+					ActionTarget = SelectedCharacter;
+					TargetX = (int)(CharactersClient[ActionTarget].Object.Position[0] / TERRAIN_SCALE);
+					TargetY = (int)(CharactersClient[ActionTarget].Object.Position[1] / TERRAIN_SCALE);
+
+					if (CheckWall((c->PositionX), (c->PositionY), TargetX, TargetY))
 					{
-						if ( c->Movement && c->MovementType==MOVEMENT_MOVE && gCharacterManager.GetBaseClass(c->Class)==CLASS_ELF )
+						if (!PathFinding2((c->PositionX), (c->PositionY), TargetX, TargetY, &c->Path))
 						{
-							if( gCharacterManager.GetEquipedBowType(CharacterMachine->Equipment) != BOWTYPE_NONE )
+							if (CheckArrow() == false)
 							{
-								#ifdef NEW_PROTOCOL_SYSTEM
-									gProtocolSend.SendPositionNew( c->PositionX, c->PositionY );
-								#else
-									SendPosition( (c->PositionX), (c->PositionY) );
-								#endif
+								return;
 							}
+							Action(c, o, true);
 						}
-						
-						if ( SelectedCharacter >= -1 )
+						else
 						{
-							Attacking = 1;
-							
-							c->MovementType = MOVEMENT_ATTACK;
-							ActionTarget = SelectedCharacter;
-							TargetX = (int)(CharactersClient[ActionTarget].Object.Position[0]/TERRAIN_SCALE);
-							TargetY = (int)(CharactersClient[ActionTarget].Object.Position[1]/TERRAIN_SCALE);
-
-							if(CheckWall(( c->PositionX),( c->PositionY),TargetX,TargetY))
+							if ((gCharacterManager.GetEquipedBowType() != BOWTYPE_NONE) || (c->MonsterIndex == 9))
 							{
-								if(!PathFinding2(( c->PositionX),( c->PositionY),TargetX,TargetY,&c->Path))
+								if (CheckArrow() == false)
 								{
-									if(CheckArrow() == false) 
-									{
-										return;
-									}
-									Action(c,o,true);
+									return;
 								}
-								else
-								{
-									if( (gCharacterManager.GetEquipedBowType() != BOWTYPE_NONE) || (c->MonsterIndex == 9) )
-									{
-										if(CheckArrow() == false)
-										{
-											return;
-										}
-										Action(c,o,true);
-									}
-									else
-									{
-										SendMove(c,o);
-									}
-								}
-							}
-						}
-					}
-					else if ( SelectedOperate != -1 && ( c->SafeZone || ( c->Helper.Type<MODEL_HELPER+2 || c->Helper.Type>MODEL_HELPER+4 || c->Helper.Type != MODEL_HELPER+37)))
-					{
-						TargetX = (int)(Operates[SelectedOperate].Owner->Position[0]/TERRAIN_SCALE);
-						TargetY = (int)(Operates[SelectedOperate].Owner->Position[1]/TERRAIN_SCALE);
-						int wall = TerrainWall[TERRAIN_INDEX(TargetX,TargetY)];
-						
-						if ( wall==TW_HEIGHT || wall<TW_CHARACTER )
-							if(!c->Movement)
-							{
-								c->MovementType = MOVEMENT_OPERATE;
-								TargetType = Operates[SelectedOperate].Owner->Type;
-								TargetAngle = Operates[SelectedOperate].Owner->Angle[2];
-								if(PathFinding2(( c->PositionX),( c->PositionY),TargetX,TargetY,&c->Path))
-									SendMove(c,o);
-								else
-									Action(c,o,true);
-							}
-					}
-					else if(SelectedNpc!=-1 
-						&& !g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_NPCSHOP)
-						&& !g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_STORAGE)
-						)
-					{
-						if(g_isCharacterBuff(o, eBuff_CrywolfNPCHide)==false)
-							c->MovementType = MOVEMENT_TALK;
-						
-						ActionTarget = SelectedNpc;
-						TargetX = (int)(CharactersClient[ActionTarget].Object.Position[0]/TERRAIN_SCALE);
-						TargetY = (int)(CharactersClient[ActionTarget].Object.Position[1]/TERRAIN_SCALE);
-						TargetNpc = ActionTarget;
-						TargetType = CharactersClient[ActionTarget].Object.Type;
-						TargetAngle = CharactersClient[ActionTarget].Object.Angle[2];
-
-						if(TargetType == MODEL_KANTURU2ND_ENTER_NPC)
-						{
-							vec3_t vHero, vTarget, vSubstract;
-							VectorCopy(o->Position, vHero);
-							vHero[2] = 0.f;
-							VectorCopy(CharactersClient[ActionTarget].Object.Position, vTarget);
-							vTarget[2] = 0.f;
-							VectorSubtract(vHero, vTarget, vSubstract);
-							float fLength = VectorLength(vSubstract);
-							if(fLength <= 550.f)
-							{
 								Action(c, o, true);
 							}
 							else
 							{
-								if(PathFinding2((c->PositionX), (c->PositionY), TargetX, TargetY, &c->Path))
-									SendMove(c, o);
-								else
-									Action(c, o, true);
+								SendMove(c, o);
 							}
 						}
-						else
-						{
-							if(PathFinding2(( c->PositionX),( c->PositionY),TargetX,TargetY,&c->Path))
-								SendMove(c,o);
-							else
-								Action(c,o,true);
-						}
 					}
-					else if(SelectedItem!=-1)
+				}
+			}
+			else if (SelectedOperate != -1 && (c->SafeZone || (c->Helper.Type<MODEL_HELPER + 2 || c->Helper.Type>MODEL_HELPER + 4 || c->Helper.Type != MODEL_HELPER + 37)))
+			{
+				TargetX = (int)(Operates[SelectedOperate].Owner->Position[0] / TERRAIN_SCALE);
+				TargetY = (int)(Operates[SelectedOperate].Owner->Position[1] / TERRAIN_SCALE);
+				int wall = TerrainWall[TERRAIN_INDEX(TargetX, TargetY)];
+
+				if (wall == TW_HEIGHT || wall < TW_CHARACTER)
+					if (!c->Movement)
 					{
-						c->MovementType = MOVEMENT_GET;
-						ItemKey = SelectedItem;
-						TargetX = (int)(Items[SelectedItem].Object.Position[0]/TERRAIN_SCALE);
-						TargetY = (int)(Items[SelectedItem].Object.Position[1]/TERRAIN_SCALE);
-						if(PathFinding2(( c->PositionX),( c->PositionY),TargetX,TargetY,&c->Path))
-							SendMove(c,o);
+						c->MovementType = MOVEMENT_OPERATE;
+						TargetType = Operates[SelectedOperate].Owner->Type;
+						TargetAngle = Operates[SelectedOperate].Owner->Angle[2];
+						if (PathFinding2((c->PositionX), (c->PositionY), TargetX, TargetY, &c->Path))
+							SendMove(c, o);
 						else
+							Action(c, o, true);
+					}
+			}
+			else if (SelectedNpc != -1
+				&& !g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_NPCSHOP)
+				&& !g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_STORAGE)
+				)
+			{
+				if (g_isCharacterBuff(o, eBuff_CrywolfNPCHide) == false)
+					c->MovementType = MOVEMENT_TALK;
+
+				ActionTarget = SelectedNpc;
+				TargetX = (int)(CharactersClient[ActionTarget].Object.Position[0] / TERRAIN_SCALE);
+				TargetY = (int)(CharactersClient[ActionTarget].Object.Position[1] / TERRAIN_SCALE);
+				TargetNpc = ActionTarget;
+				TargetType = CharactersClient[ActionTarget].Object.Type;
+				TargetAngle = CharactersClient[ActionTarget].Object.Angle[2];
+
+				if (TargetType == MODEL_KANTURU2ND_ENTER_NPC)
+				{
+					vec3_t vHero, vTarget, vSubstract;
+					VectorCopy(o->Position, vHero);
+					vHero[2] = 0.f;
+					VectorCopy(CharactersClient[ActionTarget].Object.Position, vTarget);
+					vTarget[2] = 0.f;
+					VectorSubtract(vHero, vTarget, vSubstract);
+					float fLength = VectorLength(vSubstract);
+					if (fLength <= 550.f)
+					{
+						Action(c, o, true);
+					}
+					else
+					{
+						if (PathFinding2((c->PositionX), (c->PositionY), TargetX, TargetY, &c->Path))
+							SendMove(c, o);
+						else
+							Action(c, o, true);
+					}
+				}
+				else
+				{
+					if (PathFinding2((c->PositionX), (c->PositionY), TargetX, TargetY, &c->Path))
+						SendMove(c, o);
+					else
+						Action(c, o, true);
+				}
+			}
+			else if (SelectedItem != -1)
+			{
+				c->MovementType = MOVEMENT_GET;
+				ItemKey = SelectedItem;
+				TargetX = (int)(Items[SelectedItem].Object.Position[0] / TERRAIN_SCALE);
+				TargetY = (int)(Items[SelectedItem].Object.Position[1] / TERRAIN_SCALE);
+				if (PathFinding2((c->PositionX), (c->PositionY), TargetX, TargetY, &c->Path))
+					SendMove(c, o);
+				else
+				{
+					Action(c, o, true);
+					c->MovementType = MOVEMENT_MOVE;
+				}
+			}
+			else if (HIBYTE(GetAsyncKeyState(VK_SHIFT)) != 128)
+			{
+				RenderTerrain(true);
+				bool Success = RenderTerrainTile(SelectXF, SelectYF, (int)SelectXF, (int)SelectYF, 1.f, 1, true);
+
+				if (Success && c->Object.Live)
+				{
+					TargetX = (BYTE)(CollisionPosition[0] / TERRAIN_SCALE);
+					TargetY = (BYTE)(CollisionPosition[1] / TERRAIN_SCALE);
+					int Wall;
+					//if(CharacterMachine->Equipment[EQUIPMENT_WING].Type!=-1)
+					//	Wall = TW_NOMOVE;
+					//else
+					Wall = TW_NOGROUND;
+					WORD CurrAtt = TerrainWall[TargetY * 256 + TargetX];
+					if (CurrAtt >= Wall && (CurrAtt & TW_ACTION) != TW_ACTION && (CurrAtt & TW_HEIGHT) != TW_HEIGHT)
+						DontMove = true;
+					else
+						DontMove = false;
+					int xPos = (int)(0.01f * o->Position[0]);
+					int yPos = (int)(0.01f * o->Position[1]);
+
+					if (!c->Movement || (abs((c->PositionX) - xPos) < 2 && abs((c->PositionY) - yPos) < 2))
+					{
+						if (((c->PositionX) != TargetX || (c->PositionY) != TargetY || !c->Movement) &&
+							PathFinding2((c->PositionX), (c->PositionY), TargetX, TargetY, &c->Path))
 						{
-							Action(c,o,true);
 							c->MovementType = MOVEMENT_MOVE;
-						}
-					}
-					else if(HIBYTE(GetAsyncKeyState(VK_SHIFT)) != 128)
-					{
-						RenderTerrain ( true );
-						bool Success = RenderTerrainTile(SelectXF,SelectYF,(int)SelectXF,(int)SelectYF,1.f,1,true);
+							SendMove(c, o);
+							OBJECT* pHeroObj = &Hero->Object;
+							vec3_t vLight, vPos;
+							Vector(1.f, 1.f, 0.f, vLight);
+							VectorCopy(CollisionPosition, vPos);
+							DeleteEffect(MODEL_MOVE_TARGETPOSITION_EFFECT);
 
-						if(Success && c->Object.Live)
-						{
-							TargetX = (BYTE)(CollisionPosition[0]/TERRAIN_SCALE);
-							TargetY = (BYTE)(CollisionPosition[1]/TERRAIN_SCALE);
-							int Wall;
-							//if(CharacterMachine->Equipment[EQUIPMENT_WING].Type!=-1)
-							//	Wall = TW_NOMOVE;
-							//else
-							Wall = TW_NOGROUND;
-							WORD CurrAtt = TerrainWall[TargetY*256+TargetX];
-							if ( CurrAtt>=Wall && (CurrAtt&TW_ACTION)!=TW_ACTION && (CurrAtt&TW_HEIGHT)!=TW_HEIGHT)
-								DontMove = true;
-							else
-								DontMove = false;
-							int xPos = ( int)( 0.01f * o->Position[0] );
-							int yPos = ( int)( 0.01f * o->Position[1] );
-
-							if ( !c->Movement || ( abs( ( c->PositionX) - xPos) < 2 && abs( ( c->PositionY) - yPos) < 2))
-							{	
-								if ( ( ( c->PositionX)!=TargetX || ( c->PositionY)!=TargetY || !c->Movement) &&
-									PathFinding2( ( c->PositionX),( c->PositionY),TargetX,TargetY,&c->Path ) )
-								{
-									c->MovementType = MOVEMENT_MOVE;
-									SendMove ( c, o );
-									OBJECT* pHeroObj = &Hero->Object;
-									vec3_t vLight, vPos;
-									Vector( 1.f, 1.f, 0.f, vLight );
-									VectorCopy( CollisionPosition, vPos );
-									DeleteEffect( MODEL_MOVE_TARGETPOSITION_EFFECT );
-
-									int iTerrainIndex = TERRAIN_INDEX( (int)SelectXF, (int)SelectYF );
-									if( (TerrainWall[iTerrainIndex]&TW_NOMOVE) != TW_NOMOVE )
-									{
-										CreateEffect( MODEL_MOVE_TARGETPOSITION_EFFECT, vPos, pHeroObj->Angle, vLight, 0, pHeroObj, -1, 0, 0, 0, 0.6f);
-									}
-								}
-								else
-								{
-									MouseUpdateTime = MouseUpdateTimeMax;
-									MouseUpdateTime = 0;
-								}
+							int iTerrainIndex = TERRAIN_INDEX((int)SelectXF, (int)SelectYF);
+							if ((TerrainWall[iTerrainIndex] & TW_NOMOVE) != TW_NOMOVE)
+							{
+								CreateEffect(MODEL_MOVE_TARGETPOSITION_EFFECT, vPos, pHeroObj->Angle, vLight, 0, pHeroObj, -1, 0, 0, 0, 0.6f);
 							}
 						}
+						else
+						{
+							MouseUpdateTime = MouseUpdateTimeMax;
+							MouseUpdateTime = 0;
+						}
 					}
+				}
+			}
 		}
+
 		MouseUpdateTime++;
 	}
 	

@@ -71,12 +71,15 @@
 #include "wzAudio.h"
 #include "MixMgr.h"
 #include <algorithm>
+#include "mu_file.h"
 
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
 CUITextInputBox * g_pSinglePasswdInputBox = NULL;
 int g_iChatInputType = 1;
 extern BOOL g_bIMEBlock;
+
+int g_TestMouseClick = 0;
 
 CChatRoomSocketList * g_pChatRoomSocketList = NULL;
 
@@ -1142,7 +1145,11 @@ BOOL OpenInitFile()
 	//DWORD dwSize;
 
 #ifdef MU_USE_SDL
+#ifdef __ANDROID__
+	g_bUseWindowMode = FALSE;
+#else
 	g_bUseWindowMode = TRUE;
+#endif
 	strcpy(g_aszMLSelection, "Eng");
 	g_strSelectedML = g_aszMLSelection;
 	m_Resolution = 2;
@@ -2103,40 +2110,41 @@ void MU_ProcessSDLEvents()
 
 				break;
 
-		case SDL_FINGERMOTION:
+		case SDL_MOUSEMOTION:
 
-			//MouseX = (float)e.motion.x / g_fScreenRate_x;
-			//MouseY = (float)e.motion.y / g_fScreenRate_y;
+			MouseX = (float)e.motion.x / g_fScreenRate_x;
+			MouseY = (float)e.motion.y / g_fScreenRate_y;
 
-			MouseX = (e.tfinger.x * WindowWidth) / g_fScreenRate_x;
-			MouseY = (e.tfinger.y * WindowHeight) / g_fScreenRate_y;
+			if (MouseX < 0) MouseX = 0;
+			if (MouseX > 640) MouseX = 640;
+			if (MouseY < 0) MouseY = 0;
+			if (MouseY > 480) MouseY = 480;
+			break;
 
+		case SDL_MOUSEBUTTONDOWN:
+
+			MouseX = (float)e.button.x / g_fScreenRate_x;
+			MouseY = (float)e.button.y / g_fScreenRate_y;
+
+			//g_ErrorReport.Write("> debugmouse DOWN, X %d Y %d", MouseX, MouseY);
 
 			if (MouseX < 0) MouseX = 0;
 			if (MouseX > 640) MouseX = 640;
 			if (MouseY < 0) MouseY = 0;
 			if (MouseY > 480) MouseY = 480;
 
-			break;
-
-		case SDL_FINGERDOWN:
-
 			g_iNoMouseTime = 0;
 
-			//MouseX = (float)e.motion.x / g_fScreenRate_x;
-			//MouseY = (float)e.motion.y / g_fScreenRate_y;
+			g_TestMouseClick = 1;
 
-			MouseX = (e.tfinger.x * WindowWidth) / g_fScreenRate_x;
-			MouseY = (e.tfinger.y * WindowHeight) / g_fScreenRate_y;
-
+#ifdef __ANDROID__
 			MouseLButtonPop = false;
-
 			if (!MouseLButton)
 				MouseLButtonPush = true;
 
 			MouseLButton = true;
+#else
 
-			/*
 			if (e.button.button == SDL_BUTTON_LEFT)
 			{
 				MouseLButtonPop = false;
@@ -2160,27 +2168,32 @@ void MU_ProcessSDLEvents()
 					MouseMButtonPush = true;
 
 				MouseMButton = true;
-			}*/
+			}
+#endif
 			break;
 
-		case SDL_FINGERUP:
+		case SDL_MOUSEBUTTONUP:
 
 			g_iNoMouseTime = 0;
+			g_TestMouseClick = 0;
 
-			//MouseX = (float)e.motion.x / g_fScreenRate_x;
-			//MouseY = (float)e.motion.y / g_fScreenRate_y;
+#ifdef __ANDROID__
+			//MouseX = (float)e.button.x / g_fScreenRate_x;
+			//MouseY = (float)e.button.y / g_fScreenRate_y;
 
+			//g_ErrorReport.Write("> debugmouse UP, X %d Y %d", MouseX, MouseY);
 
-			MouseLButton = false;
 			MouseLButtonPush = false;
 			MouseLButtonPop = true;
-
-			/*if (e.button.button == SDL_BUTTON_LEFT)
+			MouseLButton = false;
+			g_iMousePopPosition_x = MouseX;
+			g_iMousePopPosition_y = MouseY;
+#else
+			if (e.button.button == SDL_BUTTON_LEFT)
 			{
 				MouseLButtonPush = false;
 				MouseLButtonPop = true;
 				MouseLButton = false;
-
 				g_iMousePopPosition_x = MouseX;
 				g_iMousePopPosition_y = MouseY;
 
@@ -2202,7 +2215,8 @@ void MU_ProcessSDLEvents()
 					MouseMButtonPop = true;
 
 				MouseMButton = false;
-			}*/
+			}
+#endif
 			break;
 
 		case SDL_MOUSEWHEEL:
