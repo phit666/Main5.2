@@ -8,6 +8,7 @@
 #include <cstring>
 #include "WSclient.h"
 #include "mu_sdl.h"
+#include "mu_file.h"
 
 bool g_EnableSound = false;
 bool g_Enable3DSound = false;
@@ -114,10 +115,11 @@ void LoadWaveFile(int Buffer, TCHAR* strFileName, int MaxChannel, bool Enable)
     const char* fileName = strFileName;
 #endif
 
-    Mix_Chunk* chunk = Mix_LoadWAV(fileName);
+    std::string fixedsoundfile = MU_NormalizePath(fileName);
+    Mix_Chunk* chunk = Mix_LoadWAV(fixedsoundfile.c_str());
     if (!chunk)
     {
-        g_ErrorReport.Write("SDL_mixer failed to load sound [%s]: %s\r\n", fileName, Mix_GetError());
+        g_ErrorReport.Write("SDL_mixer failed to load sound [%s]: %s\r\n", fixedsoundfile.c_str(), Mix_GetError());
         return;
     }
 

@@ -436,10 +436,6 @@ void setfont(int size) {
     if (font[size] == nullptr)
         return;
     nk_style_set_font(g_nk_ctx, &font[size]->handle);
-
-#ifdef __ANDROID__
-    FontHeight = size * g_fScreenRate_y;
-#endif
 }
 
 
@@ -543,9 +539,7 @@ bool MU_InitSDL(int width, int height)
 
         float multi = 1.0f;
 
-#ifdef __ANDROID__
         multi = g_fScreenRate_y;
-#endif
 
 #ifdef _WIN32
         switch (WindowWidth)
@@ -555,8 +549,14 @@ bool MU_InitSDL(int width, int height)
         case 1024:FontHeight = 14; break;
         case 1280:FontHeight = 15; break;
         }
-
         int nFixFontHeight = 13;
+#endif
+
+#ifdef __ANDROID__
+        FontHeight = 15 * g_fScreenRate_y;
+        int nFixFontHeight = 13 * g_fScreenRate_y;
+#endif
+
         int nFixFontSize;
         int iFontSize;
 
@@ -573,7 +573,7 @@ bool MU_InitSDL(int width, int height)
             font[FONT_SIZE14] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, iFontSize * 2, &cfg);
             SDL_free(fontrawdata);
         }
-#endif
+
         g_hFont = FONT_SIZE12;
         g_hFontBold = FONT_SIZE13;
         g_hFontBig = FONT_SIZE14;
@@ -654,6 +654,22 @@ short MU_GetAsyncKeyState(int key) {
     // Mouse buttons
     Uint32 mouse = SDL_GetMouseState(nullptr, nullptr);
 
+#ifdef __ANDROID__
+
+    switch (key)
+    {
+    case VK_LBUTTON:
+        return MouseLButton ? (short)0x8000 : 0;
+
+    case VK_RBUTTON:
+        return MouseRButton ? (short)0x8000 : 0;
+
+    case VK_MBUTTON:
+        return MouseMButton ? (short)0x8000 : 0;
+    }
+
+#else
+
     switch (key)
     {
     case VK_LBUTTON:
@@ -666,6 +682,7 @@ short MU_GetAsyncKeyState(int key) {
         return (mouse & SDL_BUTTON(SDL_BUTTON_MIDDLE)) ? (short)0x8000 : 0;
     }
 
+#endif
     // Keyboard
     const Uint8* state = SDL_GetKeyboardState(nullptr);
 

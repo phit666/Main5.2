@@ -2503,7 +2503,7 @@ void OpenMonsterScript(char *FileName)
         MONSTER_SCRIPT *m = &MonsterScript[EditMonsterNumber++];
 		m->Type = (int)TokenNumber;
 		Token = (*GetToken)();
-		Token = (*GetToken)();strcpy(m->Name,TokenString);
+		Token = (*GetToken)();strncpy(m->Name,TokenString, 31);
 
 		//g_ErrorReport.Write("> OpenMonsterScript, Id %d Name %s", m->Type, m->Name);
 

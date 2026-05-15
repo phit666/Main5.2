@@ -8,6 +8,7 @@
 #include "ZzzInterface.h"
 #include "UIControls.h"
 #include "CharacterManager.h"
+#include "wt.h"
 
 extern float g_fScreenRate_x;
 extern float g_fScreenRate_y;
@@ -22,7 +23,7 @@ CCharInfoBalloon::~CCharInfoBalloon()
 
 void CCharInfoBalloon::Create(CHARACTER* pCharInfo)
 {
-	CSprite::Create(118, 54, BITMAP_LOG_IN+7, 0, NULL, 59, 54);
+	CSprite::Create(getScaleNewSize(BITMAP_LOG_IN + 7, 118), getScaleNewSize(BITMAP_LOG_IN + 7, 54), getScaleTexID(BITMAP_LOG_IN+7), 0, NULL, 59, 54);
 
 	m_pCharInfo = pCharInfo;
 	m_dwNameColor = 0;
@@ -49,15 +50,20 @@ void CCharInfoBalloon::Render()
 
 	g_pRenderText->SetFont(g_hFixFont);	
 
+	int gap = 0;
+#ifdef __ANDROID__
+	gap = 10;
+#endif
+
 	int nTextPosX = int(CSprite::GetXPos() / g_fScreenRate_x);
 	g_pRenderText->SetBgColor(0);
 	g_pRenderText->SetTextColor(m_dwNameColor);
-	g_pRenderText->RenderText(nTextPosX, int((CSprite::GetYPos() + 7) / g_fScreenRate_y), m_szName, CSprite::GetWidth() / g_fScreenRate_x, 0, RT3_SORT_CENTER);
+	g_pRenderText->RenderText(nTextPosX, int((CSprite::GetYPos() + getScaleNewSize(BITMAP_LOG_IN + 7, 7)) / g_fScreenRate_y), m_szName, CSprite::GetWidth() / g_fScreenRate_x, 0, RT3_SORT_CENTER);
 	g_pRenderText->SetTextColor(CLRDW_WHITE);
-	g_pRenderText->RenderText(nTextPosX, int((CSprite::GetYPos() + 23) / g_fScreenRate_y), m_szGuild, CSprite::GetWidth() / g_fScreenRate_x, 0, RT3_SORT_CENTER);
+	g_pRenderText->RenderText(nTextPosX, int((CSprite::GetYPos() + getScaleNewSize(BITMAP_LOG_IN + 7, 23)) / g_fScreenRate_y), m_szGuild, CSprite::GetWidth() / g_fScreenRate_x, 0, RT3_SORT_CENTER);
 	g_pRenderText->SetTextColor(CLRDW_BR_ORANGE);
-	g_pRenderText->RenderText(nTextPosX-10, int((CSprite::GetYPos() + 39) / g_fScreenRate_y),
-		m_szClass, (CSprite::GetWidth()+30) / g_fScreenRate_x, 0, RT3_SORT_CENTER);
+	g_pRenderText->RenderText(nTextPosX - gap, int((CSprite::GetYPos() + getScaleNewSize(BITMAP_LOG_IN + 7, 39)) / g_fScreenRate_y),
+		m_szClass, (CSprite::GetWidth()+ getScaleNewSize(BITMAP_LOG_IN + 7, 30)) / g_fScreenRate_x, 0, RT3_SORT_CENTER);
 
 
 	if (m_pCharInfo->CtlCode & CTLCODE_80MANAGER_MOVE_CHAR)
@@ -75,7 +81,7 @@ void CCharInfoBalloon::Render()
 				g_pRenderText->SetFont(g_hFont);
 			}
 			g_pRenderText->RenderText(nTextPosX,
-				int((CSprite::GetYPos() - 46 + i * 16) / g_fScreenRate_y),
+				int((CSprite::GetYPos() - getScaleNewSize(BITMAP_LOG_IN + 7,46) + i * 16) / g_fScreenRate_y),
 				GlobalText[1241 + i], CSprite::GetWidth() / g_fScreenRate_x, 0, RT3_SORT_CENTER);
 		}
 	}

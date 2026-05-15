@@ -46,7 +46,7 @@ void CButton::Create(int nWidth, int nHeight, int nTexID, int nMaxFrame,int nDow
 		aFrameCoord[i].nY = nHeight * i;
 	}
 
-	CSprite::Create(nWidth, nHeight, nTexID, nMaxFrame, aFrameCoord, 0, 0, false, 0, this->m_scalex, this->m_scaley);
+	CSprite::Create(nWidth, nHeight, nTexID, nMaxFrame, aFrameCoord);
 
 	delete [] aFrameCoord;
 

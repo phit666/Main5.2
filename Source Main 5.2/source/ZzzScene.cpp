@@ -1074,6 +1074,10 @@ bool NewRenderCharacterScene(HDC hDC)
 	glClearColor(0.f,0.f,0.f,1.f);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#ifdef __ANDROID__
+	CameraFOV -= 5;
+	//CameraAngle[0] -= 3.0f;
+#endif
 
 	BeginOpengl(0,25,640,430);
 	
@@ -2070,6 +2074,12 @@ bool RenderMainScene()
 
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
+
+#ifdef __ANDROID__
+	CameraFOV -= 10;
+	CameraAngle[0] -= 3.0f;
+#endif
+
 	BeginOpengl(0,0,Width,Height);
 
 	CreateFrustrum((float)Width/(float)640, pos);
@@ -2272,16 +2282,13 @@ void MainScene(HDC hDC)
 		{
 		case LOG_IN_SCENE:
 			NewMoveLogInScene();
-			//OutputDebugStringA("[SDL-DEBUG] NewMoveLogInScene");
 			break;
 
 		case CHARACTER_SCENE:
-			//OutputDebugStringA("[SDL-DEBUG] NewMoveCharacterScene");
 			NewMoveCharacterScene();
 			break;
 
 		case MAIN_SCENE:
-			//OutputDebugStringA("[SDL-DEBUG] MoveMainScene");
 			MoveMainScene();
 			break;
 		}
@@ -2769,17 +2776,14 @@ void Scene(HDC hDC)
 		break;
 #endif // MOVIE_DIRECTSHOW
 	case WEBZEN_SCENE:
-		//OutputDebugStringA("[SDL-DEBUG] WebzenScene");
         WebzenScene(hDC);
 		break;
 	case LOADING_SCENE:
-		//OutputDebugStringA("[SDL-DEBUG] LoadingScene");
 		LoadingScene(hDC);
 		break;
 	case LOG_IN_SCENE:
 	case CHARACTER_SCENE:
 	case MAIN_SCENE:
-		//OutputDebugStringA("[SDL-DEBUG] MainScene");
 		MainScene(hDC);
 		break;
 	}

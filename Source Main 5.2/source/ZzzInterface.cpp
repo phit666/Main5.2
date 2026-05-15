@@ -857,9 +857,12 @@ void RenderBoolean(int x,int y,CHAT *c)
 	glColor3f(1.f,1.f,1.f);
 
 
-	
+#ifdef __ANDROID__
+	if (FontHeight > 64) FontHeight = 64;
+#else
 	if (FontHeight > 32) FontHeight = 32;
-	
+#endif
+
 	POINT RenderPos = { x, y };
 	SIZE RenderBoxSize = { c->Width, c->Height };
 	int iLineHeight = FontHeight/g_fScreenRate_y;

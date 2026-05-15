@@ -18,20 +18,28 @@
 
 std::vector<_TexScaleMap> g_mapTexScale = {
 	{0, 0, false, false, "Default"},
-#ifdef __ANDROID__
+//#ifdef __ANDROID__
 	{BITMAP_LOG_IN, 480.0f, true, true, "Select Server"},
 	{BITMAP_LOG_IN + 1, 480.0f, true, true, "Select Server"},
-
 	{BITMAP_LOG_IN + 7, 480.0f, true, true, "Login-Box"},
 	{BITMAP_LOG_IN + 8, 480.0f, true, true, "Login-User/Pass"},
 	{BITMAP_BUTTON, 480.0f, true, true, "Login Window"},
 	{BITMAP_BUTTON + 1, 480.0f, true, true, "Login Window"},
-#endif
+	{BITMAP_LOG_IN + 3, 480.0f, true, true, "Char. Create"},
+	{BITMAP_LOG_IN + 4, 480.0f, true, true, "Char. Menu"},
+	{BITMAP_LOG_IN + 5, 480.0f, true, true, "Char Conn"},
+	{BITMAP_LOG_IN + 6, 480.0f, true, true, "Char. Del"},
+	{BITMAP_LOG_IN + 2, 480.0f, true, true, "Decor"},
+//#endif
 };
+
+
+#define SCALED_TEXTURE 500000
 
 _TexScaleMap getTexScale(GLuint TexID) {
 	for (auto iter = g_mapTexScale.begin(); iter != g_mapTexScale.end(); iter++) {
 		if (iter->TexID == TexID) {
+			g_ErrorReport.Write("> scaledebug %s (%u) texture match", iter->note.c_str(), TexID);
 			return *iter;
 		}
 	}
@@ -42,7 +50,7 @@ GLuint getScaleTexID(GLuint TexID) {
 	for (auto iter = g_mapTexScale.begin(); iter != g_mapTexScale.end(); iter++) {
 		if (iter->TexID == TexID) {
 			if (iter->isscale) {
-				return (TexID + BITMAP_SCALED);
+				return (TexID + SCALED_TEXTURE);
 			}
 		}
 	}
@@ -448,11 +456,19 @@ bool CGlobalBitmap::LoadImage(GLuint uiBitmapIndex, const std::string& filename,
 	if (mi != m_mapBitmap.end())
 	{
 		BITMAP_t* pBitmap = (*mi).second;
+
+
+		if (_tex.TexID == uiBitmapIndex)
+			g_ErrorReport.Write("> scaledebug %u unscaled -> (%us) texture exist", uiBitmapIndex, _tex.TexID + SCALED_TEXTURE);
+
+
 		if (pBitmap->Ref > 0)
 		{
+
 			if (0 == _stricmp(pBitmap->FileName, filename.c_str()))
 			{
 				pBitmap->Ref++;
+
 				if (!_tex.isscale || !_tex.iscopy)
 					return true;
 			}
@@ -464,25 +480,25 @@ bool CGlobalBitmap::LoadImage(GLuint uiBitmapIndex, const std::string& filename,
 		}
 	}
 
+	bool isscaledfound = false;
+
 	if (_tex.iscopy) {
 
-		type_bitmap_map::iterator mi = m_mapBitmap.find(_tex.TexID + BITMAP_SCALED);
+		type_bitmap_map::iterator mi = m_mapBitmap.find(_tex.TexID + SCALED_TEXTURE);
 
 		if (mi != m_mapBitmap.end())
 		{
 			BITMAP_t* pBitmap = (*mi).second;
-			if (pBitmap->Ref > 0)
+
+			if (0 == _stricmp(pBitmap->FileName, filename.c_str()))
 			{
-				if (0 == _stricmp(pBitmap->FileName, filename.c_str()))
-				{
-					pBitmap->Ref++;
-					return true;
-				}
-				else
-				{
-					g_ErrorReport.Write("File not found %s (%d)->%s\r\n", pBitmap->FileName, uiBitmapIndex, filename.c_str());
-					UnloadImage(uiBitmapIndex, true);
-				}
+				pBitmap->Ref++;
+				return true;
+			}
+			else
+			{
+				g_ErrorReport.Write("Scaled file not found %s (%d)->%s\r\n", pBitmap->FileName, _tex.TexID + SCALED_TEXTURE, filename.c_str());
+				UnloadImage(_tex.TexID + SCALED_TEXTURE, true);
 			}
 		}
 	}
@@ -490,15 +506,25 @@ bool CGlobalBitmap::LoadImage(GLuint uiBitmapIndex, const std::string& filename,
 	std::string ext;
 	SplitExt(filename, ext, false);
 
+	if (_tex.isscale && !isscaledfound) {
 
-	if (_tex.isscale) {
 		bool _res = false;
+		g_ErrorReport.Write("scaledebug File %s scaling %u...", filename.c_str(), _tex.TexID + SCALED_TEXTURE);
+
 		if (0 == _stricmp(ext.c_str(), "jpg"))
-			_res = OpenJpegScaledCopy(_tex.TexID + BITMAP_SCALED, filename, uiFilter, uiWrapMode, WindowHeight / _tex.scale);
+			_res = OpenJpegScaledCopy(_tex.TexID + SCALED_TEXTURE, filename, uiFilter, uiWrapMode, WindowHeight / _tex.scale);
 		else if (0 == _stricmp(ext.c_str(), "tga"))
-			_res = OpenTgaScaledCopy(_tex.TexID + BITMAP_SCALED, filename, uiFilter, uiWrapMode, WindowHeight / _tex.scale);
-		if (!_res)
+			_res = OpenTgaScaledCopy(_tex.TexID + SCALED_TEXTURE, filename, uiFilter, uiWrapMode, WindowHeight / _tex.scale);
+		else {
+			g_ErrorReport.Write("scaledebug File %s no method of scaling found. (%s)", filename.c_str(), ext.c_str());
 			return false;
+		}
+
+		if (!_res) {
+			g_ErrorReport.Write("scaledebug File %s scaling failed.", filename.c_str());
+			return false;
+		}
+
 		if (!_tex.iscopy)
 			return true;
 	} 
@@ -882,6 +908,8 @@ bool CGlobalBitmap::OpenJpeg(GLuint uiBitmapIndex, const std::string& filename, 
 		}
 
         m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
+		if (uiBitmapIndex >= SCALED_TEXTURE)
+			g_ErrorReport.Write("> scaledebug %s %u scaled texture added to map.", filename.c_str(), uiBitmapIndex);
 
 		glGenTextures(1, &(pNewBitmap->TextureNumber));
 		glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
@@ -1094,6 +1122,8 @@ bool CGlobalBitmap::OpenJpegScaledCopy(
 	delete[] srcBuffer;
 
 	m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
+	g_ErrorReport.Write("> scaledebug %u scaled texture added to map.", uiBitmapIndex);
+
 
 	glGenTextures(1, &(pNewBitmap->TextureNumber));
 	glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
@@ -1243,6 +1273,9 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::string& filename, G
 	SAFE_DELETE_ARRAY(PakBuffer);
 
 	m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
+	if (uiBitmapIndex >= SCALED_TEXTURE)
+		g_ErrorReport.Write("> scaledebug %s %u scaled texture added to map.", filename.c_str(), uiBitmapIndex);
+
 
 	glGenTextures(1, &(pNewBitmap->TextureNumber));
 	glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);
@@ -1421,6 +1454,8 @@ bool CGlobalBitmap::OpenTgaScaledCopy(
 	SAFE_DELETE_ARRAY(PakBuffer);
 
 	m_mapBitmap.insert(type_bitmap_map::value_type(uiBitmapIndex, pNewBitmap));
+	g_ErrorReport.Write("> scaledebug %u scaled texture added to map.", uiBitmapIndex);
+
 
 	glGenTextures(1, &(pNewBitmap->TextureNumber));
 	glBindTexture(GL_TEXTURE_2D, pNewBitmap->TextureNumber);

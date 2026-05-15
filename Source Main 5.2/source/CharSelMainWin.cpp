@@ -15,6 +15,7 @@
 #include "ZzzOpenData.h"
 #include "ZzzOpenglUtil.h"
 #include "ServerListManager.h"
+#include "wt.h"
 
 extern float g_fScreenRate_x;
 extern float g_fScreenRate_y;
@@ -31,17 +32,22 @@ CCharSelMainWin::~CCharSelMainWin()
 
 void CCharSelMainWin::Create()
 {
-	m_asprBack[CSMW_SPR_DECO].Create(189, 103, BITMAP_LOG_IN+2);
+	m_asprBack[CSMW_SPR_DECO].Create(getScaleNewSize(BITMAP_LOG_IN + 2, 189), getScaleNewSize(BITMAP_LOG_IN + 2, 103), getScaleTexID(BITMAP_LOG_IN+2));
 	m_asprBack[CSMW_SPR_INFO].Create(
-	CInput::Instance().GetScreenWidth() - 266, 21);
+	CInput::Instance().GetScreenWidth() - getScaleNewSize(BITMAP_LOG_IN + 2, 266), getScaleNewSize(BITMAP_LOG_IN + 2, 21));
 	m_asprBack[CSMW_SPR_INFO].SetColor(0, 0, 0);
 	m_asprBack[CSMW_SPR_INFO].SetAlpha(143);
 
+	//getScaleTexID(BITMAP_LOG_IN + 3)
 
-	m_aBtn[CSMW_BTN_CREATE].Create(54, 30, BITMAP_LOG_IN+3, 4, 2, 1, 3);
-	m_aBtn[CSMW_BTN_MENU].Create(54, 30, BITMAP_LOG_IN+4, 3, 2, 1);
-	m_aBtn[CSMW_BTN_CONNECT].Create(54, 30, BITMAP_LOG_IN+5, 4, 2, 1, 3);
-	m_aBtn[CSMW_BTN_DELETE].Create(54, 30, BITMAP_LOG_IN+6, 4, 2, 1, 3);
+	m_aBtn[CSMW_BTN_CREATE].Create(getScaleNewSize(BITMAP_LOG_IN + 3,54), getScaleNewSize(BITMAP_LOG_IN + 3, 30), getScaleTexID(BITMAP_LOG_IN+3), 4, 2, 1, 3);
+	m_aBtn[CSMW_BTN_MENU].Create(getScaleNewSize(BITMAP_LOG_IN + 4,54), getScaleNewSize(BITMAP_LOG_IN + 4, 30), getScaleTexID(BITMAP_LOG_IN+4), 3, 2, 1);
+
+	m_aBtn[CSMW_BTN_CONNECT].Create(getScaleNewSize(BITMAP_LOG_IN + 5, 54), getScaleNewSize(BITMAP_LOG_IN + 5, 30), getScaleTexID(BITMAP_LOG_IN + 5), 4, 2, 1, 3);
+
+	//g_ErrorReport.Write("> CCharSelMainWin ID %u w %d h %d", getScaleTexID(BITMAP_LOG_IN + 5), getScaleNewSize(BITMAP_LOG_IN + 5, 54), getScaleNewSize(BITMAP_LOG_IN + 5, 30));
+
+	m_aBtn[CSMW_BTN_DELETE].Create(getScaleNewSize(BITMAP_LOG_IN + 6,54), getScaleNewSize(BITMAP_LOG_IN + 6,30), getScaleTexID(BITMAP_LOG_IN+6), 4, 2, 1, 3);
 
 	CWin::Create(
 		m_aBtn[0].GetWidth() * CSMW_BTN_MAX + m_asprBack[CSMW_SPR_INFO].GetWidth() + 6,
@@ -82,8 +88,11 @@ void CCharSelMainWin::SetPosition(int nXCoord, int nYCoord)
 	m_asprBack[CSMW_SPR_INFO].SetPosition(m_aBtn[CSMW_BTN_MENU].GetXPos() + nBtnWidth + 2, nYCoord + 5);
 
 	int nWinRPosX = nXCoord + CWin::GetWidth();
-	m_asprBack[CSMW_SPR_DECO].SetPosition(nWinRPosX - (m_asprBack[CSMW_SPR_DECO].GetWidth() - 22), nYCoord - 59);
+
+	m_asprBack[CSMW_SPR_DECO].SetPosition(nWinRPosX - (m_asprBack[CSMW_SPR_DECO].GetWidth() - getScaleNewSize(BITMAP_LOG_IN + 2, 22)), nYCoord - getScaleNewSize(BITMAP_LOG_IN + 2, 59));
+
 	m_aBtn[CSMW_BTN_DELETE].SetPosition(nWinRPosX - nBtnWidth, nYCoord);
+
 	m_aBtn[CSMW_BTN_CONNECT].SetPosition(nWinRPosX - (nBtnWidth * 2 + 1), nYCoord);
 }
 

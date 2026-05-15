@@ -2103,31 +2103,40 @@ void MU_ProcessSDLEvents()
 
 				break;
 
-		case SDL_MOUSEMOTION:
+		case SDL_FINGERMOTION:
 
-#ifdef __ANDROID__
-			//scale = std::min(WindowWidth / 640.0f, WindowHeight / 480.0f);
-			//g_fScreenRate_x = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
-			//g_fScreenRate_y = g_fScreenRate_x;
+			//MouseX = (float)e.motion.x / g_fScreenRate_x;
+			//MouseY = (float)e.motion.y / g_fScreenRate_y;
 
-			MouseX = (float)e.motion.x / g_fScreenRate_x;
-			MouseY = (float)e.motion.y / g_fScreenRate_y;
+			MouseX = (e.tfinger.x * WindowWidth) / g_fScreenRate_x;
+			MouseY = (e.tfinger.y * WindowHeight) / g_fScreenRate_y;
 
-#else
-			MouseX = (float)e.motion.x / g_fScreenRate_x;
-			MouseY = (float)e.motion.y / g_fScreenRate_y;
-#endif
 
 			if (MouseX < 0) MouseX = 0;
 			if (MouseX > 640) MouseX = 640;
 			if (MouseY < 0) MouseY = 0;
 			if (MouseY > 480) MouseY = 480;
+
 			break;
 
-		case SDL_MOUSEBUTTONDOWN:
+		case SDL_FINGERDOWN:
 
 			g_iNoMouseTime = 0;
 
+			//MouseX = (float)e.motion.x / g_fScreenRate_x;
+			//MouseY = (float)e.motion.y / g_fScreenRate_y;
+
+			MouseX = (e.tfinger.x * WindowWidth) / g_fScreenRate_x;
+			MouseY = (e.tfinger.y * WindowHeight) / g_fScreenRate_y;
+
+			MouseLButtonPop = false;
+
+			if (!MouseLButton)
+				MouseLButtonPush = true;
+
+			MouseLButton = true;
+
+			/*
 			if (e.button.button == SDL_BUTTON_LEFT)
 			{
 				MouseLButtonPop = false;
@@ -2151,17 +2160,27 @@ void MU_ProcessSDLEvents()
 					MouseMButtonPush = true;
 
 				MouseMButton = true;
-			}
+			}*/
 			break;
 
-		case SDL_MOUSEBUTTONUP:
+		case SDL_FINGERUP:
+
 			g_iNoMouseTime = 0;
 
-			if (e.button.button == SDL_BUTTON_LEFT)
+			//MouseX = (float)e.motion.x / g_fScreenRate_x;
+			//MouseY = (float)e.motion.y / g_fScreenRate_y;
+
+
+			MouseLButton = false;
+			MouseLButtonPush = false;
+			MouseLButtonPop = true;
+
+			/*if (e.button.button == SDL_BUTTON_LEFT)
 			{
 				MouseLButtonPush = false;
 				MouseLButtonPop = true;
 				MouseLButton = false;
+
 				g_iMousePopPosition_x = MouseX;
 				g_iMousePopPosition_y = MouseY;
 
@@ -2183,7 +2202,7 @@ void MU_ProcessSDLEvents()
 					MouseMButtonPop = true;
 
 				MouseMButton = false;
-			}
+			}*/
 			break;
 
 		case SDL_MOUSEWHEEL:

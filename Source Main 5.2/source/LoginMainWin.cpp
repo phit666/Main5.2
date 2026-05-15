@@ -15,6 +15,7 @@
 
 #include "ZzzCharacter.h"
 #include "wsclientinline.h"
+#include "wt.h"
 
 #ifdef MOVIE_DIRECTSHOW
 #include <dshow.h>
@@ -38,7 +39,8 @@ CLoginMainWin::~CLoginMainWin()
 void CLoginMainWin::Create()
 {
 	for (int i = 0; i <= LMW_BTN_CREDIT; ++i)
-		m_aBtn[i].Create(54, 30, BITMAP_LOG_IN+4 + i, 3, 2, 1);
+		m_aBtn[i].Create(getScaleNewSize(BITMAP_LOG_IN + 4 + i, 54), getScaleNewSize(BITMAP_LOG_IN + 4 + i, 30), getScaleTexID(BITMAP_LOG_IN+4 + i), 3, 2, 1);
+
 #ifdef MOVIE_DIRECTSHOW
 	m_aBtn[LMW_BTN_MOVIE].Create(54, 30, BITMAP_LOG_IN+15, 3, 2, 1);
 #endif	// MOVIE_DIRECTSHOW
@@ -49,7 +51,7 @@ void CLoginMainWin::Create()
 	for (int i = 0; i < LMW_BTN_MAX; ++i)
 		CWin::RegisterButton(&m_aBtn[i]);
 
-	m_sprDeco.Create(189, 103, BITMAP_LOG_IN+6, 0, NULL, 105, 59);
+	m_sprDeco.Create(getScaleNewSize(BITMAP_LOG_IN + 6,189), getScaleNewSize(BITMAP_LOG_IN + 6,103), getScaleTexID(BITMAP_LOG_IN+6), 0, NULL, 105, 59);
 }
 
 void CLoginMainWin::PreRelease()
