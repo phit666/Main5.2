@@ -160,8 +160,8 @@ void PlayMp3(char *Name, BOOL bEnforce )
 	if(Destroy) return;
     if(!m_MusicOnOff && !bEnforce) return;
 
-    if(Name != NULL)
-        g_ErrorReport.Write( "> PlayMp3, %s", Name);
+    //if(Name != NULL)
+        //g_ErrorReport.Write( "> PlayMp3, %s", Name);
 
 	if(strcmp(Name,Mp3FileName) == 0) 
 	{
@@ -1782,9 +1782,9 @@ int main(int argc, char* argv[])
 		SetEffectVolumeLevel(g_pOption->GetVolumeLevel());
 	}
 
-#ifdef _TODO
+//#ifdef _TODO
 	SetTimer(g_hWnd, HACK_TIMER, 20*1000, NULL);
-#endif
+//#endif
 
 	srand((unsigned)time(NULL));
 	for(int i=0;i<100;i++)
@@ -2238,6 +2238,10 @@ void MU_ProcessSDLEvents()
 			case SDL_USEREVENT:
 
 				switch(e.user.code){
+
+					case HACK_TIMER:
+						CheckHack();
+						break;
 
 					case CHATCONNECT_TIMER:
 						g_pFriendMenu->SendChatRoomConnectCheck();

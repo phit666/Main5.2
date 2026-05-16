@@ -78,6 +78,17 @@ void CLoginWin::Create()
 	m_pPassInputBox->SetState(UISTATE_NORMAL);
 	m_pPassInputBox->SetTitle("login-password");
 
+	char username[11];
+	char password[11];
+
+	if (LoadQuickLogin(username, sizeof(username), password, sizeof(password)))
+	{
+		strncpy(m_pIDInputBox->m_szText, username, 10);
+		strncpy(m_pPassInputBox->m_szText, password, 10);
+		m_pIDInputBox->m_iTextLength = strlen(username);
+		m_pPassInputBox->m_iTextLength = strlen(password);
+	}
+
 #ifdef _WIN32
 	m_pIDInputBox->SetTabTarget(m_pPassInputBox);
 	m_pPassInputBox->SetTabTarget(m_pIDInputBox);
@@ -249,6 +260,9 @@ void CLoginWin::RequestLogin()
 			#else
 				SendRequestLogIn(szID, szPass);
 			#endif
+
+				SaveQuickLogin(szID, szPass);		
+
 		
 		}
 	}

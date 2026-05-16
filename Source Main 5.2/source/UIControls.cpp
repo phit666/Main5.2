@@ -3705,17 +3705,6 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 		ctx->style.edit.cursor_normal = text;
 		ctx->style.edit.cursor_hover = text;
 
-		/*
-		if (strncmp(this->m_title.c_str(), "login-username", 14) == 0) {
-			sprintf(m_szText, "lorelie");
-			m_iTextLength = 7;
-		}*/
-
-		//if (strncmp(this->m_title.c_str(), "login-password", 14) == 0) {
-			//strncpy(masked, m_szText, 7);
-			//m_iTextLength = 7;
-		//}
-
 		if (m_bPasswordInput) {
 			int len = m_iTextLength;
 			if (len > MAX_TEXT_LENGTH)
@@ -3747,11 +3736,11 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 			strncpy(m_szText, masked, m_iTextLength);
 		}
 
-		if (g_refocusinputresize == 1 && g_activewindow == m_title) {
-			g_refocusinputresize = 0;
-			nk_window_set_focus(ctx, m_title.c_str());
+		//if (g_refocusinputresize == 1 && g_activewindow == m_title) {
+			//g_refocusinputresize = 0;
+			//nk_window_set_focus(ctx, m_title.c_str());
 			//nk_edit_focus(ctx, NK_EDIT_FIELD);
-		}
+		//}
 
 		if (textboxfocused == false) {
 			textboxfocused = ((st & NK_EDIT_ACTIVE) != 0) ? true : false;
