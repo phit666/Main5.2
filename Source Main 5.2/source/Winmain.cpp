@@ -1394,7 +1394,7 @@ static bool iskeyboardactive = false;
 
 static void enablekeyboard() {
 #ifdef MU_USE_SDL
-	if (!iskeyboardactive || SDL_IsScreenKeyboardShown(gSDLWindow) == SDL_TRUE) {
+	if (SDL_IsScreenKeyboardShown(gSDLWindow) == SDL_FALSE) {
 		iskeyboardactive = true;
 		SDL_StartTextInput();
 	}
@@ -1403,7 +1403,7 @@ static void enablekeyboard() {
 
 static void disablekeyboard() {
 #ifdef MU_USE_SDL
-	if (iskeyboardactive || SDL_IsScreenKeyboardShown(gSDLWindow) == SDL_FALSE) {
+	if (SDL_IsScreenKeyboardShown(gSDLWindow) == SDL_TRUE) {
 		iskeyboardactive = false;
 		SDL_StopTextInput();
 	}
@@ -1412,9 +1412,14 @@ static void disablekeyboard() {
 
 static bool isoverlayvkactive = false;
 static uint64_t overlaytick = 0;
+bool overlayblocktouch = false;
+static int input_len = 0;
+static char input_buf[256] = {};
+static std::string uniquetitle = "";
+static bool initfocus = false;
 
-static void vkeyboardoverlay(char* buffer) {
-	if (iskeyboardactive)
+static void vkeyboardoverlay(const char* title) {
+	/*if (iskeyboardactive)
 	{
 		nk_style_push_color(g_nk_ctx, &g_nk_ctx->style.window.background,
 			nk_rgba(12, 8, 4, 235));
@@ -1424,66 +1429,95 @@ static void vkeyboardoverlay(char* buffer) {
 
 		int fontsize = pushfont(g_hFontBig);
 
-		g_ErrorReport.Write("> debugvkey, fontsize %d", fontsize);
-
-
 		struct nk_rect inputOverlay;
-		inputOverlay.w = WindowWidth / 2;
-		inputOverlay.h = fontsize * 3;
-		inputOverlay.y = 480 - FontHeight - 220; // above keyboard estimate
+		inputOverlay.w = WindowWidth / 2.5;
+		inputOverlay.h = fontsize * 6;
+		inputOverlay.y = WindowHeight / 3; // above keyboard estimate
 		inputOverlay.x = (WindowWidth - inputOverlay.w) / 2;
 
-		nk_begin(g_nk_ctx, "Typing", inputOverlay,
-			NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER);
+		pushfont(g_hFont);
 
-		nk_layout_row_dynamic(g_nk_ctx, fontsize * 2, 1);
-		nk_edit_focus(g_nk_ctx, NK_EDIT_FIELD);
+		if (nk_begin_titled(g_nk_ctx, uniquetitle.c_str(), title, inputOverlay,
+			NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER | NK_WINDOW_TITLE)) {
 
-		static int len = 0;
-		nk_flags editcontrolflag = nk_edit_string(g_nk_ctx,
-			NK_EDIT_FIELD,
-			buffer,
-			&len,
-			10,
-			nk_filter_default);
+			pushfont(g_hFontBig);
 
-		isoverlayvkactive = (editcontrolflag & NK_EDIT_ACTIVE) ? true : false;
+			nk_layout_row_dynamic(g_nk_ctx, fontsize * 4, 1);
+
+			if (!initfocus) {
+				initfocus = true;
+				//g_nk_ctx->current->edit.active = nk_true;
+				//g_nk_ctx->current->edit.name = g_nk_ctx->current->edit.seq;
+				nk_edit_focus(g_nk_ctx, NK_EDIT_FIELD);
+			}
+
+			nk_flags editcontrolflag = nk_edit_string(g_nk_ctx,
+				NK_EDIT_FIELD | NK_EDIT_ALWAYS_INSERT_MODE,
+				input_buf,
+				&input_len,
+				10,
+				nk_filter_default);
+
+			//nk_edit_focus(g_nk_ctx, NK_EDIT_FIELD);
+
+		}
 
 		nk_end(g_nk_ctx);
 
 		popfont();
 		nk_style_pop_color(g_nk_ctx);
 		nk_style_pop_color(g_nk_ctx);
-	}
+		
+	}*/
 }
+
+static CUITextInputBox* textinput = NULL;
 
 static void togglevkeyboard() {
 
 	bool has_focus = false;
-	static CUITextInputBox* textinput = NULL;
 
-	if (!(isoverlayvkactive)) {
-		for (auto iter = vUITextInputs.begin(); iter != vUITextInputs.end(); iter++) {
-			textinput = *iter;
-			if (textinput->textboxfocused) {
-				has_focus = true;
-				memset(textinput->m_szText, 0, sizeof(textinput->m_szText));
-				textinput->m_szText[10] = '\0';
-				break;
-			}
+	for (auto iter = vUITextInputs.begin(); iter != vUITextInputs.end(); iter++) {
+		textinput = *iter;
+		if (textinput->textboxfocused) {
+			//initfocus = false;
+			has_focus = true;
+			/*overlaytick = SDL_GetTicks64() + 500;
+			uniquetitle = std::to_string(SDL_GetTicks64());
+			if (textinput->m_iTextLength) {
+				strncpy(input_buf, textinput->m_szText, textinput->m_iTextLength);
+				input_len = textinput->m_iTextLength;
+
+			}*/
+			break;
 		}
 	}
 
-	if (has_focus || isoverlayvkactive || overlaytick > SDL_GetTicks64()) {
-		if (has_focus || isoverlayvkactive) {
-			overlaytick = SDL_GetTicks64() + 500;
-		}
-		vkeyboardoverlay(textinput->m_szText);
+	if (has_focus) {
 		enablekeyboard();
+		overlayblocktouch = true;
 	}
 	else {
 		disablekeyboard();
+		overlayblocktouch = false;
 	}
+	/*else if (overlaytick > SDL_GetTicks64()) {
+		overlaytick = SDL_GetTicks64() + 500;
+		vkeyboardoverlay(textinput->m_title.c_str());
+	}
+	else 
+	{
+		if (overlaytick != 0) {
+			strncpy(textinput->m_szText, input_buf, input_len);
+			textinput->m_iTextLength = input_len;
+			disablekeyboard();
+			overlayblocktouch = false;
+			overlaytick = 0;
+			memset(input_buf, 0, sizeof(input_buf));
+			input_len = 0;
+			initfocus = false;
+		}
+	}*/
 }
 
 void MU_ProcessSDLEvents();
@@ -2223,7 +2257,6 @@ void MU_ProcessSDLEvents()
 				}
 
 				break;
-
 #ifdef __ANDROID__
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
@@ -2233,6 +2266,9 @@ void MU_ProcessSDLEvents()
 
 			case SDL_FINGERDOWN:
 			{
+				//if (overlayblocktouch)
+					//break;
+
 				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
 				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
 
@@ -2274,6 +2310,9 @@ void MU_ProcessSDLEvents()
 
 			case SDL_FINGERMOTION:
 			{
+				if (overlayblocktouch)
+					break;
+
 				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
 				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
 
@@ -2286,6 +2325,9 @@ void MU_ProcessSDLEvents()
 
 			case SDL_FINGERUP:
 			{
+				//if (overlayblocktouch)
+					//break;
+
 				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
 				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
 
@@ -2297,6 +2339,9 @@ void MU_ProcessSDLEvents()
 #else
 		case SDL_MOUSEMOTION:
 
+			//if (overlayblocktouch)
+				//break;
+
 			MouseX = (float)e.motion.x / g_fScreenRate_x;
 			MouseY = (float)e.motion.y / g_fScreenRate_y;
 
@@ -2307,6 +2352,9 @@ void MU_ProcessSDLEvents()
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
+
+			//if (overlayblocktouch)
+				//break;
 
 			MouseX = (float)e.button.x / g_fScreenRate_x;
 			MouseY = (float)e.button.y / g_fScreenRate_y;
@@ -2359,6 +2407,9 @@ void MU_ProcessSDLEvents()
 
 		case SDL_MOUSEBUTTONUP:
 
+			//if (overlayblocktouch)
+				//break;
+
 			g_iNoMouseTime = 0;
 			g_TestMouseClick = 0;
 
@@ -2406,15 +2457,28 @@ void MU_ProcessSDLEvents()
 #endif
 
 		case SDL_MOUSEWHEEL:
+
+			//if (overlayblocktouch)
+				//break;
+
 			MouseWheel = e.wheel.y;
 			break;
 
 		case SDL_KEYDOWN:
+
+			//if (overlayblocktouch && e.key.keysym.sym == SDLK_RETURN)
+				//overlaytick = SDL_GetTicks64();
+				//break;
+
 			if (e.key.keysym.sym == SDLK_RETURN)
 				SetEnterPressed(true);
 			break;
 
 		case SDL_TEXTINPUT:
+
+			if (overlayblocktouch)
+				break;
+
 			// later: send e.text.text to your chat/textbox system
 			break;
 		}

@@ -111,18 +111,6 @@ bool SEASON3B::CNewUI3DCamera::Render()
 	if (m_list3DObjs.empty())
 		return true;
 
-	if (g_TestMouseClick) {
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n CameraAngle %.3f %.3f %.3f",
-			CameraAngle[0],
-			CameraAngle[1],
-			CameraAngle[2]
-		);
-	}
-
-	PickState savedPick = SavePickState();
-
-
 	EndBitmap();
 
 
@@ -154,8 +142,6 @@ bool SEASON3B::CNewUI3DCamera::Render()
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	BeginBitmap();
-
-	RestorePickState(savedPick);
 
 	while (!m_deque2DEffects.empty())
 	{

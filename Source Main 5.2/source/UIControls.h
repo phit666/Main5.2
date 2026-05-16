@@ -913,6 +913,7 @@ public:
 	bool textboxfocused = false;
 	std::string m_title;
 	char m_szText[MAX_TEXT_LENGTH + 1];
+	char masked[MAX_TEXT_LENGTH + 1];
 	int  m_iTextLength;
 	int  m_iMaxLength;
 

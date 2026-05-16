@@ -364,4 +364,4 @@ extern int  g_PendingTouchMoveFrames;
 #include "UIControls.h"
 
 extern std::vector<CUITextInputBox*> vUITextInputs;
-
+extern bool overlayblocktouch;

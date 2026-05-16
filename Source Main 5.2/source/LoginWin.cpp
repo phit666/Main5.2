@@ -78,13 +78,10 @@ void CLoginWin::Create()
 	m_pPassInputBox->SetState(UISTATE_NORMAL);
 	m_pPassInputBox->SetTitle("login-password");
 
+#ifdef _WIN32
 	m_pIDInputBox->SetTabTarget(m_pPassInputBox);
 	m_pPassInputBox->SetTabTarget(m_pIDInputBox);
-
-	m_pIDInputBox->SetText("lorelie");
-	m_pPassInputBox->SetText("redzone");
-
-	
+#endif	
 	this->FirstLoad = 1;
 }
 

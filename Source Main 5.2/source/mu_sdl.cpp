@@ -669,6 +669,9 @@ void MU_ShutdownSDL()
 
 short MU_GetAsyncKeyState(int key) {
 
+    if (overlayblocktouch)
+        return 0;
+
 #ifdef __ANDROID__
     if (SceneFlag == CHARACTER_SCENE && key == VK_LBUTTON) {
         if (g_PendingTouchMove && g_PendingTouchMoveFrames == 0) {

@@ -260,45 +260,6 @@ void safe_enable_attr(GLuint index) {
 	glEnableVertexAttribArray(index);
 }
 
-
-void gluPerspective2TEST(float Fov, float Aspect, float ZNear, float ZFar)
-{
-	projectionStack.back() = glm::perspective(
-		glm::radians(Fov),
-		Aspect,
-		ZNear,
-		ZFar
-	);
-
-	MU_ApplyMatrices();
-
-	ScreenCenterX = OpenglWindowX + OpenglWindowWidth / 2;
-	ScreenCenterY = OpenglWindowY + OpenglWindowHeight / 2;
-	ScreenCenterYFlip = WindowHeight - ScreenCenterY;
-
-	float tanFov = tanf(Fov * 0.5f * 3.141592f / 180.0f);
-
-	PerspectiveX = tanFov * Aspect / (OpenglWindowWidth * 0.5f);
-	PerspectiveY = tanFov / (OpenglWindowHeight * 0.5f);
-}
-
-void gluPerspective222(float Fov, float Aspect, float ZNear, float ZFar)
-{
-	projectionStack.back() =
-		glm::perspective(glm::radians(Fov), Aspect, ZNear, ZFar);
-
-	//MU_ApplyMatrices();
-
-	ScreenCenterX = (int)(OpenglWindowX + ((float)OpenglWindowWidth * 0.5f));
-	ScreenCenterY = (int)(OpenglWindowY + ((float)OpenglWindowHeight * 0.5f));
-	ScreenCenterYFlip = WindowHeight - ScreenCenterY;
-
-	float tanFov = tanf(glm::radians(Fov) * 0.5f);
-
-	PerspectiveX = tanFov * Aspect / (OpenglWindowWidth * 0.5f);
-	PerspectiveY = tanFov / (OpenglWindowHeight * 0.5f);
-}
-
 void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 {
 	// 1. Update the manual Projection Stack
@@ -317,85 +278,11 @@ void gluPerspective2(float Fov, float Aspect, float ZNear, float ZFar)
 	PerspectiveY = tanf(Fov * 0.5f * 3.141592f / 180.f) / (float)(OpenglWindowHeight / 2) * AspectY;
 }
 
-void CreateScreenVectorTEST(int sx, int sy, vec3_t Target, bool bFixView)
-{
-#ifdef _WIN32
-	sx = sx * WindowWidth / 640;
-	sy = sy * WindowHeight / 480;
-#else
-	float scale = (std::min)(
-		WindowWidth / 640.0f,
-		WindowHeight / 480.0f
-		);
-
-	float offsetX = (WindowWidth - 640.0f * scale) * 0.5f;
-	float offsetY = (WindowHeight - 480.0f * scale) * 0.5f;
-
-	sx = (int)(offsetX + sx * scale);
-	sy = (int)(offsetY + sy * scale);
-#endif
-
-	vec3_t p1, p2;
-
-	if (bFixView)
-	{
-		p1[0] = (float)(sx - ScreenCenterX) * CameraViewFar * PerspectiveX;
-		p1[1] = -(float)(sy - ScreenCenterY) * CameraViewFar * PerspectiveY;
-		p1[2] = -CameraViewFar;
-	}
-	else
-	{
-		p1[0] = (float)(sx - ScreenCenterX) * RENDER_ITEMVIEW_FAR * PerspectiveX;
-		p1[1] = -(float)(sy - ScreenCenterY) * RENDER_ITEMVIEW_FAR * PerspectiveY;
-		p1[2] = -RENDER_ITEMVIEW_FAR;
-	}
-
-	p2[0] = -CameraMatrix[0][3];
-	p2[1] = -CameraMatrix[1][3];
-	p2[2] = -CameraMatrix[2][3];
-
-	VectorIRotate(p2, CameraMatrix, MousePosition);
-	VectorIRotate(p1, CameraMatrix, p2);
-	VectorAdd(MousePosition, p2, Target);
-}
-
 void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 {
 	sx = sx * g_fScreenRate_x;// WindowWidth / 640;
 	sy = sy * g_fScreenRate_y;// WindowHeight / 480;
 
-	if (g_TestMouseClick) {
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n BEFORE CSV CAM MATRIX POS %.3f %.3f %.3f",
-			CameraMatrix[0][3],
-			CameraMatrix[1][3],
-			CameraMatrix[2][3]
-		);
-
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n BEFORE CSV MousePosition %.3f %.3f %.3f",
-			MousePosition[0],
-			MousePosition[1],
-			MousePosition[2]
-		);
-
-		int oldsx = sx;
-		int oldsy = sy;
-
-		sx = sx * g_fScreenRate_x;
-		sy = sy * g_fScreenRate_y;
-
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n CSV input(%d,%d) scaled(%d,%d) center(%d,%d) persp(%.8f,%.8f)",
-			oldsx, oldsy,
-			sx, sy,
-			ScreenCenterX, ScreenCenterY,
-			PerspectiveX, PerspectiveY
-		);
-	}
-
-
-
 	vec3_t p1, p2;
 
 	if (bFixView)
@@ -415,24 +302,9 @@ void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 	p2[1] = -CameraMatrix[1][3];
 	p2[2] = -CameraMatrix[2][3];
 
-	if (g_TestMouseClick) {
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n CSV p1(%.3f %.3f %.3f)",
-			p1[0], p1[1], p1[2]
-		);
-	}
-
 	VectorIRotate(p2, CameraMatrix, MousePosition);
 	VectorIRotate(p1, CameraMatrix, p2);
 	VectorAdd(MousePosition, p2, Target);
-
-	if (g_TestMouseClick) {
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n CSV MousePos(%.3f %.3f %.3f) Target(%.3f %.3f %.3f)",
-			MousePosition[0], MousePosition[1], MousePosition[2],
-			Target[0], Target[1], Target[2]
-		);
-	}
 }
 
 void Projection(vec3_t Position, int* sx, int* sy)
@@ -984,32 +856,6 @@ void UpdateMousePositionn()
 
 	Vector(-CameraMatrix[0][3], -CameraMatrix[1][3], -CameraMatrix[2][3], vPos);
 	VectorIRotate(vPos, CameraMatrix, MousePosition);
-}
-
-void UpdateMousePositionn2()
-{
-	// 1. Calculate the View Matrix (Manual glLoadIdentity + glTranslatef)
-	// We create a fresh matrix and translate it by the negative camera position.
-	glm::mat4 cameraMat = glm::translate(glm::mat4(1.0f),
-		glm::vec3(-CameraPosition[0], -CameraPosition[1], -CameraPosition[2]));
-
-	// 2. Extract Translation (Equivalent to -CameraMatrix[i][3])
-	// In a column-major glm::mat4, .[3] is the translation column.
-	// We take the negative of x, y, z as per your original logic.
-	glm::vec3 vPos(-cameraMat[3][0], -cameraMat[3][1], -cameraMat[3][2]);
-
-	// 3. Inverse Rotation (Equivalent to VectorIRotate)
-	// VectorIRotate usually means multiplying the vector by the transposed 
-	// (inverse) 3x3 rotation part of the matrix.
-	glm::mat3 rotationPart = glm::mat3(cameraMat); // Extracts the top-left 3x3
-	glm::mat3 inverseRotation = glm::transpose(rotationPart);
-
-	glm::vec3 finalMousePos = inverseRotation * vPos;
-
-	// 4. Store result back into your array
-	MousePosition[0] = finalMousePos.x;
-	MousePosition[1] = finalMousePos.y;
-	MousePosition[2] = finalMousePos.z;
 }
 
 #ifdef LDS_ADD_MULTISAMPLEANTIALIASING
@@ -2121,55 +1967,13 @@ vec3_t CollisionPosition;
 
 bool CollisionDetectLineToFace(vec3_t Position, vec3_t Target, int Polygon, float* v1, float* v2, float* v3, float* v4, vec3_t Normal, bool Collision)
 {
-	if (g_TestMouseClick) {
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n"
-
-			"Pos(%.3f %.3f %.3f)\n"
-			"Target(%.3f %.3f %.3f)\n"
-			"Normal(%.3f %.3f %.3f)\n"
-
-			"v1(%.3f %.3f %.3f)\n"
-			"v2(%.3f %.3f %.3f)\n"
-			"v3(%.3f %.3f %.3f)\n",
-
-			Position[0], Position[1], Position[2],
-			Target[0], Target[1], Target[2],
-
-			Normal[0], Normal[1], Normal[2],
-
-			v1[0], v1[1], v1[2],
-			v2[0], v2[1], v2[2],
-			v3[0], v3[1], v3[2]
-		);
-	}
-
 	vec3_t Direction;
 	VectorSubtract(Target, Position, Direction);
-
-	if (g_TestMouseClick) {
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n Direction(%.3f %.3f %.3f)",
-			Direction[0],
-			Direction[1],
-			Direction[2]
-		);
-	}
 
 	float a = DotProduct(Direction, Normal);
 	if (a >= 0.f) return false;
 	float b = DotProduct(Position, Normal) - DotProduct(v1, Normal);
 	float t = -b / a;
-
-	if (g_TestMouseClick) {
-		g_ErrorReport.Write(
-			"> COLLISION TEST\n a=%.6f b=%.6f t=%.6f Distance=%.6f",
-			a,
-			b,
-			t,
-			Distance
-		);
-	}
 
 	if (t >= 0.f && t <= Distance)
 	{
@@ -2212,15 +2016,6 @@ bool CollisionDetectLineToFace(vec3_t Position, vec3_t Target, int Polygon, floa
 		{
 			Distance = t;
 			Vector(X, Y, Z, CollisionPosition);
-		}
-
-		if (g_TestMouseClick) {
-			g_ErrorReport.Write(
-				"> COLLISION TEST\n HIT X=%.3f Y=%.3f Z=%.3f",
-				X,
-				Y,
-				Z
-			);
 		}
 
 		return true;

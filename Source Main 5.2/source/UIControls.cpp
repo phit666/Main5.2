@@ -3131,7 +3131,8 @@ CUITextInputBox::CUITextInputBox()
 	m_hBitmap = NULL;
 	m_pFontBuffer = NULL;
 
-	memset(m_szText, 0, sizeof(m_szText));
+	memset(m_szText, 0, sizeof(m_szText)); //masked
+	memset(masked, 0, sizeof(masked)); //masked
 	m_iTextLength = 0;
 	m_iMaxLength = MAX_TEXT_LENGTH;
 	m_bShow = false;
@@ -3639,6 +3640,8 @@ static nk_color ARGBToNK(DWORD c)
 	return col;
 }
 
+static std::string g_activewindow = "";
+
 void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 {
 #ifdef MU_USE_SDL
@@ -3661,10 +3664,13 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 
 	struct nk_rect bounds = nk_rect(
 		(float)(m_iPos_x * g_fScreenRate_x),
-		(float)(m_iPos_y * g_fScreenRate_y) - 3,
+		(float)(m_iPos_y * g_fScreenRate_y)-20,
 		(float)(m_iWidth * g_fScreenRate_x),
 		(float)(m_iHeight * g_fScreenRate_y)
 	);
+
+	//g_ErrorReport.Write("> debugform, %s x:%d y:%d w:%d h:%d", m_title.c_str(), m_iPos_x, m_iPos_y, m_iWidth, m_iHeight);
+
 
 	nk_color back = ARGBToNK(m_dwBackColor);
 	nk_color text = ARGBToNK(m_dwTextColor);
@@ -3680,19 +3686,10 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 	if (nk_begin(ctx, m_title.c_str(), bounds,
 		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND))
 	{
-
-		/*SDL_Rect r;
-		r.x = bounds.x * g_fScreenRate_x;
-		r.y = bounds.y * g_fScreenRate_y;
-		r.w = bounds.w * g_fScreenRate_x;
-		r.h = bounds.h * g_fScreenRate_y;
-
-		SDL_SetTextInputRect(&r);*/
-
-
 		nk_layout_row_dynamic(ctx, (float)(m_iHeight * g_fScreenRate_y), 1);
 
 		nk_flags flags = m_bUseMultiLine ? NK_EDIT_BOX : NK_EDIT_FIELD | NK_EDIT_SIG_ENTER | NK_EDIT_AUTO_SELECT;
+
 		if (m_bFocused)
 			flags |= NK_EDIT_ALWAYS_INSERT_MODE;
 
@@ -3708,36 +3705,36 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 		ctx->style.edit.cursor_normal = text;
 		ctx->style.edit.cursor_hover = text;
 
-		static char masked[MAX_TEXT_LENGTH + 1];
-
 		/*
 		if (strncmp(this->m_title.c_str(), "login-username", 14) == 0) {
 			sprintf(m_szText, "lorelie");
 			m_iTextLength = 7;
-		}
-		else if (strncmp(this->m_title.c_str(), "login-password", 14) == 0) {
-			sprintf(m_szText, "redzone");
-			strncpy(masked, m_szText, 7);
-			m_iTextLength = 7;
 		}*/
 
-		if (m_bPasswordInput) {
+		//if (strncmp(this->m_title.c_str(), "login-password", 14) == 0) {
+			//strncpy(masked, m_szText, 7);
+			//m_iTextLength = 7;
+		//}
 
+		if (m_bPasswordInput) {
 			int len = m_iTextLength;
 			if (len > MAX_TEXT_LENGTH)
 				len = MAX_TEXT_LENGTH;
 
 			memset(masked, '*', len);
 			masked[len] = '\0';
-			st = nk_edit_string(
-				ctx,
-				flags,
-				masked,
-				&m_iTextLength,
-				m_iMaxLength,
-				nk_filter_default
-			);
+		}
 
+		st = nk_edit_string(
+			ctx,
+			flags,
+			masked,
+			&m_iTextLength,
+			m_iMaxLength,
+			nk_filter_default
+		);
+
+		if (m_bPasswordInput) {
 			int realpasslen = strlen(m_szText);
 			if (m_iTextLength != realpasslen) {
 				if (realpasslen < m_iTextLength)
@@ -3747,20 +3744,26 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 			}
 		}
 		else {
-			st = nk_edit_string(
-				ctx,
-				flags,
-				m_szText,
-				&m_iTextLength,
-				m_iMaxLength,
-				nk_filter_default
-			);
+			strncpy(m_szText, masked, m_iTextLength);
 		}
 
-		textboxfocused = ((st & NK_EDIT_ACTIVE) != 0) ? true : false;
+		if (textboxfocused == false) {
+			textboxfocused = ((st & NK_EDIT_ACTIVE) != 0) ? true : false;
+			if (textboxfocused) {
+				g_activewindow = m_title;
+				nk_window_set_focus(ctx, m_title.c_str());
+			}
+		}
+		else if (textboxfocused && ((st & NK_EDIT_ACTIVE) == 0 || g_activewindow != m_title)) {
+			ctx->current->edit.active = nk_false;
+			ctx->current->edit.name = 0;
+			textboxfocused = false;
+			if (g_activewindow == m_title)
+				g_activewindow = "";
+		}
+
 
 		ctx->style.edit = old_edit;
-
 		m_szText[m_iTextLength] = '\0';
 	}
 
