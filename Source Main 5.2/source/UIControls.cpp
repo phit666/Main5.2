@@ -3747,6 +3747,12 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 			strncpy(m_szText, masked, m_iTextLength);
 		}
 
+		if (g_refocusinputresize == 1 && g_activewindow == m_title) {
+			g_refocusinputresize = 0;
+			nk_window_set_focus(ctx, m_title.c_str());
+			//nk_edit_focus(ctx, NK_EDIT_FIELD);
+		}
+
 		if (textboxfocused == false) {
 			textboxfocused = ((st & NK_EDIT_ACTIVE) != 0) ? true : false;
 			if (textboxfocused) {

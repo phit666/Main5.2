@@ -365,3 +365,7 @@ extern int  g_PendingTouchMoveFrames;
 
 extern std::vector<CUITextInputBox*> vUITextInputs;
 extern bool overlayblocktouch;
+extern int g_focusinputresize;
+extern std::string g_focusinputwindow;
+extern int g_refocusinputresize;
+

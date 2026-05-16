@@ -1472,6 +1472,9 @@ static void vkeyboardoverlay(const char* title) {
 }
 
 static CUITextInputBox* textinput = NULL;
+std::string g_focusinputwindow = "";
+int g_focusinputresize = 0;
+int g_refocusinputresize = 0;
 
 static void togglevkeyboard() {
 
@@ -1480,6 +1483,7 @@ static void togglevkeyboard() {
 	for (auto iter = vUITextInputs.begin(); iter != vUITextInputs.end(); iter++) {
 		textinput = *iter;
 		if (textinput->textboxfocused) {
+			g_focusinputwindow = textinput->m_title;
 			//initfocus = false;
 			has_focus = true;
 			/*overlaytick = SDL_GetTicks64() + 500;
@@ -1500,6 +1504,8 @@ static void togglevkeyboard() {
 	else {
 		disablekeyboard();
 		overlayblocktouch = false;
+		//g_focusinputresize = false;
+		g_focusinputwindow = "";
 	}
 	/*else if (overlaytick > SDL_GetTicks64()) {
 		overlaytick = SDL_GetTicks64() + 500;
