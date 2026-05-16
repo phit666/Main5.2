@@ -1725,7 +1725,7 @@ bool RenderTerrainTile(float xf,float yf,int xi,int yi,float lodf,int lodi,bool 
 		RenderTerrainFace(xf,yf,xi,yi,lodf);
 	}
 	else
-	{	
+	{
 		vec3_t Normal;
 		FaceNormalize ( TerrainVertex[0], TerrainVertex[1], TerrainVertex[2], Normal );
 		bool Success = CollisionDetectLineToFace ( MousePosition, MouseTarget, 3, TerrainVertex[0], TerrainVertex[1], TerrainVertex[2], TerrainVertex[3], Normal );

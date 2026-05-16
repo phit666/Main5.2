@@ -269,6 +269,8 @@ struct _TexScaleMap {
 };
 
 void setfont(int size);
+int pushfont(int size);
+void popfont();
 
 _TexScaleMap getTexScale(GLuint TexID);
 GLuint getScaleTexID(GLuint TexID);
@@ -304,3 +306,62 @@ bool CreateScreenRayGLM(
     int viewportH,
     glm::vec3& rayStart,
     glm::vec3& rayEnd);
+
+struct PickState
+{
+    int ScreenCenterX;
+    int ScreenCenterY;
+    int ScreenCenterYFlip;
+    float PerspectiveX;
+    float PerspectiveY;
+    float CameraMatrix[3][4];
+};
+
+inline PickState SavePickState()
+{
+    PickState s;
+    s.ScreenCenterX = ScreenCenterX;
+    s.ScreenCenterY = ScreenCenterY;
+    s.ScreenCenterYFlip = ScreenCenterYFlip;
+    s.PerspectiveX = PerspectiveX;
+    s.PerspectiveY = PerspectiveY;
+    memcpy(s.CameraMatrix, CameraMatrix, sizeof(CameraMatrix));
+    return s;
+}
+
+inline void RestorePickState(const PickState& s)
+{
+    ScreenCenterX = s.ScreenCenterX;
+    ScreenCenterY = s.ScreenCenterY;
+    ScreenCenterYFlip = s.ScreenCenterYFlip;
+    PerspectiveX = s.PerspectiveX;
+    PerspectiveY = s.PerspectiveY;
+    memcpy(CameraMatrix, s.CameraMatrix, sizeof(CameraMatrix));
+}
+
+extern bool  SelectFlag;
+
+struct WorldPickState
+{
+    bool valid;
+
+    int ScreenCenterX;
+    int ScreenCenterY;
+    int ScreenCenterYFlip;
+
+    float PerspectiveX;
+    float PerspectiveY;
+
+    float CameraMatrix[3][4];
+};
+
+extern WorldPickState g_LastWorldPickState;
+void SaveWorldPickState();
+void RestoreWorldPickState();
+extern bool g_PendingTouchMove;
+extern int  g_PendingTouchMoveFrames;
+
+#include "UIControls.h"
+
+extern std::vector<CUITextInputBox*> vUITextInputs;
+

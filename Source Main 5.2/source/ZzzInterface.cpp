@@ -3764,6 +3764,7 @@ void CloseNPCGMWindow()
 
 void SendMove(CHARACTER *c,OBJECT *o)
 {
+
 	if(g_pNewUISystem->IsImpossibleSendMoveInterface() == true)
 	{
 		return;
@@ -7171,7 +7172,7 @@ void MoveHero()
 {
 	CHARACTER *c = Hero;
 	OBJECT *o = &c->Object;
-	
+
 	if(o->CurrentAction == PLAYER_CHANGE_UP)
 	{
 		return;
@@ -7198,6 +7199,7 @@ void MoveHero()
 	if (c->Object.Live == 0)
 		return;
 
+
 	if(LoadingWorld > 0) 
 	{
 		LoadingWorld--;
@@ -7209,6 +7211,16 @@ void MoveHero()
 	{
 		return;
 	}
+
+	//RestoreWorldPickState();
+
+	SelectFlag = false;
+	SelectXF = -1;
+	SelectYF = -1;
+	Distance = 9999999.0f;
+	Vector(0.f, 0.f, 0.f, CollisionPosition);
+
+	//CreateScreenVector(MouseX, MouseY, MouseTarget, true);
 	
 	if (g_pWindowMgr->GetAddFriendWindow() > 0)
 	{
@@ -7658,6 +7670,7 @@ void MoveHero()
 	if(Index < 0) Index = 0;
 	else if(Index > 65535) Index = 65535;
 	HeroTile = TerrainMappingLayer1[Index];
+	
 }
 
 int SelectItem()
@@ -7912,11 +7925,6 @@ void SelectObjects()
 	SelectedItem      = -1;
 	SelectedNpc       = -1;
 	SelectedOperate   = -1;
-
-	//char t[100] = { 0 };
-	//sprintf(t, "[SDL-DEBUG-4] MouseOnWindow %d CheckMouseUse %d ScrnW %d MouseIn %d", MouseOnWindow, g_pNewUISystem->CheckMouseUse(), GetScreenWidth(),
-		//SEASON3B::CheckMouseIn(0, 0, GetScreenWidth(), 429));
-	//OutputDebugStringA(t);
 
 	if(!MouseOnWindow && false == g_pNewUISystem->CheckMouseUse() && SEASON3B::CheckMouseIn(0, 0, GetScreenWidth(), 429))
 	{

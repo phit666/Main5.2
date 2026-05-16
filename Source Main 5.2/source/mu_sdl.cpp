@@ -428,6 +428,8 @@ bool loadfont(char* fontpath)
     return true;
 }
 
+static int fontsize = 0;
+
 void setfont(int size) {
     if (iscustomfontfailed)
         return;
@@ -436,6 +438,22 @@ void setfont(int size) {
     if (font[size] == nullptr)
         return;
     nk_style_set_font(g_nk_ctx, &font[size]->handle);
+    fontsize = size;
+}
+
+int pushfont(int size) {
+    if (iscustomfontfailed)
+        return 0;
+    if (size < 0 || size >= (MAX_FONTS))
+        return 0;
+    if (font[size] == nullptr)
+        return 0;
+    nk_style_set_font(g_nk_ctx, &font[size]->handle);
+    return size * g_fScreenRate_y;
+}
+
+void popfont() {
+    nk_style_set_font(g_nk_ctx, &font[fontsize]->handle);
 }
 
 
@@ -651,14 +669,27 @@ void MU_ShutdownSDL()
 
 short MU_GetAsyncKeyState(int key) {
 
+#ifdef __ANDROID__
+    if (SceneFlag == CHARACTER_SCENE && key == VK_LBUTTON) {
+        if (g_PendingTouchMove && g_PendingTouchMoveFrames == 0) {
+            g_PendingTouchMove = false;
+            return (short)0x8000;
+        }
+    }
+#endif
+
     // Mouse buttons
     Uint32 mouse = SDL_GetMouseState(nullptr, nullptr);
 
     switch (key)
     {
+#ifdef __ANDROID__
+    case VK_LBUTTON:
+        return MouseLButton ? (short)0x8000 : 0;
+#else
     case VK_LBUTTON:
         return (mouse & SDL_BUTTON(SDL_BUTTON_LEFT)) ? (short)0x8000 : 0;
-
+#endif
     case VK_RBUTTON:
         return (mouse & SDL_BUTTON(SDL_BUTTON_RIGHT)) ? (short)0x8000 : 0;
 

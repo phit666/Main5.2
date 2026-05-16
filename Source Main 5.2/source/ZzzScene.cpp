@@ -106,7 +106,7 @@ bool EnableEdit    = false;
 
 int g_iLengthAuthorityCode = 20;
 
-char *szServerIpAddress = "192.168.1.19";
+char *szServerIpAddress = "51.79.229.164";
 WORD g_ServerPort = 44405;
 
 #ifdef MOVIE_DIRECTSHOW
@@ -1067,35 +1067,15 @@ bool NewRenderCharacterScene(HDC hDC)
 
 #ifdef __ANDROID__
 	CameraFOV -= 10;
-	//CameraAngle[0] -= 3.0f;
 #endif
 
-	//BeginOpengl(0,25,640,430);
-	BeginWorldOpenGL(0, 25, 640, 430);
+	BeginOpengl(0, 25, 640, 430);
 	
 	CreateFrustrum((float)Width/(float)640, pos);
 
 	OBJECT* o = &CharactersClient[SelectedHero].Object;
 	
 	CreateScreenVector(MouseX,MouseY,MouseTarget);
-
-	/*glm::vec3 start, end;
-
-	if (CreateScreenRayGLM(MouseX, MouseY,
-		g_WorldViewX,
-		g_WorldViewY,
-		g_WorldViewW,
-		g_WorldViewH,
-		start, end))
-	{
-		MousePosition[0] = start.x;
-		MousePosition[1] = start.y;
-		MousePosition[2] = start.z;
-
-		MouseTarget[0] = end.x;
-		MouseTarget[1] = end.y;
-		MouseTarget[2] = end.z;
-	}*/
 
 	for(int i = 0; i < 5; i++)
 	{
@@ -1140,11 +1120,8 @@ bool NewRenderCharacterScene(HDC hDC)
 		SelectObjects();
 
 	RenderBugs();
-
 	RenderBlurs();
-
 	RenderJoints();
-
 	RenderEffects();
 
 	ThePetProcess().RenderPets();
@@ -1170,11 +1147,11 @@ bool NewRenderCharacterScene(HDC hDC)
 		g_csMapServer.SetHeroID ( (char *)CharactersClient[SelectedHero].ID );
 	}
 
-	//BeginSprite();
-	//RenderSprites();
-	//RenderParticles();
-	//RenderPoints();
-	//EndSprite();
+	BeginSprite();
+	RenderSprites();
+	RenderParticles();
+	RenderPoints();
+	EndSprite();
 	BeginBitmap();
 	RenderInfomation();
 
@@ -1183,7 +1160,6 @@ bool NewRenderCharacterScene(HDC hDC)
 #endif //ENABLE_EDIT
 
 	EndBitmap();
-
 	EndOpengl();
 
 	return true;

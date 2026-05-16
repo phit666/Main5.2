@@ -72,6 +72,8 @@
 #include "MixMgr.h"
 #include <algorithm>
 #include "mu_file.h"
+#include "_GlobalFunctions.h"
+#include "ZzzAI.h"
 
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
@@ -1388,6 +1390,102 @@ bool ExceptionCallback(_EXCEPTION_POINTERS* pExceptionInfo )
 	return true;
 }
 
+static bool iskeyboardactive = false;
+
+static void enablekeyboard() {
+#ifdef MU_USE_SDL
+	if (!iskeyboardactive || SDL_IsScreenKeyboardShown(gSDLWindow) == SDL_TRUE) {
+		iskeyboardactive = true;
+		SDL_StartTextInput();
+	}
+#endif
+}
+
+static void disablekeyboard() {
+#ifdef MU_USE_SDL
+	if (iskeyboardactive || SDL_IsScreenKeyboardShown(gSDLWindow) == SDL_FALSE) {
+		iskeyboardactive = false;
+		SDL_StopTextInput();
+	}
+#endif
+}
+
+static bool isoverlayvkactive = false;
+static uint64_t overlaytick = 0;
+
+static void vkeyboardoverlay(char* buffer) {
+	if (iskeyboardactive)
+	{
+		nk_style_push_color(g_nk_ctx, &g_nk_ctx->style.window.background,
+			nk_rgba(12, 8, 4, 235));
+
+		nk_style_push_color(g_nk_ctx, &g_nk_ctx->style.window.border_color,
+			nk_rgba(255, 210, 90, 255));
+
+		int fontsize = pushfont(g_hFontBig);
+
+		g_ErrorReport.Write("> debugvkey, fontsize %d", fontsize);
+
+
+		struct nk_rect inputOverlay;
+		inputOverlay.w = WindowWidth / 2;
+		inputOverlay.h = fontsize * 3;
+		inputOverlay.y = 480 - FontHeight - 220; // above keyboard estimate
+		inputOverlay.x = (WindowWidth - inputOverlay.w) / 2;
+
+		nk_begin(g_nk_ctx, "Typing", inputOverlay,
+			NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER);
+
+		nk_layout_row_dynamic(g_nk_ctx, fontsize * 2, 1);
+		nk_edit_focus(g_nk_ctx, NK_EDIT_FIELD);
+
+		static int len = 0;
+		nk_flags editcontrolflag = nk_edit_string(g_nk_ctx,
+			NK_EDIT_FIELD,
+			buffer,
+			&len,
+			10,
+			nk_filter_default);
+
+		isoverlayvkactive = (editcontrolflag & NK_EDIT_ACTIVE) ? true : false;
+
+		nk_end(g_nk_ctx);
+
+		popfont();
+		nk_style_pop_color(g_nk_ctx);
+		nk_style_pop_color(g_nk_ctx);
+	}
+}
+
+static void togglevkeyboard() {
+
+	bool has_focus = false;
+	static CUITextInputBox* textinput = NULL;
+
+	if (!(isoverlayvkactive)) {
+		for (auto iter = vUITextInputs.begin(); iter != vUITextInputs.end(); iter++) {
+			textinput = *iter;
+			if (textinput->textboxfocused) {
+				has_focus = true;
+				memset(textinput->m_szText, 0, sizeof(textinput->m_szText));
+				textinput->m_szText[10] = '\0';
+				break;
+			}
+		}
+	}
+
+	if (has_focus || isoverlayvkactive || overlaytick > SDL_GetTicks64()) {
+		if (has_focus || isoverlayvkactive) {
+			overlaytick = SDL_GetTicks64() + 500;
+		}
+		vkeyboardoverlay(textinput->m_szText);
+		enablekeyboard();
+	}
+	else {
+		disablekeyboard();
+	}
+}
+
 void MU_ProcessSDLEvents();
 
 #if _WIN32 == 1
@@ -1796,6 +1894,8 @@ int main(int argc, char* argv[])
 		MU_ProcessSDLEvents();
 		nk_input_end(g_nk_ctx);
 
+		togglevkeyboard();
+
 		if (g_eventBase)
 			event_base_loop(g_eventBase, EVLOOP_NONBLOCK);
 
@@ -1834,7 +1934,21 @@ int main(int argc, char* argv[])
 		{
 			glUniform4f(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			Scene(g_hDC); // later remove g_hDC
+
+#ifdef __ANDROID__
+			if (SceneFlag == MAIN_SCENE) {
+				if (g_PendingTouchMove && g_PendingTouchMoveFrames == 0) {
+					MouseLButtonPush = 1;
+					g_PendingTouchMove = false;
+					g_ErrorReport.Write("> debugmove, pending move executed.");
+				}
+			}
+#endif
+			Scene(g_hDC); 
+
+#ifdef __ANDROID__
+			g_PendingTouchMoveFrames = 0;
+#endif
 		}
 
 		ProtocolCompiler();
@@ -2110,6 +2224,77 @@ void MU_ProcessSDLEvents()
 
 				break;
 
+#ifdef __ANDROID__
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+			case SDL_MOUSEMOTION:
+				// Ignore emulated mouse on Android
+				break;
+
+			case SDL_FINGERDOWN:
+			{
+				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
+				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
+
+				if (SceneFlag == MAIN_SCENE) {
+					CHARACTER* c = Hero;
+					OBJECT* o = &c->Object;
+
+					int HeroX = GetScreenWidth() / 2;
+					int HeroY = 180;
+
+					int	HeroAngle = -(int)(CreateAngle((float)MouseX, (float)MouseY, (float)HeroX, (float)HeroY)) + 360 + 45;
+					HeroAngle %= 360;
+					BYTE Angle1 = ((BYTE)((o->Angle[2] + 22.5f) / 360.f * 8.f + 1.f) % 8);
+					BYTE Angle2 = ((BYTE)(((float)HeroAngle + 22.5f) / 360.f * 8.f + 1.f) % 8);
+					if (Angle1 != Angle2)
+					{
+						g_PendingTouchMove = true;
+						g_PendingTouchMoveFrames = 1; // wait one game frame
+					}
+					else {
+						MouseLButtonPop = false;
+						if (!MouseLButton)
+							MouseLButtonPush = true;
+						MouseLButton = true;
+					}
+				}
+				else if (SceneFlag == CHARACTER_SCENE) {
+					g_PendingTouchMove = true;
+					g_PendingTouchMoveFrames = 1; // wait one game frame
+				}
+				else {
+					MouseLButtonPop = false;
+					if (!MouseLButton)
+						MouseLButtonPush = true;
+					MouseLButton = true;
+				}
+			}
+			break;
+
+			case SDL_FINGERMOTION:
+			{
+				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
+				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
+
+				if (MouseX < 0) MouseX = 0;
+				if (MouseX > 640) MouseX = 640;
+				if (MouseY < 0) MouseY = 0;
+				if (MouseY > 480) MouseY = 480;
+			}
+			break;
+
+			case SDL_FINGERUP:
+			{
+				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
+				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
+
+				MouseLButton = false;
+				MouseLButtonPush = false;
+				MouseLButtonPop = true;
+			}
+			break;
+#else
 		case SDL_MOUSEMOTION:
 
 			MouseX = (float)e.motion.x / g_fScreenRate_x;
@@ -2218,6 +2403,7 @@ void MU_ProcessSDLEvents()
 			}
 #endif
 			break;
+#endif
 
 		case SDL_MOUSEWHEEL:
 			MouseWheel = e.wheel.y;

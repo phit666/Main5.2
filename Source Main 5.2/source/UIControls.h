@@ -860,8 +860,8 @@ protected:
 	void WriteText(int iOffset, int iWidth, int iHeight);
 	void UploadText(int sx,int sy,int Width,int Height);
 
-	void enablekeyboard();
-	void disablekeyboard();
+	//void enablekeyboard();
+	//void disablekeyboard();
 
 public:
 	WNDPROC m_hOldProc;
@@ -905,14 +905,16 @@ protected:
 	bool m_bUseScrollbarRender;
 #endif //PBG_ADD_INGAMESHOPMSGBOX
 
-	char m_szText[MAX_TEXT_LENGTH + 1];
-	int  m_iTextLength;
-	int  m_iMaxLength;
-
-	std::string m_title;
 	bool iskeyboardactive;
 	bool m_bShow;
 	bool m_bFocused;
+
+public:
+	bool textboxfocused = false;
+	std::string m_title;
+	char m_szText[MAX_TEXT_LENGTH + 1];
+	int  m_iTextLength;
+	int  m_iMaxLength;
 
 };
 

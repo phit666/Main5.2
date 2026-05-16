@@ -3166,6 +3166,8 @@ CUITextInputBox::CUITextInputBox()
 	m_fScrollBarClickPos_y = 0;
 }
 
+std::vector<CUITextInputBox*> vUITextInputs;
+
 CUITextInputBox::~CUITextInputBox()
 {
 #ifdef _WIN32
@@ -3528,6 +3530,9 @@ void CUITextInputBox::Init(HWND hWnd, int iWidth, int iHeight, int iMaxLength, B
 
 	m_bShow = false; // same idea as old ShowWindow(..., SW_HIDE)
 	m_title = std::to_string(titleseed++);
+	textboxfocused = false;
+
+	vUITextInputs.push_back(this);
 	return;
 #else
 	m_hParentWnd = hWnd;
@@ -3605,7 +3610,7 @@ void CUITextInputBox::GiveFocus(BOOL SelectText)
 		PostMessageW(m_hEditWnd, EM_SETSEL, ( WPARAM)-2, ( LPARAM)-1);
 #endif
 }
-
+/*
 void CUITextInputBox::enablekeyboard() {
 #ifdef MU_USE_SDL
 	if (!this->iskeyboardactive) {
@@ -3622,7 +3627,7 @@ void CUITextInputBox::disablekeyboard() {
 		SDL_StopTextInput();
 	}
 #endif
-}
+}*/
 
 static nk_color ARGBToNK(DWORD c)
 {
@@ -3675,6 +3680,16 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 	if (nk_begin(ctx, m_title.c_str(), bounds,
 		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND))
 	{
+
+		/*SDL_Rect r;
+		r.x = bounds.x * g_fScreenRate_x;
+		r.y = bounds.y * g_fScreenRate_y;
+		r.w = bounds.w * g_fScreenRate_x;
+		r.h = bounds.h * g_fScreenRate_y;
+
+		SDL_SetTextInputRect(&r);*/
+
+
 		nk_layout_row_dynamic(ctx, (float)(m_iHeight * g_fScreenRate_y), 1);
 
 		nk_flags flags = m_bUseMultiLine ? NK_EDIT_BOX : NK_EDIT_FIELD | NK_EDIT_SIG_ENTER | NK_EDIT_AUTO_SELECT;
@@ -3693,46 +3708,9 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 		ctx->style.edit.cursor_normal = text;
 		ctx->style.edit.cursor_hover = text;
 
-		/*if (MouseLButtonPush)
-		{
-			char t[100] = { 0 };
-
-			sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseX %d >= %d && < %d.", this->m_title.c_str(), 
-				MouseX, m_iPos_x, m_iPos_x + m_iWidth);
-
-			OutputDebugStringA(t);
-
-			sprintf(t, "[SDL-DEBUG] RenderNuklear %s, MouseY %d >= %d && < %d.", this->m_title.c_str(),
-				MouseY, m_iPos_y, m_iPos_y + m_iHeight);
-
-			OutputDebugStringA(t);
-
-
-			if ((float)MouseX >= m_iPos_x &&
-				(float)MouseX < m_iPos_x + m_iWidth &&
-				(float)MouseY >= m_iPos_y &&
-				(float)MouseY < m_iPos_y + m_iHeight)
-			{
-
-				char t[100] = { 0 };
-				sprintf(t, "[SDL-DEBUG] RenderNuklear, set focus to %s.", this->m_title.c_str());
-				OutputDebugStringA(t);
-				m_bFocused = true;
-				this->enablekeyboard();
-				//SDL_StartTextInput();
-
-			}
-			else
-			{
-				//char t[100] = { 0 };
-				//sprintf(t, "[SDL-DEBUG] RenderNuklear, unset focus to %s.", this->m_title.c_str());
-				//OutputDebugStringA(t);
-				m_bFocused = false;
-				//this->disablekeyboard();
-			}
-		}*/
 		static char masked[MAX_TEXT_LENGTH + 1];
 
+		/*
 		if (strncmp(this->m_title.c_str(), "login-username", 14) == 0) {
 			sprintf(m_szText, "lorelie");
 			m_iTextLength = 7;
@@ -3741,7 +3719,7 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 			sprintf(m_szText, "redzone");
 			strncpy(masked, m_szText, 7);
 			m_iTextLength = 7;
-		}
+		}*/
 
 		if (m_bPasswordInput) {
 
@@ -3779,14 +3757,7 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 			);
 		}
 
-		bool has_focus = (st & NK_EDIT_ACTIVE) != 0;
-
-		if (has_focus) {
-			this->enablekeyboard();
-		}
-		else {
-			//this->disablekeyboard();
-		}
+		textboxfocused = ((st & NK_EDIT_ACTIVE) != 0) ? true : false;
 
 		ctx->style.edit = old_edit;
 

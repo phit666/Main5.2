@@ -51,6 +51,10 @@ bool         MouseMButtonPush;
 int          MouseWheel;
 DWORD		 MouseRButtonPress = 0;
 
+WorldPickState g_LastWorldPickState = {};
+bool g_PendingTouchMove = false;
+int  g_PendingTouchMoveFrames = 0;
+
 // Simple state tracker
 static GLboolean attr_enabled[3] = { GL_FALSE, GL_FALSE, GL_FALSE };
 
@@ -60,6 +64,8 @@ void OpenExploper(char* Name, char* para)
 	ShellExecute(NULL, "open", Name, para, "", SW_SHOW);
 #endif
 }
+
+
 
 bool CheckID_HistoryDay(char* Name, WORD day)
 {
@@ -210,6 +216,42 @@ void GetOpenGLMatrix(float Matrix[3][4])
 }
 
 
+void RestoreWorldPickState()
+{
+	if (!g_LastWorldPickState.valid)
+		return;
+
+	ScreenCenterX = g_LastWorldPickState.ScreenCenterX;
+	ScreenCenterY = g_LastWorldPickState.ScreenCenterY;
+	ScreenCenterYFlip = g_LastWorldPickState.ScreenCenterYFlip;
+
+	PerspectiveX = g_LastWorldPickState.PerspectiveX;
+	PerspectiveY = g_LastWorldPickState.PerspectiveY;
+
+	memcpy(CameraMatrix,
+		g_LastWorldPickState.CameraMatrix,
+		sizeof(CameraMatrix));
+
+	//g_LastWorldPickState.valid = false;
+}
+
+void SaveWorldPickState()
+{
+	g_LastWorldPickState.valid = true;
+
+	g_LastWorldPickState.ScreenCenterX = ScreenCenterX;
+	g_LastWorldPickState.ScreenCenterY = ScreenCenterY;
+	g_LastWorldPickState.ScreenCenterYFlip = ScreenCenterYFlip;
+
+	g_LastWorldPickState.PerspectiveX = PerspectiveX;
+	g_LastWorldPickState.PerspectiveY = PerspectiveY;
+
+	memcpy(g_LastWorldPickState.CameraMatrix,
+		CameraMatrix,
+		sizeof(CameraMatrix));
+}
+
+
 void safe_disable_attr(GLuint index, bool set, float x, float y, float z, float w) {
 	glDisableVertexAttribArray(index);
 }
@@ -322,6 +364,38 @@ void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 	sx = sx * g_fScreenRate_x;// WindowWidth / 640;
 	sy = sy * g_fScreenRate_y;// WindowHeight / 480;
 
+	if (g_TestMouseClick) {
+		g_ErrorReport.Write(
+			"> COLLISION TEST\n BEFORE CSV CAM MATRIX POS %.3f %.3f %.3f",
+			CameraMatrix[0][3],
+			CameraMatrix[1][3],
+			CameraMatrix[2][3]
+		);
+
+		g_ErrorReport.Write(
+			"> COLLISION TEST\n BEFORE CSV MousePosition %.3f %.3f %.3f",
+			MousePosition[0],
+			MousePosition[1],
+			MousePosition[2]
+		);
+
+		int oldsx = sx;
+		int oldsy = sy;
+
+		sx = sx * g_fScreenRate_x;
+		sy = sy * g_fScreenRate_y;
+
+		g_ErrorReport.Write(
+			"> COLLISION TEST\n CSV input(%d,%d) scaled(%d,%d) center(%d,%d) persp(%.8f,%.8f)",
+			oldsx, oldsy,
+			sx, sy,
+			ScreenCenterX, ScreenCenterY,
+			PerspectiveX, PerspectiveY
+		);
+	}
+
+
+
 	vec3_t p1, p2;
 
 	if (bFixView)
@@ -340,9 +414,25 @@ void CreateScreenVector(int sx, int sy, vec3_t Target, bool bFixView)
 	p2[0] = -CameraMatrix[0][3];
 	p2[1] = -CameraMatrix[1][3];
 	p2[2] = -CameraMatrix[2][3];
+
+	if (g_TestMouseClick) {
+		g_ErrorReport.Write(
+			"> COLLISION TEST\n CSV p1(%.3f %.3f %.3f)",
+			p1[0], p1[1], p1[2]
+		);
+	}
+
 	VectorIRotate(p2, CameraMatrix, MousePosition);
 	VectorIRotate(p1, CameraMatrix, p2);
 	VectorAdd(MousePosition, p2, Target);
+
+	if (g_TestMouseClick) {
+		g_ErrorReport.Write(
+			"> COLLISION TEST\n CSV MousePos(%.3f %.3f %.3f) Target(%.3f %.3f %.3f)",
+			MousePosition[0], MousePosition[1], MousePosition[2],
+			Target[0], Target[1], Target[2]
+		);
+	}
 }
 
 void Projection(vec3_t Position, int* sx, int* sy)
@@ -867,6 +957,11 @@ void BeginOpengl(int x, int y, int Width, int Height)
 	}
 
 	GetOpenGLMatrix(CameraMatrix);
+
+	if (SceneFlag == MAIN_SCENE)
+	{
+		SaveWorldPickState();
+	}
 
 	MU_ApplyMatrices(); 
 }
@@ -2026,12 +2121,56 @@ vec3_t CollisionPosition;
 
 bool CollisionDetectLineToFace(vec3_t Position, vec3_t Target, int Polygon, float* v1, float* v2, float* v3, float* v4, vec3_t Normal, bool Collision)
 {
+	if (g_TestMouseClick) {
+		g_ErrorReport.Write(
+			"> COLLISION TEST\n"
+
+			"Pos(%.3f %.3f %.3f)\n"
+			"Target(%.3f %.3f %.3f)\n"
+			"Normal(%.3f %.3f %.3f)\n"
+
+			"v1(%.3f %.3f %.3f)\n"
+			"v2(%.3f %.3f %.3f)\n"
+			"v3(%.3f %.3f %.3f)\n",
+
+			Position[0], Position[1], Position[2],
+			Target[0], Target[1], Target[2],
+
+			Normal[0], Normal[1], Normal[2],
+
+			v1[0], v1[1], v1[2],
+			v2[0], v2[1], v2[2],
+			v3[0], v3[1], v3[2]
+		);
+	}
+
 	vec3_t Direction;
 	VectorSubtract(Target, Position, Direction);
+
+	if (g_TestMouseClick) {
+		g_ErrorReport.Write(
+			"> COLLISION TEST\n Direction(%.3f %.3f %.3f)",
+			Direction[0],
+			Direction[1],
+			Direction[2]
+		);
+	}
+
 	float a = DotProduct(Direction, Normal);
 	if (a >= 0.f) return false;
 	float b = DotProduct(Position, Normal) - DotProduct(v1, Normal);
 	float t = -b / a;
+
+	if (g_TestMouseClick) {
+		g_ErrorReport.Write(
+			"> COLLISION TEST\n a=%.6f b=%.6f t=%.6f Distance=%.6f",
+			a,
+			b,
+			t,
+			Distance
+		);
+	}
+
 	if (t >= 0.f && t <= Distance)
 	{
 		float X = Direction[0] * t + Position[0];
@@ -2074,6 +2213,16 @@ bool CollisionDetectLineToFace(vec3_t Position, vec3_t Target, int Polygon, floa
 			Distance = t;
 			Vector(X, Y, Z, CollisionPosition);
 		}
+
+		if (g_TestMouseClick) {
+			g_ErrorReport.Write(
+				"> COLLISION TEST\n HIT X=%.3f Y=%.3f Z=%.3f",
+				X,
+				Y,
+				Z
+			);
+		}
+
 		return true;
 	}
 	return false;
