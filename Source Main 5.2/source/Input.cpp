@@ -10,6 +10,7 @@
 #include "UIManager.h"
 #include "mu_sdl.h"
 #include "wt.h"
+#include "MU_EditControl.h"
 
 extern bool g_bWndActive;
 #endif
@@ -95,7 +96,7 @@ bool CInput::Create(HWND hWnd, long lScreenWidth, long lScreenHeight)
 
 void CInput::Update()
 {
-	if (overlayblocktouch)
+	if (MU_EditAnyFocused())
 		return;
 
 	m_lDX = m_lDY = 0L;

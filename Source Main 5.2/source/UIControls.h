@@ -867,6 +867,8 @@ public:
 	WNDPROC m_hOldProc;
 	int m_iCaretBlinkTemp;
 
+	struct MU_EditControl* ec;
+
 
 protected:
 	HWND m_hParentWnd;

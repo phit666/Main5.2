@@ -2314,7 +2314,10 @@ void MU_FillRectCallback(
 	v[4] = { x1, y1, 0.f, 0.f, 0.f, rf, gf, bf, af };
 	v[5] = { x0, y1, 0.f, 0.f, 0.f, rf, gf, bf, af };
 
+
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	myShader.setFloat(g_uTexEnabledLoc, 0.0f);
 
 	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
 

@@ -1398,13 +1398,10 @@ bool NewRenderLogInScene(HDC hDC)
 	g_pRenderText->SetBgColor(0, 0, 0, 128);
 	
 	strcpy(Text, GlobalText[454]);
-	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), Text, lstrlen(Text), &Size);
-	g_pRenderText->RenderText(getScaleNewSize(1, 335) - Size.cx * 640 / WindowWidth, getScaleNewSize(1, 480) - Size.cy * 640 / WindowWidth - 1, Text);
-
-	strcpy(Text, GlobalText[455]);
+	strcat(Text, GlobalText[455]);
 
 	g_pMultiLanguage->_GetTextExtentPoint32(g_pRenderText->GetFontDC(), Text, lstrlen(Text), &Size);
-	g_pRenderText->RenderText(getScaleNewSize(1, 335), getScaleNewSize(1, 480) - Size.cy * 640 / WindowWidth - 1, Text);
+	g_pRenderText->RenderText((WindowWidth - Size.cx) / 2 * 640 / WindowWidth, getScaleNewSize(1, 480) - Size.cy * 640 / WindowWidth - 3 * WindowWidth / 480, Text);
 
 	sprintf(Text, GlobalText[456], m_ExeVersion);
 

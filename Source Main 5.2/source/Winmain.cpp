@@ -75,6 +75,8 @@
 #include "_GlobalFunctions.h"
 #include "ZzzAI.h"
 
+#include "MU_EditControl.h"
+
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
 CUITextInputBox * g_pSinglePasswdInputBox = NULL;
@@ -1910,7 +1912,7 @@ int main(int argc, char* argv[])
 	{
 		MU_ProcessSDLEvents();
 
-		togglevkeyboard();
+		//togglevkeyboard();
 
 		if (g_eventBase)
 			event_base_loop(g_eventBase, EVLOOP_NONBLOCK);
@@ -2129,6 +2131,18 @@ void MU_ProcessSDLEvents()
 
 	while (SDL_PollEvent(&e))
 	{
+		bool consumed = false;
+		for (auto iter = vUITextInputs.begin(); iter != vUITextInputs.end(); iter++) {
+			CUITextInputBox* ti = *iter;
+			if (MU_EditHandleEvent(ti->ec, &e)) {
+				consumed = true;
+				break;
+			}
+		}
+
+		if (consumed)
+			continue;
+
 		switch (e.type)
 		{
 		case SDL_QUIT:
@@ -2253,14 +2267,14 @@ void MU_ProcessSDLEvents()
 			case SDL_MOUSEMOTION:
 			case SDL_KEYDOWN:
 
-				if (overlayblocktouch)
+				if (MU_EditAnyFocused())
 					continue;
 
 				break;
 
 			case SDL_FINGERDOWN:
 			{
-				if (overlayblocktouch)
+				if (MU_EditAnyFocused())
 					continue;
 
 				touchtick = SDL_GetTicks64();
@@ -2277,7 +2291,7 @@ void MU_ProcessSDLEvents()
 
 			case SDL_FINGERMOTION:
 			{
-				if (overlayblocktouch)
+				if (MU_EditAnyFocused())
 					continue;
 
 				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
@@ -2292,7 +2306,7 @@ void MU_ProcessSDLEvents()
 
 			case SDL_FINGERUP:
 			{
-				if (overlayblocktouch)
+				if (MU_EditAnyFocused())
 					continue;
 
 				touchtick = 0;
@@ -2319,6 +2333,9 @@ void MU_ProcessSDLEvents()
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
+
+			if (MU_EditAnyFocused())
+				continue;
 
 			g_iNoMouseTime = 0;
 			g_TestMouseClick = 1;
@@ -2350,6 +2367,9 @@ void MU_ProcessSDLEvents()
 			break;
 
 		case SDL_MOUSEBUTTONUP:
+
+			if (MU_EditAnyFocused())
+				continue;
 
 			g_iNoMouseTime = 0;
 			g_TestMouseClick = 0;
@@ -2388,11 +2408,17 @@ void MU_ProcessSDLEvents()
 
 		case SDL_KEYDOWN:
 
+			if (MU_EditAnyFocused())
+				continue;
+
 			if (e.key.keysym.sym == SDLK_RETURN)
 				SetEnterPressed(true);
 			break;
 
 		case SDL_TEXTINPUT:
+
+			if (MU_EditAnyFocused())
+				continue;
 
 			break;
 #endif

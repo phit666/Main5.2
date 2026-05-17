@@ -20,6 +20,7 @@
 #include "ServerListManager.h"
 #include "mu_sdl.h"
 #include "wt.h"
+#include "MU_EditControl.h"
 
 #define	LIW_ACCOUNT		0
 #define	LIW_PASSWORD	1
@@ -85,10 +86,18 @@ void CLoginWin::Create()
 	{
 		memcpy(m_pIDInputBox->m_szText, username, 11);
 		memcpy(m_pPassInputBox->m_szText, password, 11);
+
+		memcpy(m_pIDInputBox->ec->text, username, 11);
+		memcpy(m_pPassInputBox->ec->text, password, 11);
+
 		memcpy(m_pIDInputBox->masked, username, 11);
 		memcpy(m_pPassInputBox->masked, password, 11);
+
 		m_pIDInputBox->m_iTextLength = strlen(username);
 		m_pPassInputBox->m_iTextLength = strlen(password);
+
+		m_pIDInputBox->ec->len = strlen(username);
+		m_pPassInputBox->ec->len = strlen(password);
 	}
 
 #ifdef _WIN32

@@ -140,6 +140,7 @@ bool MU_EditHitTest(const MU_EditControl* e, int mx, int my);
 void MU_EditAppendText(MU_EditControl* e, const char* input);
 void MU_EditBackspace(MU_EditControl* e);
 
+
 #ifdef __cplusplus
 }
 #endif

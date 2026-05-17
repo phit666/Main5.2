@@ -25,6 +25,7 @@
 #endif
 
 #include "Winmain.h"
+#include "MU_EditControl.h"
 
 typedef struct
 {
@@ -1124,7 +1125,7 @@ SDL_Scancode VKToSDLScancode(int key)
 
 short MU_GetAsyncKeyState(int key) {
 
-    if (overlayblocktouch)
+    if (MU_EditAnyFocused())
         return 0;
 
 #ifdef __ANDROID__

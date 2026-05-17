@@ -23,6 +23,7 @@
 #include "mu_sdl.h"
 #include "wt.h"
 #include "MU_UIRenderer.h"
+#include "MU_EditControl.h"
 
 extern BYTE m_CrywolfState;
 
@@ -3145,6 +3146,8 @@ CUITextInputBox::CUITextInputBox()
 	m_fScrollBarHeight = 0;
 	m_fScrollBarPos_y = 0;
 	m_fScrollBarClickPos_y = 0;
+
+	ec = new MU_EditControl;
 }
 
 std::vector<CUITextInputBox*> vUITextInputs;
@@ -3171,6 +3174,9 @@ CUITextInputBox::~CUITextInputBox()
 		m_hBitmap = NULL;
 	}
 #endif
+	if (ec) {
+		delete ec;
+	}
 }
 
 BOOL ClipboardCheck(HWND hWnd)
@@ -3513,6 +3519,9 @@ void CUITextInputBox::Init(HWND hWnd, int iWidth, int iHeight, int iMaxLength, B
 	m_title = std::to_string(titleseed++);
 	textboxfocused = false;
 
+	MU_EditInit(ec, m_iPos_x, m_iPos_y, m_iWidth, m_iHeight, this->m_iMaxLength, MU_GetActiveFont(), m_bPasswordInput ? true : false);
+	ec->style = MU_EditDefaultStyle();
+
 	vUITextInputs.push_back(this);
 	return;
 #else
@@ -3847,13 +3856,46 @@ void CUITextInputBox::WriteText(int iOffset, int iWidth, int iHeight)
 #endif
 }
 
+
 void CUITextInputBox::Render()
 {
 #ifdef MU_USE_SDL
-	//RenderNuklear(g_nk_ctx);
-	//RenderNuklearSafe(g_nk_ctx);
-	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
-	//glActiveTexture(GL_TEXTURE0);
+	stColor back = GetRGBA(m_dwBackColor);
+	stColor text = GetRGBA(m_dwTextColor);
+
+	ec->x = m_iPos_x * g_fScreenRate_x;
+	ec->y = (m_iPos_y * g_fScreenRate_y) - 3;
+	ec->w = m_iWidth * g_fScreenRate_x;
+	ec->h = m_iHeight * g_fScreenRate_y;
+
+	ec->style.bgR = back.r;
+	ec->style.bgG = back.g;
+	ec->style.bgB = back.b;
+	ec->style.bgA = back.a;
+
+	ec->style.textR = text.r;
+	ec->style.textG = text.g;
+	ec->style.textB = text.b;
+	ec->style.textA = text.a;
+
+	ec->style.caretR = 255;
+	ec->style.caretG = 210;
+	ec->style.caretB = 90;
+	ec->style.caretA = 255;
+
+	ec->style.borderA = 0;
+	ec->style.focusBorderA = 0;
+
+	if (ec->len) {
+		strncpy(m_szText, ec->text, ec->len);
+		m_szText[ec->len] = '\0';
+		m_iTextLength = ec->len;
+	}
+
+	MU_2DRenderer_Begin(WindowWidth, WindowHeight);
+	MU_EditRender(ec);
+	MU_2DRenderer_End();
+
 #else
 	m_bIsReady = TRUE;
 	if (m_hEditWnd == NULL || IsWindowVisible(m_hEditWnd) == FALSE) return;
@@ -4003,9 +4045,11 @@ void CUITextInputBox::RenderScrollbar()
 
 void CUITextInputBox::SetFont(HFONT hFont)
 {
+	MU_SetActiveFont(hFont);
+
+#ifndef MU_USE_SDL
 	if (m_hEditWnd == NULL || hFont == NULL)
 		return;
-#ifndef MU_USE_SDL
 	SendMessageW(m_hEditWnd, WM_SETFONT, (UINT)hFont, FALSE);
 	SelectObject(m_hMemDC, hFont);
 #endif
