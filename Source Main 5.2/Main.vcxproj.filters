@@ -1207,6 +1207,12 @@
     <ClCompile Include="source\DSPlaySound_SDL.cpp">
       <Filter>MU\Client\wrappers</Filter>
     </ClCompile>
+    <ClCompile Include="source\MU_UIRenderer.cpp">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MU_EditControl.cpp">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\BlackWin.h">
@@ -2317,6 +2323,12 @@
       <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="source\wt.h">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MU_UIRenderer.h">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\MU_EditControl.h">
       <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
   </ItemGroup>

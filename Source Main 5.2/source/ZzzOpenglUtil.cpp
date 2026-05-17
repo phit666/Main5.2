@@ -13,6 +13,7 @@
 #include "mu_gles2_matrix.h"
 #include "wt.h"
 #include "Utilities/Log/ErrorReport.h"
+#include "MU_UIRenderer.h"
 
 int     OpenglWindowX;
 int     OpenglWindowY;
@@ -736,6 +737,126 @@ bool CreateScreenRayGLM(
 	rayEnd = glm::vec3(farWorld);
 
 	return true;
+}
+
+void RenderNuklearSafe(struct nk_context* ctx)
+{
+	if (!ctx)
+		return;
+
+	// -----------------------------
+	// Save current OpenGL / GLES2 state
+	// -----------------------------
+	GLint last_texture = 0;
+	GLint last_array_buffer = 0;
+	GLint last_element_array_buffer = 0;
+	GLint last_viewport[4] = { 0 };
+	GLint last_scissor_box[4] = { 0 };
+
+	GLboolean last_blend = glIsEnabled(GL_BLEND);
+	GLboolean last_cull_face = glIsEnabled(GL_CULL_FACE);
+	GLboolean last_depth_test = glIsEnabled(GL_DEPTH_TEST);
+	GLboolean last_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
+
+	GLint last_blend_src_rgb = 0;
+	GLint last_blend_dst_rgb = 0;
+	GLint last_blend_src_alpha = 0;
+	GLint last_blend_dst_alpha = 0;
+	GLint last_active_texture = 0;
+
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
+	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
+	glGetIntegerv(GL_VIEWPORT, last_viewport);
+	glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
+
+	glGetIntegerv(GL_BLEND_SRC_RGB, &last_blend_src_rgb);
+	glGetIntegerv(GL_BLEND_DST_RGB, &last_blend_dst_rgb);
+	glGetIntegerv(GL_BLEND_SRC_ALPHA, &last_blend_src_alpha);
+	glGetIntegerv(GL_BLEND_DST_ALPHA, &last_blend_dst_alpha);
+	glGetIntegerv(GL_ACTIVE_TEXTURE, &last_active_texture);
+
+	// -----------------------------
+	// Prepare OpenGL state for Nuklear
+	// -----------------------------
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glActiveTexture(GL_TEXTURE0);
+
+	// Important for UI clipping
+	glEnable(GL_SCISSOR_TEST);
+
+	// -----------------------------
+	// Draw Nuklear
+	// -----------------------------
+
+	// Some Nuklear SDL backends use this:
+	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// -----------------------------
+	// Restore OpenGL / GLES2 state
+	// -----------------------------
+
+	glUseProgram(g_muProgram);
+
+	glActiveTexture(last_active_texture);
+	glBindTexture(GL_TEXTURE_2D, last_texture);
+
+	glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
+
+	glViewport(
+		last_viewport[0],
+		last_viewport[1],
+		last_viewport[2],
+		last_viewport[3]
+	);
+
+	glScissor(
+		last_scissor_box[0],
+		last_scissor_box[1],
+		last_scissor_box[2],
+		last_scissor_box[3]
+	);
+
+	glBlendFuncSeparate(
+		last_blend_src_rgb,
+		last_blend_dst_rgb,
+		last_blend_src_alpha,
+		last_blend_dst_alpha
+	);
+
+	if (last_blend)
+		glEnable(GL_BLEND);
+	else
+		glDisable(GL_BLEND);
+
+	if (last_cull_face)
+		glEnable(GL_CULL_FACE);
+	else
+		glDisable(GL_CULL_FACE);
+
+	if (last_depth_test)
+		glEnable(GL_DEPTH_TEST);
+	else
+		glDisable(GL_DEPTH_TEST);
+
+	if (last_scissor_test)
+		glEnable(GL_SCISSOR_TEST);
+	else
+		glDisable(GL_SCISSOR_TEST);
+
+	// Important if your engine uses fixed-style attrib locations
+	//glDisableVertexAttribArray(0);
+	//glDisableVertexAttribArray(1);
+	//glDisableVertexAttribArray(2);
+
+	// Safe default for your own rendering after Nuklear
+	//glActiveTexture(GL_TEXTURE0);
 }
 
 void BeginWorldOpenGL(int x, int y, int w, int h)
@@ -1808,7 +1929,7 @@ void RenderBitmapLocalRotate(int Texture, float x, float y, float Width, float H
 		quad[i].v = c[i][1];
 	}
 
-	MU_DrawBoundTexturedQuad2D(quad, Texture);
+	//MU_DrawBoundTexturedQuad2D(quad, Texture);
 }
 // xx
 void RenderBitmapAlpha(int Texture, float sx, float sy, float Width, float Height)
@@ -2069,5 +2190,172 @@ bool CollisionDetectLineToOBB(vec3_t p1, vec3_t p2, OBB_t obb)
 	if (!ProjectLineBox(obb.ZAxis, p1, p2, obb)) return false;
 
 	return true;
+}
+
+void MU_DrawTexturedQuadCallback(
+	GLuint texture,
+	float x,
+	float y,
+	float w,
+	float h,
+	unsigned char r,
+	unsigned char g,
+	unsigned char b,
+	unsigned char a)
+{
+	SpriteVertexFull v[6];
+
+	float rf = r / 255.0f;
+	float gf = g / 255.0f;
+	float bf = b / 255.0f;
+	float af = a / 255.0f;
+
+	float x0 = x;
+	float y0 = WindowHeight - y - h;
+	float x1 = x + w;
+	float y1 = y0 + h;
+
+	v[0] = { x0, y0, 0.f, 0.f, 1.f, rf, gf, bf, af };
+	v[1] = { x1, y0, 0.f, 1.f, 1.f, rf, gf, bf, af };
+	v[2] = { x1, y1, 0.f, 1.f, 0.f, rf, gf, bf, af };
+
+	v[3] = { x0, y0, 0.f, 0.f, 1.f, rf, gf, bf, af };
+	v[4] = { x1, y1, 0.f, 1.f, 0.f, rf, gf, bf, af };
+	v[5] = { x0, y1, 0.f, 0.f, 0.f, rf, gf, bf, af };
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+
+	myShader.use(); // if needed
+	myShader.setFloat(g_uTexEnabledLoc, 1.0f);
+	myShader.setVec4(g_uColorLoc, 1.f, 1.f, 1.f, 1.f);
+
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(v),
+		v,
+		GL_STREAM_DRAW
+	);
+
+	safe_enable_attr(g_aPosLoc);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
+
+	safe_enable_attr(g_aTexLoc);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, u)
+	);
+
+	safe_enable_attr(g_aColorLoc);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
+
+	MU_ApplyMatrices();
+
+	//myShader.setVec4(g_uColorLoc, 1.f, 1.f, 1.f, 1.f);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aTexLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void MU_FillRectCallback(
+	float x,
+	float y,
+	float w,
+	float h,
+	unsigned char r,
+	unsigned char g,
+	unsigned char b,
+	unsigned char a)
+{
+	SpriteVertexFull v[6];
+
+	float rf = r / 255.0f;
+	float gf = g / 255.0f;
+	float bf = b / 255.0f;
+	float af = a / 255.0f;
+
+	float x0 = x;
+	float y0 = WindowHeight - y - h;
+	float x1 = x + w;
+	float y1 = y0 + h;
+
+	v[0] = { x0, y0, 0.f, 0.f, 0.f, rf, gf, bf, af };
+	v[1] = { x1, y0, 0.f, 0.f, 0.f, rf, gf, bf, af };
+	v[2] = { x1, y1, 0.f, 0.f, 0.f, rf, gf, bf, af };
+
+	v[3] = { x0, y0, 0.f, 0.f, 0.f, rf, gf, bf, af };
+	v[4] = { x1, y1, 0.f, 0.f, 0.f, rf, gf, bf, af };
+	v[5] = { x0, y1, 0.f, 0.f, 0.f, rf, gf, bf, af };
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(v),
+		v,
+		GL_STREAM_DRAW
+	);
+
+	safe_enable_attr(g_aPosLoc);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
+
+	safe_disable_attr(g_aTexLoc);
+
+	safe_enable_attr(g_aColorLoc);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
+
+	MU_ApplyMatrices();
+
+	myShader.setVec4(g_uColorLoc, 1.f, 1.f, 1.f, 1.f);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(g_aColorLoc);
+	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

@@ -1481,7 +1481,7 @@ void LoadingScene(HDC hDC)
 	//::glFlush();
 
 #ifdef MU_USE_SDL
-	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 	SDL_GL_SwapWindow(gSDLWindow);
 #else
 	::SwapBuffers(hDC);
@@ -2432,7 +2432,7 @@ void MainScene(HDC hDC)
 	{
 		glFlush();
 #ifdef MU_USE_SDL
-		nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+		//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 		SDL_GL_SwapWindow(gSDLWindow);
 #else
 		::SwapBuffers(hDC);

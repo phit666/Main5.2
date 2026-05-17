@@ -369,7 +369,10 @@ extern int g_focusinputresize;
 extern std::string g_focusinputwindow;
 extern int g_refocusinputresize;
 
+void RenderNuklearSafe(struct nk_context* ctx);
 
 bool SaveQuickLogin(const char* username, const char* password);
 bool LoadQuickLogin(char* usernameOut, int usernameOutSize,
     char* passwordOut, int passwordOutSize);
+
+extern GLuint g_meshVBO;

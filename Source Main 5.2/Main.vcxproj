@@ -436,8 +436,10 @@
     <ClCompile Include="source\MsgWin.cpp" />
     <ClCompile Include="source\MultiLanguage.cpp" />
     <ClCompile Include="source\mu_2d_renderer.cpp" />
+    <ClCompile Include="source\MU_EditControl.cpp" />
     <ClCompile Include="source\mu_gles2_matrix.cpp" />
     <ClCompile Include="source\mu_sdl.cpp" />
+    <ClCompile Include="source\MU_UIRenderer.cpp" />
     <ClCompile Include="source\mu_wininet_curl_compat.cpp" />
     <ClCompile Include="source\NewBloodCastleSystem.cpp" />
     <ClCompile Include="source\NewChaosCastleSystem.cpp" />
@@ -841,11 +843,13 @@
     <ClInclude Include="source\MsgWin.h" />
     <ClInclude Include="source\MultiLanguage.h" />
     <ClInclude Include="source\mu_2d_renderer.h" />
+    <ClInclude Include="source\MU_EditControl.h" />
     <ClInclude Include="source\mu_file.h" />
     <ClInclude Include="source\mu_gl.h" />
     <ClInclude Include="source\mu_gles2_matrix.h" />
     <ClInclude Include="source\mu_gles_matrix.h" />
     <ClInclude Include="source\mu_sdl.h" />
+    <ClInclude Include="source\MU_UIRenderer.h" />
     <ClInclude Include="source\mu_wininet_curl_compat.h" />
     <ClInclude Include="source\mu_win_compat.h" />
     <ClInclude Include="source\NewBloodCastleSystem.h" />

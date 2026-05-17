@@ -1484,46 +1484,24 @@ static void togglevkeyboard() {
 		textinput = *iter;
 		if (textinput->textboxfocused) {
 			g_focusinputwindow = textinput->m_title;
-			//initfocus = false;
 			has_focus = true;
-			/*overlaytick = SDL_GetTicks64() + 500;
-			uniquetitle = std::to_string(SDL_GetTicks64());
-			if (textinput->m_iTextLength) {
-				strncpy(input_buf, textinput->m_szText, textinput->m_iTextLength);
-				input_len = textinput->m_iTextLength;
-
-			}*/
+			overlaytick = SDL_GetTicks64() + 2000;
+			overlayblocktouch = true;
 			break;
 		}
 	}
 
 	if (has_focus) {
 		enablekeyboard();
-		overlayblocktouch = true;
+		overlaytick += 300;
 	}
 	else {
-		disablekeyboard();
-		overlayblocktouch = false;
-		//g_focusinputresize = false;
-		g_focusinputwindow = "";
-	}
-	/*else if (overlaytick > SDL_GetTicks64()) {
-		overlaytick = SDL_GetTicks64() + 500;
-		vkeyboardoverlay(textinput->m_title.c_str());
-	}
-	else 
-	{
-		if (overlaytick != 0) {
-			strncpy(textinput->m_szText, input_buf, input_len);
-			textinput->m_iTextLength = input_len;
+		if (SDL_GetTicks64() > overlaytick) {
 			disablekeyboard();
 			overlayblocktouch = false;
-			overlaytick = 0;
-			memset(input_buf, 0, sizeof(input_buf));
-			input_len = 0;
-			initfocus = false;
+			g_focusinputwindow = "";
 		}
-	}*/
+	}
 }
 
 void MU_ProcessSDLEvents();
@@ -1930,9 +1908,7 @@ int main(int argc, char* argv[])
 
 	while (!Destroy && gSDLRunning)
 	{
-		nk_input_begin(g_nk_ctx);
 		MU_ProcessSDLEvents();
-		nk_input_end(g_nk_ctx);
 
 		togglevkeyboard();
 
@@ -2092,6 +2068,9 @@ static float Matrix[3][4];
 
 void UpdateDebugCameraByKeyboard(float dt)
 {
+	if (overlayblocktouch)
+		return;
+
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
 
 	const float rotateSpeed = 60.0f;   // degrees per second
@@ -2150,8 +2129,6 @@ void MU_ProcessSDLEvents()
 
 	while (SDL_PollEvent(&e))
 	{
-		nk_sdl_handle_event(&e);
-
 		switch (e.type)
 		{
 		case SDL_QUIT:
@@ -2274,10 +2251,18 @@ void MU_ProcessSDLEvents()
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
 			case SDL_MOUSEMOTION:
+			case SDL_KEYDOWN:
+
+				if (overlayblocktouch)
+					continue;
+
 				break;
 
 			case SDL_FINGERDOWN:
 			{
+				if (overlayblocktouch)
+					continue;
+
 				touchtick = SDL_GetTicks64();
 
 				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
@@ -2293,7 +2278,7 @@ void MU_ProcessSDLEvents()
 			case SDL_FINGERMOTION:
 			{
 				if (overlayblocktouch)
-					break;
+					continue;
 
 				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
 				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
@@ -2307,6 +2292,9 @@ void MU_ProcessSDLEvents()
 
 			case SDL_FINGERUP:
 			{
+				if (overlayblocktouch)
+					continue;
+
 				touchtick = 0;
 
 				MouseLButtonPop = false;
@@ -2320,9 +2308,6 @@ void MU_ProcessSDLEvents()
 			break;
 #else
 		case SDL_MOUSEMOTION:
-
-			//if (overlayblocktouch)
-				//break;
 
 			MouseX = (float)e.motion.x / g_fScreenRate_x;
 			MouseY = (float)e.motion.y / g_fScreenRate_y;
@@ -2395,7 +2380,6 @@ void MU_ProcessSDLEvents()
 			}
 
 			break;
-#endif
 
 		case SDL_MOUSEWHEEL:
 
@@ -2410,14 +2394,14 @@ void MU_ProcessSDLEvents()
 
 		case SDL_TEXTINPUT:
 
-			if (overlayblocktouch)
-				break;
-
 			break;
+#endif
+
+
 		}
 	}
 
-	if (touchtick != 0 && (SDL_GetTicks64() - touchtick) > 500) {
+	if (!overlayblocktouch && touchtick != 0 && (SDL_GetTicks64() - touchtick) > 500) {
 		MouseLButtonPush = true;
 	}
 }

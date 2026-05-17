@@ -125,12 +125,23 @@ void SEASON3B::CNewUIMoveCommandWindow::SetPos(int x, int y)
 	case 1280:
 		m_MapNameUISize.x = 160; m_MapNamePos.x = m_Pos.x + 59; m_ReqLevelPos.x = m_Pos.x + 104; m_ReqZenPos.x = m_Pos.x + 139;
 		break;
+	default:
+		//m_MapNameUISize.x = 200; m_MapNamePos.x = m_Pos.x + 69; m_ReqLevelPos.x = m_Pos.x + 129; m_ReqZenPos.x = m_Pos.x + 174;
+
+		m_MapNameUISize.x = 160 * WindowHeight / 800;
+		m_MapNamePos.x = m_Pos.x + 59 * WindowHeight / 800;
+		m_ReqLevelPos.x = m_Pos.x + 104 * WindowHeight / 800;
+		m_ReqZenPos.x = m_Pos.x + 139 * WindowHeight / 800;
+
 	}
 
 	m_MapNameUISize.x += 10;
 
 	m_listMoveInfoData = CMoveCommandData::GetInstance()->GetMoveCommandDatalist();
+
 	m_iRealFontHeight = FontHeight * 640 / WindowWidth + 2;
+
+	m_iRealFontHeight *= WindowHeight / 480;
 
 	m_MapNameUISize.y = 60 + (m_iRealFontHeight * MOVECOMMAND_MAX_RENDER_TEXTLINE);
 	
@@ -408,7 +419,7 @@ bool SEASON3B::CNewUIMoveCommandWindow::BtnProcess()
 {
 	int iX, iY;
 
-	if( CheckMouseIn( m_ScrollBtnPos.x, m_ScrollBtnPos.y, MOVECOMMAND_SCROLLBTN_WIDTH, MOVECOMMAND_SCROLLBTN_HEIGHT ))
+	if( CheckMouseIn( m_ScrollBtnPos.x, m_ScrollBtnPos.y, MOVECOMMAND_SCROLLBTN_WIDTH * WindowHeight / 480, MOVECOMMAND_SCROLLBTN_HEIGHT * WindowHeight / 480))
 	{	
 		if(IsPress(VK_LBUTTON))
 		{

@@ -303,8 +303,8 @@ void CUIMng::CreateCharacterScene()
 	m_CharMakeWin.Create();
 	m_WinList.AddHead(&m_CharMakeWin);
 
-	m_CharMakeWin.SetPosition((rInput.GetScreenWidth() - 454) / 2,
-		(rInput.GetScreenHeight() - 406) / 2);
+	m_CharMakeWin.SetPosition((rInput.GetScreenWidth() - getScaleNewSize(BITMAP_LOG_IN, 454)) / 2,
+		(rInput.GetScreenHeight() - getScaleNewSize(BITMAP_LOG_IN, 406)) / 2);
 
 	m_CharSelMainWin.UpdateDisplay();
 	m_CharInfoBalloonMng.UpdateDisplay();

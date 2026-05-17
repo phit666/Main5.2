@@ -12,6 +12,7 @@
 #endif
 #include "w_nuklear.h"
 #include "mu_sdl.h"
+#include "MU_UIRenderer.h"
 
 CMultiLanguage* CMultiLanguage::ms_Singleton = NULL;
 
@@ -334,26 +335,29 @@ int	CMultiLanguage::GetClosestBlankFromCenter(const std::wstring wstrTarget)
 
 BOOL CMultiLanguage::_GetTextExtentPoint32(HDC hdc, LPCWSTR lpString, int cbString, LPSIZE lpSize)
 {
-	if (!g_nk_ctx || !lpString || !lpSize) return false;
+	if (!lpString || !lpSize) return false;
 
-	const struct nk_user_font *font = g_nk_ctx->style.font;
 	std::string ss;
 	this->ConvertWideCharToStr(ss, lpString);
-	lpSize->cx = (long)font->width(font->userdata, font->height, ss.c_str(), cbString);
 
-	lpSize->cy = (long)font->height;
+	MU_TextSize sz =
+		MU_GetTextSizeEx(g_hFont, ss.c_str());
+	lpSize->cx = sz.w;
+	lpSize->cy = sz.h;
+
 	return true;
 }
 
 BOOL CMultiLanguage::_GetTextExtentPoint32(HDC hdc, LPCSTR lpString, int cbString, LPSIZE lpSize)
 {
-	if (!g_nk_ctx || !lpString || !lpSize) return false;
+	if (!lpString || !lpSize) return false;
 
-	const struct nk_user_font* font = g_nk_ctx->style.font;
+	MU_TextSize sz =
+		MU_GetTextSizeEx(g_hFont, lpString);
 
-	lpSize->cx = (long)font->width(font->userdata, font->height, lpString, cbString);
+	lpSize->cx = sz.w;
+	lpSize->cy = sz.h;
 
-	lpSize->cy = (long)font->height;
 	return true;
 }
 
@@ -368,6 +372,7 @@ static uint32_t canvasctr = 1;
 
 BOOL CMultiLanguage::_TextOut(HDC hdc, int nXStart, int nYStart, LPCSTR lpString, int cbString)
 {
+	/*
 	std::string canvastitle = std::to_string(canvasctr++); if (canvasctr >= 2000000000)canvasctr = 1;
 
 	if (nk_begin(g_nk_ctx, canvastitle.c_str(), nk_rect(0, 0, WindowWidth, WindowHeight), NK_WINDOW_NO_SCROLLBAR)) {
@@ -383,7 +388,7 @@ BOOL CMultiLanguage::_TextOut(HDC hdc, int nXStart, int nYStart, LPCSTR lpString
 	}
 
 	nk_end(g_nk_ctx);
-
+	*/
 	return 1;
 }
 	

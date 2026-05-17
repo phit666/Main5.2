@@ -9,6 +9,7 @@
 #if	defined WINDOWMODE
 #include "UIManager.h"
 #include "mu_sdl.h"
+#include "wt.h"
 
 extern bool g_bWndActive;
 #endif
@@ -94,6 +95,9 @@ bool CInput::Create(HWND hWnd, long lScreenWidth, long lScreenHeight)
 
 void CInput::Update()
 {
+	if (overlayblocktouch)
+		return;
+
 	m_lDX = m_lDY = 0L;
 	m_bLBtnUp = m_bRBtnUp = m_bMBtnUp
 		= m_bLBtnDn = m_bRBtnDn = m_bMBtnDn

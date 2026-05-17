@@ -13,6 +13,7 @@
 #include "BaseCls.h"
 #include "ZzzCharacter.h"
 #include "mu_gles2_matrix.h"
+#include "wt.h"
 
 CQueue<CShadowVolume*> m_qSV;
 
@@ -302,27 +303,34 @@ void CShadowVolume::RenderAsFrame( void)
 
 void CShadowVolume::RenderShadowVolume( void)
 {
-	// 1. Pack your vertices into your current struct if they aren't already
-	// Assuming m_pVertices is a pointer to an array of 3D floats (x, y, z)
-	// and m_nNumVertices is the total count.
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
 
-	// 2. Set Attributes
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		m_nNumVertices * sizeof(vec3_t),
+		m_pVertices,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	// Points directly to your m_pVertices array in memory
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, 0, m_pVertices);
 
-	// 3. Disable other attributes (Safety)
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(vec3_t),
+		(void*)0
+	);
+
 	safe_disable_attr(g_aTexLoc);
 	safe_disable_attr(g_aColorLoc);
-	// Set a default neutral white color for the shader math
-	//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 	MU_ApplyMatrices();
-	// 4. Draw all triangles in one command
+
 	glDrawArrays(GL_TRIANGLES, 0, m_nNumVertices);
-
 	glDisableVertexAttribArray(g_aPosLoc);
-
-
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void CShadowVolume::Shade( void)

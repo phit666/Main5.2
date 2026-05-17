@@ -5,8 +5,9 @@
 #else
 #include "nuklear.h"
 #endif
-#define NK_SDL_GLES2_IMPLEMENTATION
-#include "nuklear_sdl_gles2.h"
+//#define NK_SDL_GLES2_IMPLEMENTATION
+//#include "nuklear_sdl_gles2.h"
+#include "MU_UIRenderer.h"
 
 #include "mu_sdl.h"
 #include "WSclient.h"
@@ -437,7 +438,7 @@ void setfont(int size) {
         return;
     if (font[size] == nullptr)
         return;
-    nk_style_set_font(g_nk_ctx, &font[size]->handle);
+    //nk_style_set_font(g_nk_ctx, &font[size]->handle);
     fontsize = size;
 }
 
@@ -448,14 +449,29 @@ int pushfont(int size) {
         return 0;
     if (font[size] == nullptr)
         return 0;
-    nk_style_set_font(g_nk_ctx, &font[size]->handle);
+    //nk_style_set_font(g_nk_ctx, &font[size]->handle);
     return size * g_fScreenRate_y;
 }
 
 void popfont() {
-    nk_style_set_font(g_nk_ctx, &font[fontsize]->handle);
+    //nk_style_set_font(g_nk_ctx, &font[fontsize]->handle);
 }
 
+GLuint g_meshVBO = 0;
+
+void InitMeshVBO()
+{
+    glGenBuffers(1, &g_meshVBO);
+}
+
+void DestroyMeshVBO()
+{
+    if (g_meshVBO)
+    {
+        glDeleteBuffers(1, &g_meshVBO);
+        g_meshVBO = 0;
+    }
+}
 
 bool MU_InitSDL(int width, int height)
 {
@@ -518,6 +534,8 @@ bool MU_InitSDL(int width, int height)
     }
 #endif
 
+    InitMeshVBO();
+
 //#ifdef __ANDROID__
     int _screen_w, _screen_h;
     SDL_GL_GetDrawableSize(gSDLWindow, &_screen_w, &_screen_h);
@@ -536,103 +554,42 @@ bool MU_InitSDL(int width, int height)
 
     g_ErrorReport.Write( "MU_InitSDL > nk_sdl_init\r\n");
 
-    g_nk_ctx = nk_sdl_init(gSDLWindow);
 
+    g_hFont = 0;
+    g_hFontBold = 1;
+    g_hFontBig = 2;
+    g_hFixFont = 3;
 
-    if (loadfont("data/fonts/gulim.ttf")) {
-
-        struct nk_font_atlas* atlas = nullptr;
-
-        nk_sdl_font_stash_begin(&atlas);
-
-        static const nk_rune ASCII_RANGE[] = { 0x0020, 0x007E, 0 };
-
-        struct nk_font_config cfg = nk_font_config(0);
-        cfg.oversample_h = 1;
-        cfg.oversample_v = 1;
-        cfg.pixel_snap = 1;
-        cfg.range = ASCII_RANGE;
-
-        for (int n = 0; n < MAX_FONTS; n++) font[n] = nullptr;
-
-        float multi = 1.0f;
-
-        multi = g_fScreenRate_y;
 
 #ifdef _WIN32
-        switch (WindowWidth)
-        {
-        case 640:FontHeight = 12; break;
-        case 800:FontHeight = 13; break;
-        case 1024:FontHeight = 14; break;
-        case 1280:FontHeight = 15; break;
-        }
-        int nFixFontHeight = 13;
+    switch (WindowWidth)
+    {
+    case 640:FontHeight = 12; break;
+    case 800:FontHeight = 13; break;
+    case 1024:FontHeight = 14; break;
+    case 1280:FontHeight = 15; break;
+    }
+    int nFixFontHeight = 13;
 #endif
 
 #ifdef __ANDROID__
-        FontHeight = 15 * g_fScreenRate_y;
-        int nFixFontHeight = 13 * g_fScreenRate_y;
+    FontHeight = 15 * g_fScreenRate_y;
+    int nFixFontHeight = 13 * g_fScreenRate_y;
 #endif
 
-        int nFixFontSize;
-        int iFontSize;
+    int nFixFontSize;
+    int iFontSize;
 
-        iFontSize = FontHeight - 1;
-        nFixFontSize = nFixFontHeight - 1;
+    iFontSize = FontHeight - 1;
+    nFixFontSize = nFixFontHeight - 1;
 
-        font[FONT_SIZE12] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, iFontSize, &cfg);
-        font[FONT_SIZE15] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, nFixFontSize, &cfg);
+    MU_2DRenderer_Init(WindowWidth, WindowHeight);
+    MU_SetFontSlot(g_hFont, "data/fonts/gulim.ttf", iFontSize);
+    MU_SetFontSlot(g_hFontBold, "data/fonts/verdana.ttf", iFontSize);
+    MU_SetFontSlot(g_hFixFont, "data/fonts/gulim.ttf", nFixFontHeight);
+    MU_SetFontSlot(g_hFontBig, "data/fonts/verdana.ttf", iFontSize * 2);
 
-        SDL_free(fontrawdata);
-
-        if (loadfont("data/fonts/verdana.ttf")) {
-            font[FONT_SIZE13] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, iFontSize, &cfg);
-            font[FONT_SIZE14] = nk_font_atlas_add_from_memory(atlas, fontrawdata, (nk_size)fontrawsize, iFontSize * 2, &cfg);
-            SDL_free(fontrawdata);
-        }
-
-        g_hFont = FONT_SIZE12;
-        g_hFontBold = FONT_SIZE13;
-        g_hFontBig = FONT_SIZE14;
-        g_hFixFont = FONT_SIZE15;
-
-#ifndef MU_USE_SDL
-        g_hFont = CreateFontA(iFontSize, 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, GlobalText[0][0] ? GlobalText[0] : NULL);
-        g_hFontBold = CreateFontA(iFontSize, 0, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, GlobalText[0][0] ? GlobalText[0] : NULL);
-        g_hFontBig = CreateFontA(iFontSize * 2, 0, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, GlobalText[0][0] ? GlobalText[0] : NULL);
-        g_hFixFont = CreateFontA(nFixFontSize, 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, NONANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, GlobalText[18][0] ? GlobalText[18] : NULL);
-#endif
-
-        nk_sdl_font_stash_end();
-
-        if (!sdl.ogl.font_tex) {
-            g_ErrorReport.Write("> font allocation failed, failing back to default.");
-            iscustomfontfailed = true;
-            nk_style_set_font(g_nk_ctx, 0);
-            nk_font_atlas_clear(atlas);
-        }
-        else {
-            iscustomfontfailed = false;
-        }
-
-    }
-
-    setfont(g_hFont);
-
-    //struct nk_style_item old_bg = g_nk_ctx->style.window.fixed_background;
-
-    g_nk_ctx->style.window.fixed_background =
-        nk_style_item_color(nk_rgba(
-            0,
-            0,
-            0,
-            0));
-
-    g_nk_ctx->style.window.padding = nk_vec2(0, 0);
-    g_nk_ctx->style.window.spacing = nk_vec2(0, 0);
-    g_nk_ctx->style.window.border = 0;
-
+    MU_SetActiveFont(g_hFont);
 
     g_ErrorReport.Write( "MU_InitSDL > MU_InitNetworkEvent\r\n");
 
@@ -647,6 +604,8 @@ bool MU_InitSDL(int width, int height)
 void MU_ShutdownSDL()
 {
     SDL_StopTextInput();
+    
+    DestroyMeshVBO();
 
     if (gGLContext)
     {
@@ -660,7 +619,8 @@ void MU_ShutdownSDL()
         gSDLWindow = nullptr;
     }
 
-    nk_sdl_shutdown();
+    MU_2DRenderer_Destroy();
+    //nk_sdl_shutdown();
     SDL_Quit();
     MU_ShutdownNetworkEvent();
 
@@ -1168,13 +1128,21 @@ short MU_GetAsyncKeyState(int key) {
         return 0;
 
 #ifdef __ANDROID__
+
     if (SceneFlag == CHARACTER_SCENE && key == VK_LBUTTON) {
         if (g_PendingTouchMove && g_PendingTouchMoveFrames == 0) {
             g_PendingTouchMove = false;
             return (short)0x8000;
         }
     }
-#endif
+
+    if (SceneFlag == MAIN_SCENE && key == VK_LBUTTON) {
+        if (MouseLButtonPush) {
+            return (short)0x8000;
+        }
+    }
+
+#endif //MouseLButtonPush
 
     // Mouse buttons
     Uint32 mouse = SDL_GetMouseState(nullptr, nullptr);

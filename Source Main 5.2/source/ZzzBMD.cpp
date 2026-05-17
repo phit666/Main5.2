@@ -1368,14 +1368,9 @@ void BMD::RenderMesh(int i, int RenderFlag, float Alpha, int BlendMesh, float Bl
 
 
 	// 2. RENDERING
+	/*
 	if (!meshVao.empty())
 	{
-		//myShader.setFloat(g_uTexEnabledLoc, 1.0f);
-		//myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-
-// --- QUICK TEST RESET ---
-
-
 
 		safe_enable_attr(g_aPosLoc);
 		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].x);
@@ -1395,6 +1390,59 @@ void BMD::RenderMesh(int i, int RenderFlag, float Alpha, int BlendMesh, float Bl
 		glDisableVertexAttribArray(g_aTexLoc);
 		glDisableVertexAttribArray(g_aPosLoc);
 
+	}*/
+
+	if (!meshVao.empty())
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			meshVao.size() * sizeof(SpriteVertexFull),
+			meshVao.data(),
+			GL_STREAM_DRAW
+		);
+
+		safe_enable_attr(g_aPosLoc);
+		glVertexAttribPointer(
+			g_aPosLoc,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, x)
+		);
+
+		safe_enable_attr(g_aTexLoc);
+		glVertexAttribPointer(
+			g_aTexLoc,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, u)
+		);
+
+		safe_enable_attr(g_aColorLoc);
+		glVertexAttribPointer(
+			g_aColorLoc,
+			4,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, r)
+		);
+
+		MU_ApplyMatrices();
+		myShader.setVec4(g_uColorLoc, 1.f, 1.f, 1.f, 1.f);
+
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)meshVao.size());
+
+		glDisableVertexAttribArray(g_aColorLoc);
+		glDisableVertexAttribArray(g_aTexLoc);
+		glDisableVertexAttribArray(g_aPosLoc);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 }

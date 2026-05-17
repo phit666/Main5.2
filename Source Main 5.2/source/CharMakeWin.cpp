@@ -18,6 +18,7 @@
 #include "wsclientinline.h"
 #include "Local.h"
 #include "CharacterManager.h"
+#include "wt.h"
 
 #define	CMW_OK		0
 #define	CMW_CANCEL	1
@@ -43,14 +44,14 @@ void CCharMakeWin::Create()
 	CWin::Create(rInput.GetScreenWidth(), rInput.GetScreenHeight());
 
 
-	m_winBack.Create(454, 406, -2);
+	m_winBack.Create(getScaleNewSize(BITMAP_LOG_IN, 454), getScaleNewSize(BITMAP_LOG_IN, 406), -2);
 
 
-	m_asprBack[CMW_SPR_INPUT].Create(346, 38, BITMAP_LOG_IN);
+	m_asprBack[CMW_SPR_INPUT].Create(getScaleNewSize(BITMAP_LOG_IN,346), getScaleNewSize(BITMAP_LOG_IN, 38), getScaleTexID(BITMAP_LOG_IN));
 
-	m_asprBack[CMW_SPR_STAT].Create(108, 80);
+	m_asprBack[CMW_SPR_STAT].Create(getScaleNewSize(BITMAP_LOG_IN, 108), getScaleNewSize(BITMAP_LOG_IN, 80));
 
-	m_asprBack[CMW_SPR_DESC].Create(454, 51);
+	m_asprBack[CMW_SPR_DESC].Create(getScaleNewSize(BITMAP_LOG_IN, 454), getScaleNewSize(BITMAP_LOG_IN, 51));
 
 	int i;
 	for (i = CMW_SPR_STAT; i < CMW_SPR_MAX; ++i)
@@ -68,7 +69,7 @@ void CCharMakeWin::Create()
 	int nText;
 	for (i = 0; i < MAX_CLASS; ++i)
 	{
-		m_abtnJob[i].Create(108, 26, BITMAP_LOG_IN+1, 4, 2, 1, 0, 3, 3, 3, 0);
+		m_abtnJob[i].Create(getScaleNewSize(BITMAP_LOG_IN + 1,108), getScaleNewSize(BITMAP_LOG_IN + 1, 26), getScaleTexID(BITMAP_LOG_IN+1), 4, 2, 1, 0, 3, 3, 3, 0);
 #ifdef PBG_ADD_NEWCHAR_MONK
 		int _btn_classname[MAX_CLASS] = {20, 21, 22, 23, 24, 1687, 3150};
 #else //PBG_ADD_NEWCHAR_MONK
@@ -81,7 +82,7 @@ void CCharMakeWin::Create()
 
 	for (i = 0; i < 2; ++i)
 	{
-		m_aBtn[i].Create(54, 30, BITMAP_BUTTON + i, 3, 2, 1);
+		m_aBtn[i].Create(getScaleNewSize(BITMAP_BUTTON + i, 54), getScaleNewSize(BITMAP_BUTTON + i, 30), getScaleTexID(BITMAP_BUTTON + i), 3, 2, 1);
 		CWin::RegisterButton(&m_aBtn[i]);
 	}
 
@@ -106,16 +107,16 @@ void CCharMakeWin::SetPosition(int nXCoord, int nYCoord)
 {
 	m_winBack.SetPosition(nXCoord, nYCoord);
 
-	int nBaseX = nXCoord + 346;
-	m_asprBack[CMW_SPR_STAT].SetPosition(nBaseX, nYCoord + 24);
+	int nBaseX = nXCoord + getScaleNewSize(BITMAP_LOG_IN, 346);
+	m_asprBack[CMW_SPR_STAT].SetPosition(nBaseX, nYCoord + getScaleNewSize(BITMAP_LOG_IN, 24));
 
 	int i;
-	int nBaseY = nYCoord + 131;
+	int nBaseY = nYCoord + getScaleNewSize(BITMAP_LOG_IN, 131);
 	int nBtnHeight = m_abtnJob[0].GetHeight();
 	for (i = 0; i < 3; ++i)
 		m_abtnJob[i].SetPosition(nBaseX, nBaseY + i * nBtnHeight);
 	m_abtnJob[CLASS_SUMMONER].SetPosition(nBaseX, nBaseY + 3 * nBtnHeight);
-	nBaseY = nYCoord + 246;
+	nBaseY = nYCoord + getScaleNewSize(BITMAP_LOG_IN, 246);
 
 #ifdef PBG_ADD_NEWCHAR_MONK
 	m_abtnJob[CLASS_RAGEFIGHTER].SetPosition(nBaseX, nBaseY);
@@ -127,20 +128,20 @@ void CCharMakeWin::SetPosition(int nXCoord, int nYCoord)
 		m_abtnJob[i].SetPosition(nBaseX, nBaseY + (i - 3) * nBtnHeight);
 #endif //PBG_ADD_NEWCHAR_MONK
 
-	nBaseY = nYCoord + 325;
+	nBaseY = nYCoord + getScaleNewSize(BITMAP_LOG_IN, 325);
 	m_aBtn[CMW_OK].SetPosition(nBaseX, nBaseY);
-	m_aBtn[CMW_CANCEL].SetPosition(nXCoord + 400, nBaseY);
+	m_aBtn[CMW_CANCEL].SetPosition(nXCoord + getScaleNewSize(BITMAP_LOG_IN, 400), nBaseY);
 
-	m_asprBack[CMW_SPR_INPUT].SetPosition(nXCoord, nYCoord + 317);
+	m_asprBack[CMW_SPR_INPUT].SetPosition(nXCoord, nYCoord + getScaleNewSize(BITMAP_LOG_IN, 317));
 
 	if (g_iChatInputType == 1)
 	{
 		g_pSingleTextInputBox->SetPosition(
-			int((m_asprBack[CMW_SPR_INPUT].GetXPos() + 78) / g_fScreenRate_x),
-			int((m_asprBack[CMW_SPR_INPUT].GetYPos() + 21) / g_fScreenRate_y));
+			int((m_asprBack[CMW_SPR_INPUT].GetXPos() + getScaleNewSize(BITMAP_LOG_IN, 78)) / g_fScreenRate_x),
+			int((m_asprBack[CMW_SPR_INPUT].GetYPos() + getScaleNewSize(BITMAP_LOG_IN, 21)) / g_fScreenRate_y));
 	}
 
-	m_asprBack[CMW_SPR_DESC].SetPosition(nXCoord, nYCoord + 355);
+	m_asprBack[CMW_SPR_DESC].SetPosition(nXCoord, nYCoord + getScaleNewSize(BITMAP_LOG_IN, 355));
 }
 
 void CCharMakeWin::Show(bool bShow)
@@ -158,7 +159,7 @@ void CCharMakeWin::Show(bool bShow)
 
 	if (bShow)
 	{
-		InputTextWidth = 73;
+		InputTextWidth = getScaleNewSize(BITMAP_LOG_IN, 73);
 		ClearInput();
 		InputEnable = true;
 		InputNumber = 1;
@@ -218,9 +219,9 @@ void CCharMakeWin::UpdateDisplay()
 #endif //PBG_ADD_CHARACTERCARD
 
 	if (m_nSelJob == CLASS_DARK_LORD)
-		m_asprBack[CMW_SPR_STAT].SetSize(0, 96, Y);
+		m_asprBack[CMW_SPR_STAT].SetSize(0, getScaleNewSize(BITMAP_LOG_IN, 96), Y);
 	else
-		m_asprBack[CMW_SPR_STAT].SetSize(0, 80, Y);
+		m_asprBack[CMW_SPR_STAT].SetSize(0, getScaleNewSize(BITMAP_LOG_IN, 80), Y);
 
 	int nText = m_nSelJob == CLASS_SUMMONER ? 1690 : 1705 + m_nSelJob;
 #ifdef PBG_ADD_NEWCHAR_MONK
@@ -326,15 +327,15 @@ void CCharMakeWin::RenderControls()
 		"32", "27", "25", "20",
 #endif //PBG_ADD_NEWCHAR_MONK
 	};
-	int nStatBaseX = m_asprBack[CMW_SPR_STAT].GetXPos() + 22;
+	int nStatBaseX = m_asprBack[CMW_SPR_STAT].GetXPos() + getScaleNewSize(BITMAP_LOG_IN, 22);
 	int nStatY;
 	for (i = 0; i < 4; ++i)
 	{
-		nStatY = int((m_asprBack[CMW_SPR_STAT].GetYPos() + 10 + i * 17)
+		nStatY = int((m_asprBack[CMW_SPR_STAT].GetYPos() + getScaleNewSize(BITMAP_LOG_IN, 10) + i * getScaleNewSize(BITMAP_LOG_IN, 17))
 			/ g_fScreenRate_y);
 
 		g_pRenderText->SetTextColor(CLRDW_ORANGE);
-		g_pRenderText->RenderText(int((nStatBaseX + 54) / g_fScreenRate_x), nStatY,
+		g_pRenderText->RenderText(int((nStatBaseX + getScaleNewSize(BITMAP_LOG_IN, 54)) / g_fScreenRate_x), nStatY,
 			apszStat[m_nSelJob][i]);
 		g_pRenderText->SetTextColor(CLRDW_WHITE);
 		g_pRenderText->RenderText(int(nStatBaseX / g_fScreenRate_x), nStatY,
@@ -343,10 +344,10 @@ void CCharMakeWin::RenderControls()
 
 	if (m_nSelJob == CLASS_DARK_LORD)
 	{
-		nStatY = int((m_asprBack[CMW_SPR_STAT].GetYPos() + 10 + 4 * 17)	/ g_fScreenRate_y);
+		nStatY = int((m_asprBack[CMW_SPR_STAT].GetYPos() + getScaleNewSize(BITMAP_LOG_IN, 10) + 4 * getScaleNewSize(BITMAP_LOG_IN, 17))	/ g_fScreenRate_y);
 
 		g_pRenderText->SetTextColor(CLRDW_ORANGE);
-		g_pRenderText->RenderText(int((nStatBaseX + 54) / g_fScreenRate_x), nStatY, "25");
+		g_pRenderText->RenderText(int((nStatBaseX + getScaleNewSize(BITMAP_LOG_IN, 54)) / g_fScreenRate_x), nStatY, "25");
 		g_pRenderText->SetTextColor(CLRDW_WHITE);
 		g_pRenderText->RenderText(int(nStatBaseX / g_fScreenRate_x), nStatY, GlobalText[1738]);
 	}
@@ -354,8 +355,8 @@ void CCharMakeWin::RenderControls()
 	{
 		for (i = 0; i < m_nDescLine; ++i)
 		{
-			g_pRenderText->RenderText(int((m_asprBack[CMW_SPR_DESC].GetXPos() + 10) / g_fScreenRate_x),
-				int((m_asprBack[CMW_SPR_DESC].GetYPos() + 12 + i * 19)
+			g_pRenderText->RenderText(int((m_asprBack[CMW_SPR_DESC].GetXPos() + getScaleNewSize(BITMAP_LOG_IN, 10)) / g_fScreenRate_x),
+				int((m_asprBack[CMW_SPR_DESC].GetYPos() + getScaleNewSize(BITMAP_LOG_IN, 12) + i * getScaleNewSize(BITMAP_LOG_IN, 19))
 				/ g_fScreenRate_y), m_aszJobDesc[i]);
 		}
 	}
@@ -366,8 +367,8 @@ void CCharMakeWin::RenderControls()
 		g_pSingleTextInputBox->Render();
 	else if (g_iChatInputType == 0)
 		::RenderInputText(
-			int((m_asprBack[CMW_SPR_INPUT].GetXPos() + 78) / g_fScreenRate_x),
-			int((m_asprBack[CMW_SPR_INPUT].GetYPos() + 21) / g_fScreenRate_y),
+			int((m_asprBack[CMW_SPR_INPUT].GetXPos() + getScaleNewSize(BITMAP_LOG_IN, 78)) / g_fScreenRate_x),
+			int((m_asprBack[CMW_SPR_INPUT].GetYPos() + getScaleNewSize(BITMAP_LOG_IN, 21)) / g_fScreenRate_y),
 			0);
 }
 
@@ -396,7 +397,7 @@ void CCharMakeWin::RenderCreateCharacter()
     CameraFOV = 10.f;
 	MoveCharacterCamera(CharacterView.Object.Position,Position,Angle);
 
-	BeginOpengl( m_winBack.GetXPos()/g_fScreenRate_x, m_winBack.GetYPos()/g_fScreenRate_y,410/g_fScreenRate_x, 335/g_fScreenRate_y );
+	BeginOpengl( m_winBack.GetXPos()/g_fScreenRate_x, m_winBack.GetYPos()/g_fScreenRate_y, getScaleNewSize(BITMAP_LOG_IN, 410)/g_fScreenRate_x, getScaleNewSize(BITMAP_LOG_IN, 335)/g_fScreenRate_y );
 
 	if (CharacterView.Class == CLASS_WIZARD)
 	{

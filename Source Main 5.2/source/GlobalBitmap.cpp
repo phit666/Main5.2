@@ -18,7 +18,7 @@
 
 std::vector<_TexScaleMap> g_mapTexScale = {
 	{0, 0, false, false, "Default"},
-//#ifdef __ANDROID__
+#ifdef __ANDROID__
 	{BITMAP_LOG_IN, 480.0f, true, true, "Select Server"},
 	{BITMAP_LOG_IN + 1, 480.0f, true, true, "Select Server"},
 	{BITMAP_LOG_IN + 7, 480.0f, true, true, "Login-Box"},
@@ -32,7 +32,8 @@ std::vector<_TexScaleMap> g_mapTexScale = {
 	{BITMAP_LOG_IN + 2, 480.0f, true, true, "Decor"},
 	{BITMAP_MESSAGE_WIN, 480.0f, true, true, "Popup"},
 	{BITMAP_MSG_WIN_INPUT, 480.0f, true, true, "Popup"},
-	//#endif
+
+#endif
 
 };
 

@@ -22,6 +22,7 @@
 #include "NewUISystem.h"
 #include "mu_sdl.h"
 #include "wt.h"
+#include "MU_UIRenderer.h"
 
 extern BYTE m_CrywolfState;
 
@@ -2640,7 +2641,7 @@ void CUIRenderText::SetBgColor(DWORD dwColor)
 void CUIRenderText::SetFont(HFONT hFont)
 {
 #ifdef MU_USE_SDL
-	setfont(hFont); // nuklear
+	MU_SetActiveFont(hFont);
 #else
 	if(m_pRenderText)
 		m_pRenderText->SetFont(hFont);
@@ -2854,9 +2855,17 @@ void CUIRenderTextOriginal::UploadText(int sx, int sy, int Width, int Height)
 
 static uint32_t canvasctr = 1;
 
-static nk_color GetNkColor(DWORD color)
+struct stColor
 {
-	nk_color c;
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	unsigned char a;
+};
+
+static stColor GetRGBA(DWORD color)
+{
+	stColor c;
 
 	c.r = (color) & 0xFF;
 	c.g = (color >> 8) & 0xFF;
@@ -2865,6 +2874,7 @@ static nk_color GetNkColor(DWORD color)
 
 	return c;
 }
+
 
 
 void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_char* pszText, 
@@ -2959,7 +2969,17 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 
 	const int LIMIT_WIDTH = 256;
 
-#ifndef MU_USE_SDL
+#ifdef MU_USE_SDL
+	if (m_dwBackColor != 0)
+	{
+		EnableAlphaTest();
+		glColor4ub(GetRed(m_dwBackColor), GetGreen(m_dwBackColor),
+			GetBlue(m_dwBackColor), GetAlpha(m_dwBackColor));
+		RenderColor(RealBoxPos.x / g_fScreenRate_x, RealBoxPos.y / g_fScreenRate_y,
+			RealBoxSize.cx / g_fScreenRate_x, RealBoxSize.cy / g_fScreenRate_y);
+		EndRenderColor();
+	}
+#else
 	if(m_dwBackColor != 0)
 	{
 		EnableAlphaTest();
@@ -2971,55 +2991,15 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 	}
 #endif
 
-	//if(pszText[0] != 0x0a)
+	if(pszText[0] != 0x0a)
 	{
 #ifdef MU_USE_SDL
-
-		if (g_nk_ctx) {
-
-			std::string canvastitle = std::to_string(canvasctr++); if (canvasctr >= 2000000000)canvasctr = 1;
-
-			/*float textWidth = g_nk_ctx->style.font->width(
-				g_nk_ctx->style.font->userdata,
-				g_nk_ctx->style.font->height,
-				pszText,
-				strlen(pszText)
-			);
-			float textHeight = g_nk_ctx->style.font->height;*/
-
-			struct nk_rect bounds = nk_rect( (float)RealBoxPos.x, (float)RealBoxPos.y, (float)RealBoxSize.cx, (float)RealBoxSize.cy );
-			
-			// (float)(RealBoxPos.x + iTab), (float)RealBoxPos.y, textWidth, textHeight);
-
-			if (nk_begin(g_nk_ctx, canvastitle.c_str(), bounds, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NO_INPUT)) {
-
-				struct nk_command_buffer* canvas = nk_window_get_canvas(g_nk_ctx);
-
-				struct nk_rect text_rect = nk_rect(bounds.x + iTab, bounds.y, bounds.w, bounds.h);
-
-				nk_color bgcolor = nk_rgba(0, 0, 0, 240);
-				nk_color textcolor = nk_rgba(255, 255, 255, 240);
-
-				if (m_dwBackColor) {
-					bgcolor = GetNkColor(m_dwBackColor);
-					struct nk_rect bg_rect = nk_rect(RealBoxPos.x, RealBoxPos.y,
-						RealBoxSize.cx, RealBoxSize.cy);
-					nk_fill_rect(canvas, bounds, 0, bgcolor);
-				}
-
-				if (m_dwTextColor) {
-					textcolor = GetNkColor(m_dwTextColor);
-				}
-
-				if (pszText[0] != 0x0a) {
-
-					nk_draw_text(canvas, text_rect, pszText, strlen(pszText), g_nk_ctx->style.font,
-						nk_rgb(0, 0, 0), textcolor);
-				}
-			}
-
-			nk_end(g_nk_ctx);
-		}
+		MU_2DRenderer_Begin(WindowWidth, WindowHeight);
+		stColor textcolor = GetRGBA(m_dwTextColor);
+		MU_TextOut(RealBoxPos.x + iTab, RealBoxPos.y - 2, pszText, textcolor.r, textcolor.g, textcolor.b, textcolor.a);
+		//stColor bgcolor = GetRGBA(m_dwBackColor);
+		//MU_FillRect(RealBoxPos.x, RealBoxPos.y, RealBoxSize.cx, RealBoxSize.cy, bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
+		MU_2DRenderer_End();
 #else
 		SetBkColor(m_hFontDC, RGB(0, 0, 0));
 		SetTextColor(m_hFontDC, RGB(255,255,255));
@@ -3644,7 +3624,7 @@ static std::string g_activewindow = "";
 
 void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 {
-#ifdef MU_USE_SDL
+#ifdef MU_USE_SDL_TEMP
 	if (!ctx || !m_bShow)
 		return;
 
@@ -3706,6 +3686,8 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 		ctx->style.edit.cursor_normal = text;
 		ctx->style.edit.cursor_hover = text;
 
+		//nk_edit_focus(ctx, NK_EDIT_FIELD);
+
 		if (m_bPasswordInput) {
 			int len = m_iTextLength;
 			if (len > MAX_TEXT_LENGTH)
@@ -3737,11 +3719,11 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 			strncpy(m_szText, masked, m_iTextLength);
 		}
 
-		//if (g_refocusinputresize == 1 && g_activewindow == m_title) {
-			//g_refocusinputresize = 0;
-			//nk_window_set_focus(ctx, m_title.c_str());
+		if (g_refocusinputresize == 1 && g_activewindow == m_title) {
+			g_refocusinputresize = 0;
+			nk_window_set_focus(ctx, m_title.c_str());
 			//nk_edit_focus(ctx, NK_EDIT_FIELD);
-		//}
+		}
 
 		if (textboxfocused == false) {
 			textboxfocused = ((st & NK_EDIT_ACTIVE) != 0) ? true : false;
@@ -3868,7 +3850,10 @@ void CUITextInputBox::WriteText(int iOffset, int iWidth, int iHeight)
 void CUITextInputBox::Render()
 {
 #ifdef MU_USE_SDL
-	RenderNuklear(g_nk_ctx);
+	//RenderNuklear(g_nk_ctx);
+	//RenderNuklearSafe(g_nk_ctx);
+	//nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+	//glActiveTexture(GL_TEXTURE0);
 #else
 	m_bIsReady = TRUE;
 	if (m_hEditWnd == NULL || IsWindowVisible(m_hEditWnd) == FALSE) return;
