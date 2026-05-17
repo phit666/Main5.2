@@ -78,13 +78,15 @@ void CLoginWin::Create()
 	m_pPassInputBox->SetState(UISTATE_NORMAL);
 	m_pPassInputBox->SetTitle("login-password");
 
-	char username[11];
-	char password[11];
+	char username[11] = {};
+	char password[11] = {};
 
-	if (LoadQuickLogin(username, sizeof(username), password, sizeof(password)))
+	if (LoadQuickLogin(username, 11, password, 11))
 	{
-		strncpy(m_pIDInputBox->m_szText, username, 10);
-		strncpy(m_pPassInputBox->m_szText, password, 10);
+		memcpy(m_pIDInputBox->m_szText, username, 11);
+		memcpy(m_pPassInputBox->m_szText, password, 11);
+		memcpy(m_pIDInputBox->masked, username, 11);
+		memcpy(m_pPassInputBox->masked, password, 11);
 		m_pIDInputBox->m_iTextLength = strlen(username);
 		m_pPassInputBox->m_iTextLength = strlen(password);
 	}

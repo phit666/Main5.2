@@ -1976,13 +1976,20 @@ int main(int argc, char* argv[])
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 #ifdef __ANDROID__
-			if (SceneFlag == MAIN_SCENE) {
+			//if (SceneFlag == MAIN_SCENE) {
 				if (g_PendingTouchMove && g_PendingTouchMoveFrames == 0) {
-					MouseLButtonPush = 1;
+					//MouseLButtonPush = 1;
 					g_PendingTouchMove = false;
-					g_ErrorReport.Write("> debugmove, pending move executed.");
+
+					MouseLButtonPush = false;
+					MouseLButtonPop = true;
+					MouseLButton = false;
+					g_iMousePopPosition_x = MouseX;
+					g_iMousePopPosition_y = MouseY;
+
+					//g_ErrorReport.Write("> debugmove, pending move executed.");
 				}
-			}
+			//}
 #endif
 			Scene(g_hDC); 
 
@@ -2126,6 +2133,9 @@ void UpdateDebugCameraByKeyboard(float dt)
 	VectorRotate(p1, Matrix, p2);
 }
 
+
+static uint64_t touchtick = 0;
+
 void MU_ProcessSDLEvents()
 {
 	SDL_Event e;
@@ -2160,17 +2170,9 @@ void MU_ProcessSDLEvents()
 				WindowHeight = e.window.data2;
 
 #ifdef __ANDROID__
-				//scale = std::min(WindowWidth / 640.0f, WindowHeight / 480.0f);
-				float scale = (std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
-
-				//g_fScreenRate_x = scale;//(std::max)(WindowWidth / 640.0f, WindowHeight / 480.0f);
-				//g_fScreenRate_y = scale;// g_fScreenRate_x;
-
 				g_fScreenRate_x = (float)WindowWidth / 640;		// ��
 				g_fScreenRate_y = (float)WindowHeight / 480;
-
 				g_ErrorReport.Write("> Resize Screen Width %d Height %d Scale %f", WindowWidth, WindowHeight, g_fScreenRate_x);
-
 #else
 				g_fScreenRate_x = (float)WindowWidth / 640;		// ��
 				g_fScreenRate_y = (float)WindowHeight / 480;
@@ -2241,6 +2243,7 @@ void MU_ProcessSDLEvents()
 
 					case HACK_TIMER:
 						CheckHack();
+						//g_ErrorReport.Write("> CheckHack()");
 						break;
 
 					case CHATCONNECT_TIMER:
@@ -2271,50 +2274,19 @@ void MU_ProcessSDLEvents()
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
 			case SDL_MOUSEMOTION:
-				// Ignore emulated mouse on Android
 				break;
 
 			case SDL_FINGERDOWN:
 			{
-				//if (overlayblocktouch)
-					//break;
+				touchtick = SDL_GetTicks64();
 
 				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
 				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
 
-				if (SceneFlag == MAIN_SCENE) {
-					CHARACTER* c = Hero;
-					OBJECT* o = &c->Object;
-
-					int HeroX = GetScreenWidth() / 2;
-					int HeroY = 180;
-
-					int	HeroAngle = -(int)(CreateAngle((float)MouseX, (float)MouseY, (float)HeroX, (float)HeroY)) + 360 + 45;
-					HeroAngle %= 360;
-					BYTE Angle1 = ((BYTE)((o->Angle[2] + 22.5f) / 360.f * 8.f + 1.f) % 8);
-					BYTE Angle2 = ((BYTE)(((float)HeroAngle + 22.5f) / 360.f * 8.f + 1.f) % 8);
-					if (Angle1 != Angle2)
-					{
-						g_PendingTouchMove = true;
-						g_PendingTouchMoveFrames = 1; // wait one game frame
-					}
-					else {
-						MouseLButtonPop = false;
-						if (!MouseLButton)
-							MouseLButtonPush = true;
-						MouseLButton = true;
-					}
-				}
-				else if (SceneFlag == CHARACTER_SCENE) {
-					g_PendingTouchMove = true;
-					g_PendingTouchMoveFrames = 1; // wait one game frame
-				}
-				else {
-					MouseLButtonPop = false;
-					if (!MouseLButton)
-						MouseLButtonPush = true;
-					MouseLButton = true;
-				}
+				if (MouseX < 0) MouseX = 0;
+				if (MouseX > 640) MouseX = 640;
+				if (MouseY < 0) MouseY = 0;
+				if (MouseY > 480) MouseY = 480;
 			}
 			break;
 
@@ -2335,15 +2307,15 @@ void MU_ProcessSDLEvents()
 
 			case SDL_FINGERUP:
 			{
-				//if (overlayblocktouch)
-					//break;
+				touchtick = 0;
 
-				MouseX = (int)((e.tfinger.x * WindowWidth) / g_fScreenRate_x);
-				MouseY = (int)((e.tfinger.y * WindowHeight) / g_fScreenRate_y);
+				MouseLButtonPop = false;
+				if (!MouseLButton)
+					MouseLButtonPush = true;
+				MouseLButton = true;
 
-				MouseLButton = false;
-				MouseLButtonPush = false;
-				MouseLButtonPop = true;
+				g_PendingTouchMove = true;
+				g_PendingTouchMoveFrames = 1; // wait one game frame
 			}
 			break;
 #else
@@ -2363,30 +2335,8 @@ void MU_ProcessSDLEvents()
 
 		case SDL_MOUSEBUTTONDOWN:
 
-			//if (overlayblocktouch)
-				//break;
-
-			MouseX = (float)e.button.x / g_fScreenRate_x;
-			MouseY = (float)e.button.y / g_fScreenRate_y;
-
-			//g_ErrorReport.Write("> debugmouse DOWN, X %d Y %d", MouseX, MouseY);
-
-			if (MouseX < 0) MouseX = 0;
-			if (MouseX > 640) MouseX = 640;
-			if (MouseY < 0) MouseY = 0;
-			if (MouseY > 480) MouseY = 480;
-
 			g_iNoMouseTime = 0;
-
 			g_TestMouseClick = 1;
-
-#ifdef __ANDROID__
-			MouseLButtonPop = false;
-			if (!MouseLButton)
-				MouseLButtonPush = true;
-
-			MouseLButton = true;
-#else
 
 			if (e.button.button == SDL_BUTTON_LEFT)
 			{
@@ -2412,29 +2362,13 @@ void MU_ProcessSDLEvents()
 
 				MouseMButton = true;
 			}
-#endif
 			break;
 
 		case SDL_MOUSEBUTTONUP:
 
-			//if (overlayblocktouch)
-				//break;
-
 			g_iNoMouseTime = 0;
 			g_TestMouseClick = 0;
 
-#ifdef __ANDROID__
-			//MouseX = (float)e.button.x / g_fScreenRate_x;
-			//MouseY = (float)e.button.y / g_fScreenRate_y;
-
-			//g_ErrorReport.Write("> debugmouse UP, X %d Y %d", MouseX, MouseY);
-
-			MouseLButtonPush = false;
-			MouseLButtonPop = true;
-			MouseLButton = false;
-			g_iMousePopPosition_x = MouseX;
-			g_iMousePopPosition_y = MouseY;
-#else
 			if (e.button.button == SDL_BUTTON_LEFT)
 			{
 				MouseLButtonPush = false;
@@ -2442,9 +2376,6 @@ void MU_ProcessSDLEvents()
 				MouseLButton = false;
 				g_iMousePopPosition_x = MouseX;
 				g_iMousePopPosition_y = MouseY;
-
-				//g_ErrorReport.Write("> CLoginMainWin::UpdateWhileActive, Mouse X %d Y %d", MouseX, MouseY);
-
 			}
 			else if (e.button.button == SDL_BUTTON_RIGHT)
 			{
@@ -2462,23 +2393,16 @@ void MU_ProcessSDLEvents()
 
 				MouseMButton = false;
 			}
-#endif
+
 			break;
 #endif
 
 		case SDL_MOUSEWHEEL:
 
-			//if (overlayblocktouch)
-				//break;
-
 			MouseWheel = e.wheel.y;
 			break;
 
 		case SDL_KEYDOWN:
-
-			//if (overlayblocktouch && e.key.keysym.sym == SDLK_RETURN)
-				//overlaytick = SDL_GetTicks64();
-				//break;
 
 			if (e.key.keysym.sym == SDLK_RETURN)
 				SetEnterPressed(true);
@@ -2489,9 +2413,12 @@ void MU_ProcessSDLEvents()
 			if (overlayblocktouch)
 				break;
 
-			// later: send e.text.text to your chat/textbox system
 			break;
 		}
+	}
+
+	if (touchtick != 0 && (SDL_GetTicks64() - touchtick) > 500) {
+		MouseLButtonPush = true;
 	}
 }
 

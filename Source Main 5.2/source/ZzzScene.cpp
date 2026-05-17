@@ -2066,8 +2066,7 @@ bool RenderMainScene()
 	CameraAngle[0] -= 4.0f;
 #endif
 
-	//BeginOpengl(0,0,Width,Height);
-	BeginWorldOpenGL(0, 0, Width, Height);
+	BeginOpengl(0,0,Width,Height);
 
 	CreateFrustrum((float)Width/(float)640, pos);
 
@@ -2085,26 +2084,7 @@ bool RenderMainScene()
         }
     }
 
-	//Distance = CameraViewFar;
 	CreateScreenVector(MouseX,MouseY,MouseTarget);
-
-	//glm::vec3 start, end;
-
-	/*if (CreateScreenRayGLM(MouseX, MouseY,
-		g_WorldViewX,
-		g_WorldViewY,
-		g_WorldViewW,
-		g_WorldViewH,
-		start, end))
-	{
-		MousePosition[0] = start.x;
-		MousePosition[1] = start.y;
-		MousePosition[2] = start.z;
-
-		MouseTarget[0] = end.x;
-		MouseTarget[1] = end.y;
-		MouseTarget[2] = end.z;
-	}*/
 
     if ( IsWaterTerrain()==false )
     {

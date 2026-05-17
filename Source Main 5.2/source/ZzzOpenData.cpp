@@ -2366,7 +2366,7 @@ void DeleteMonsters()
 
 void OpenMonsterModel(int Type)
 {
-	g_ErrorReport.Write( "OpenMonsterModel(%d)\r\n", Type);
+	//g_ErrorReport.Write( "OpenMonsterModel(%d)\r\n", Type);
 
 	int Index = MODEL_MONSTER01+Type;
 

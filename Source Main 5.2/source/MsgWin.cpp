@@ -21,6 +21,7 @@
 #include "UIControls.h"
 #include "ZzzOpenglUtil.h"
 #include "mu_sdl.h"
+#include "wt.h"
 
 #define	MW_OK		0
 #define	MW_CANCEL	1
@@ -44,17 +45,17 @@ void CMsgWin::Create()
 
 	CWin::Create(rInput.GetScreenWidth(), rInput.GetScreenHeight());
 
-	m_sprBack.Create(352, 113, BITMAP_MESSAGE_WIN);
+	m_sprBack.Create(getScaleNewSize(BITMAP_MESSAGE_WIN,352), getScaleNewSize(BITMAP_MESSAGE_WIN, 113), getScaleTexID(BITMAP_MESSAGE_WIN));
 
-	m_sprInput.Create(171, 23, BITMAP_MSG_WIN_INPUT);
+	m_sprInput.Create(getScaleNewSize(BITMAP_MSG_WIN_INPUT, 171), getScaleNewSize(BITMAP_MSG_WIN_INPUT, 23), getScaleTexID(BITMAP_MSG_WIN_INPUT));
 
 	for (int i = 0; i < 2; ++i)
 	{
-		m_aBtn[i].Create(54, 30, BITMAP_BUTTON + i, 3, 2, 1);
+		m_aBtn[i].Create(getScaleNewSize(BITMAP_BUTTON + i, 54), getScaleNewSize(BITMAP_BUTTON + i, 30), getScaleTexID(BITMAP_BUTTON + i), 3, 2, 1);
 		CWin::RegisterButton(&m_aBtn[i]);
 	}
 
-	memset(m_aszMsg[0], 0 ,sizeof(char) * MW_MSG_LINE_MAX * MW_MSG_ROW_MAX);
+	memset(m_aszMsg, 0, sizeof(m_aszMsg));
 
 	m_eType = MWT_NON;
 	m_nMsgLine = 0;
@@ -78,30 +79,29 @@ void CMsgWin::SetPosition(int nXCoord, int nYCoord)
 void CMsgWin::SetCtrlPosition()
 {
 	int nBaseXPos = m_sprBack.GetXPos();
-	int nBtnYPos = m_sprBack.GetYPos() + 72;
+	int nBtnYPos = m_sprBack.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 72);
 
 	switch (m_eType)
 	{
 	case MWT_BTN_CANCEL:
-		m_aBtn[MW_CANCEL].SetPosition(nBaseXPos + 149, nBtnYPos);
+		m_aBtn[MW_CANCEL].SetPosition(nBaseXPos + getScaleNewSize(BITMAP_BUTTON + 1, 149), nBtnYPos);
 		break;
 	case MWT_BTN_OK:
-		m_aBtn[MW_OK].SetPosition(nBaseXPos + 149, nBtnYPos);
+		m_aBtn[MW_OK].SetPosition(nBaseXPos + getScaleNewSize(BITMAP_BUTTON, 149), nBtnYPos);
 		break;
 	case MWT_BTN_BOTH:
-		m_aBtn[MW_OK].SetPosition(nBaseXPos + 98, nBtnYPos);
-		m_aBtn[MW_CANCEL].SetPosition(nBaseXPos + 200, nBtnYPos);
+		m_aBtn[MW_OK].SetPosition(nBaseXPos + getScaleNewSize(BITMAP_BUTTON, 98), nBtnYPos);
+		m_aBtn[MW_CANCEL].SetPosition(nBaseXPos + getScaleNewSize(BITMAP_BUTTON + 1, 200), nBtnYPos);
 		break;
 	case MWT_STR_INPUT:
-		m_sprInput.SetPosition(nBaseXPos + 32, nBtnYPos + 4);
-		m_aBtn[MW_OK].SetPosition(nBaseXPos + 209, nBtnYPos);
-		m_aBtn[MW_CANCEL].SetPosition(nBaseXPos + 264, nBtnYPos);
-		// �Է� �ؽ�Ʈ ��ġ ����.
+		m_sprInput.SetPosition(nBaseXPos + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 32), nBtnYPos + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 4));
+		m_aBtn[MW_OK].SetPosition(nBaseXPos + getScaleNewSize(BITMAP_BUTTON, 209), nBtnYPos);
+		m_aBtn[MW_CANCEL].SetPosition(nBaseXPos + getScaleNewSize(BITMAP_BUTTON + 1, 264), nBtnYPos);
 		if (m_nMsgCode == MESSAGE_DELETE_CHARACTER_RESIDENT)
 			if (g_iChatInputType == 1)
 				g_pSinglePasswdInputBox->SetPosition(
-					int((m_sprInput.GetXPos() + 10) / g_fScreenRate_x),
-					int((m_sprInput.GetYPos() + 8) / g_fScreenRate_y));
+					int((m_sprInput.GetXPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 10)) / g_fScreenRate_x),
+					int((m_sprInput.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 8)) / g_fScreenRate_y));
 		break;
 	}
 }
@@ -237,25 +237,25 @@ void CMsgWin::RenderControls()
 	{
 		nTextPosX = int(m_sprBack.GetXPos() / g_fScreenRate_x);
 		if (MWT_NON != m_eType)
-			nTextPosY = int((m_sprBack.GetYPos() + 38) / g_fScreenRate_y);
+			nTextPosY = int((m_sprBack.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 38)) / g_fScreenRate_y);
 		else
-			nTextPosY = int((m_sprBack.GetYPos() + 54) / g_fScreenRate_y);
+			nTextPosY = int((m_sprBack.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 54)) / g_fScreenRate_y);
 		g_pRenderText->RenderText(nTextPosX, nTextPosY, m_aszMsg[0],
 			m_sprBack.GetWidth() / g_fScreenRate_x, 0, RT3_SORT_CENTER);
 	}
 	else if (2 == m_nMsgLine)
 	{
-		nTextPosX = int((m_sprBack.GetXPos() + 25) / g_fScreenRate_x);
+		nTextPosX = int((m_sprBack.GetXPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 25)) / g_fScreenRate_x);
 		if (MWT_NON != m_eType)
-			nTextPosY = int((m_sprBack.GetYPos() + 32) / g_fScreenRate_y);
+			nTextPosY = int((m_sprBack.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 32)) / g_fScreenRate_y);
 		else
-			nTextPosY = int((m_sprBack.GetYPos() + 44) / g_fScreenRate_y);
+			nTextPosY = int((m_sprBack.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 44)) / g_fScreenRate_y);
 		g_pRenderText->RenderText(nTextPosX, nTextPosY, m_aszMsg[0]);
 
 		if (MWT_NON != m_eType)
-			nTextPosY = int((m_sprBack.GetYPos() + 51) / g_fScreenRate_y);
+			nTextPosY = int((m_sprBack.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 51)) / g_fScreenRate_y);
 		else
-			nTextPosY = int((m_sprBack.GetYPos() + 66) / g_fScreenRate_y);
+			nTextPosY = int((m_sprBack.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 66)) / g_fScreenRate_y);
 		g_pRenderText->RenderText(nTextPosX, nTextPosY, m_aszMsg[1]);
 	}
 
@@ -267,11 +267,11 @@ void CMsgWin::RenderControls()
 			g_pSinglePasswdInputBox->Render();
 		else if (g_iChatInputType == 0)
 		{
-			InputTextWidth = 100;
+			InputTextWidth = getScaleNewSize(BITMAP_MSG_WIN_INPUT, 100);
 			::RenderInputText(
-				int((m_sprInput.GetXPos() + 10) / g_fScreenRate_x),
-				int((m_sprInput.GetYPos() + 8) / g_fScreenRate_y), 0, 0);
-			InputTextWidth = 256;
+				int((m_sprInput.GetXPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 10)) / g_fScreenRate_x),
+				int((m_sprInput.GetYPos() + getScaleNewSize(BITMAP_MSG_WIN_INPUT, 8)) / g_fScreenRate_y), 0, 0);
+			InputTextWidth = getScaleNewSize(BITMAP_MSG_WIN_INPUT, 256);
 		}
 	}
 

@@ -7212,16 +7212,6 @@ void MoveHero()
 		return;
 	}
 
-	//RestoreWorldPickState();
-
-	SelectFlag = false;
-	SelectXF = -1;
-	SelectYF = -1;
-	Distance = 9999999.0f;
-	Vector(0.f, 0.f, 0.f, CollisionPosition);
-
-	//CreateScreenVector(MouseX, MouseY, MouseTarget, true);
-	
 	if (g_pWindowMgr->GetAddFriendWindow() > 0)
 	{
 		if(MouseRButtonPush)

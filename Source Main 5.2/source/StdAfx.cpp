@@ -12,27 +12,29 @@
 
 typedef unsigned char BYTE;
 
-static BYTE bBuxCode[3] = { 0x9c, 0xef, 0xb8 };
+static BYTE bBuxCode2[3] = { 0x9c, 0xef, 0xb8 };
 
 static void BuxConvert2(BYTE* Buffer, int Size)
 {
     for (int i = 0; i < Size; i++)
-        Buffer[i] ^= bBuxCode[i % 3];
+        Buffer[i] ^= bBuxCode2[i % 3];
 }
 
+#pragma pack(push, 1)
 struct QuickLoginData
 {
-    char username[64];
-    char password[64];
+    char username[11];
+    char password[11];
 };
+#pragma pack(pop)
 
 std::string GetQuickLoginPath()
 {
 #ifdef __ANDROID__
     const char* base = SDL_AndroidGetInternalStoragePath();
-    return std::string(base) + "/quicklogin.dat";
+    return std::string(base) + "/ql.dat";
 #else
-    return "quicklogin.dat";
+    return "data/ql.dat";
 #endif
 }
 
@@ -48,12 +50,12 @@ bool SaveQuickLogin(const char* username, const char* password)
 
     std::string path = GetQuickLoginPath();
 
-    FILE* fp = fopen(path.c_str(), "wb");
+    MU_FILE* fp = MU_fopen(path.c_str(), "wb");
     if (!fp)
         return false;
 
-    fwrite(&data, 1, sizeof(data), fp);
-    fclose(fp);
+    MU_fwrite(&data, 1, sizeof(data), fp);
+    MU_fclose(fp);
 
     return true;
 }
@@ -63,18 +65,18 @@ bool LoadQuickLogin(char* usernameOut, int usernameOutSize,
 {
     std::string path = GetQuickLoginPath();
 
-    FILE* fp = fopen(path.c_str(), "rb");
+    MU_FILE* fp = MU_fopen(path.c_str(), "rb");
     if (!fp)
         return false;
 
     QuickLoginData data;
-    size_t readSize = fread(&data, 1, sizeof(data), fp);
-    fclose(fp);
+    size_t readSize = MU_fread(&data, 1, sizeof(data), fp);
+    MU_fclose(fp);
 
     if (readSize != sizeof(data))
         return false;
 
-    BuxConvert((BYTE*)&data, sizeof(data));
+    BuxConvert2((BYTE*)&data, sizeof(data));
 
     data.username[sizeof(data.username) - 1] = '\0';
     data.password[sizeof(data.password) - 1] = '\0';

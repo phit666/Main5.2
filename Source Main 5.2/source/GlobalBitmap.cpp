@@ -30,7 +30,10 @@ std::vector<_TexScaleMap> g_mapTexScale = {
 	{BITMAP_LOG_IN + 5, 480.0f, true, true, "Char Conn"},
 	{BITMAP_LOG_IN + 6, 480.0f, true, true, "Char. Del"},
 	{BITMAP_LOG_IN + 2, 480.0f, true, true, "Decor"},
-//#endif
+	{BITMAP_MESSAGE_WIN, 480.0f, true, true, "Popup"},
+	{BITMAP_MSG_WIN_INPUT, 480.0f, true, true, "Popup"},
+	//#endif
+
 };
 
 

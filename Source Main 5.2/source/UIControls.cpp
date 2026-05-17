@@ -3657,7 +3657,8 @@ void CUITextInputBox::RenderNuklear(struct nk_context* ctx)
 	if (m_iTextLength > m_iMaxLength)
 		m_iTextLength = m_iMaxLength;
 
-	m_szText[m_iTextLength] = '\0';
+	if(m_iTextLength == 0)
+		m_szText[m_iTextLength] = '\0';
 
 	//m_iRealWindowPos_x = (int)(m_iPos_x * g_fScreenRate_x);
 	//m_iRealWindowPos_y = (int)(m_iPos_y * g_fScreenRate_y);

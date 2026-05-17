@@ -230,8 +230,8 @@ void CUIMng::CreateLoginScene()
 	
 	m_MsgWin.Create();
 	m_WinList.AddHead(&m_MsgWin);
-	m_MsgWin.SetPosition((rInput.GetScreenWidth() - 352) / 2,
-		(rInput.GetScreenHeight() - 113) / 2);
+	m_MsgWin.SetPosition((rInput.GetScreenWidth() - getScaleNewSize(BITMAP_MESSAGE_WIN, 352)) / 2,
+		(rInput.GetScreenHeight() - getScaleNewSize(BITMAP_MESSAGE_WIN, 113)) / 2);
 
 	m_SysMenuWin.Create();
 	m_WinList.AddHead(&m_SysMenuWin);

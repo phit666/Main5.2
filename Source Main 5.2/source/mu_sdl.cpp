@@ -667,6 +667,501 @@ void MU_ShutdownSDL()
     //OutputDebugStringA("[SDL-DEBUG] MU_ShutdownSDL");
 }
 
+#ifdef VK_LBUTTON
+#undef VK_LBUTTON
+#endif
+
+#ifdef VK_RBUTTON
+#undef VK_RBUTTON
+#endif
+
+#ifdef VK_MBUTTON
+#undef VK_MBUTTON
+#endif
+
+#ifdef VK_BACK
+#undef VK_BACK
+#endif
+
+#ifdef VK_TAB
+#undef VK_TAB
+#endif
+
+#ifdef VK_RETURN
+#undef VK_RETURN
+#endif
+
+#ifdef VK_SHIFT
+#undef VK_SHIFT
+#endif
+
+#ifdef VK_CONTROL
+#undef VK_CONTROL
+#endif
+
+#ifdef VK_MENU
+#undef VK_MENU
+#endif
+
+#ifdef VK_PAUSE
+#undef VK_PAUSE
+#endif
+
+#ifdef VK_ESCAPE
+#undef VK_ESCAPE
+#endif
+
+#ifdef VK_SPACE
+#undef VK_SPACE
+#endif
+
+#ifdef VK_PRIOR
+#undef VK_PRIOR
+#endif
+
+#ifdef VK_NEXT
+#undef VK_NEXT
+#endif
+
+#ifdef VK_END
+#undef VK_END
+#endif
+
+#ifdef VK_HOME
+#undef VK_HOME
+#endif
+
+#ifdef VK_LEFT
+#undef VK_LEFT
+#endif
+
+#ifdef VK_UP
+#undef VK_UP
+#endif
+
+#ifdef VK_RIGHT
+#undef VK_RIGHT
+#endif
+
+#ifdef VK_DOWN
+#undef VK_DOWN
+#endif
+
+#ifdef VK_INSERT
+#undef VK_INSERT
+#endif
+
+#ifdef VK_DELETE
+#undef VK_DELETE
+#endif
+
+#ifdef VK_0
+#undef VK_0
+#endif
+
+#ifdef VK_1
+#undef VK_1
+#endif
+
+#ifdef VK_2
+#undef VK_2
+#endif
+
+#ifdef VK_3
+#undef VK_3
+#endif
+
+#ifdef VK_4
+#undef VK_4
+#endif
+
+#ifdef VK_5
+#undef VK_5
+#endif
+
+#ifdef VK_6
+#undef VK_6
+#endif
+
+#ifdef VK_7
+#undef VK_7
+#endif
+
+#ifdef VK_8
+#undef VK_8
+#endif
+
+#ifdef VK_9
+#undef VK_9
+#endif
+
+#ifdef VK_A
+#undef VK_A
+#endif
+
+#ifdef VK_B
+#undef VK_B
+#endif
+
+#ifdef VK_C
+#undef VK_C
+#endif
+
+#ifdef VK_D
+#undef VK_D
+#endif
+
+#ifdef VK_E
+#undef VK_E
+#endif
+
+#ifdef VK_F
+#undef VK_F
+#endif
+
+#ifdef VK_G
+#undef VK_G
+#endif
+
+#ifdef VK_H
+#undef VK_H
+#endif
+
+#ifdef VK_I
+#undef VK_I
+#endif
+
+#ifdef VK_J
+#undef VK_J
+#endif
+
+#ifdef VK_K
+#undef VK_K
+#endif
+
+#ifdef VK_L
+#undef VK_L
+#endif
+
+#ifdef VK_M
+#undef VK_M
+#endif
+
+#ifdef VK_N
+#undef VK_N
+#endif
+
+#ifdef VK_O
+#undef VK_O
+#endif
+
+#ifdef VK_P
+#undef VK_P
+#endif
+
+#ifdef VK_Q
+#undef VK_Q
+#endif
+
+#ifdef VK_R
+#undef VK_R
+#endif
+
+#ifdef VK_S
+#undef VK_S
+#endif
+
+#ifdef VK_T
+#undef VK_T
+#endif
+
+#ifdef VK_U
+#undef VK_U
+#endif
+
+#ifdef VK_V
+#undef VK_V
+#endif
+
+#ifdef VK_W
+#undef VK_W
+#endif
+
+#ifdef VK_X
+#undef VK_X
+#endif
+
+#ifdef VK_Y
+#undef VK_Y
+#endif
+
+#ifdef VK_Z
+#undef VK_Z
+#endif
+
+#ifndef VK_LBUTTON
+#define VK_LBUTTON 0x01
+#endif
+
+#ifndef VK_RBUTTON
+#define VK_RBUTTON 0x02
+#endif
+
+#ifndef VK_MBUTTON
+#define VK_MBUTTON 0x04
+#endif
+
+#ifndef VK_BACK
+#define VK_BACK 0x08
+#endif
+
+#ifndef VK_TAB
+#define VK_TAB 0x09
+#endif
+
+#ifndef VK_RETURN
+#define VK_RETURN 0x0D
+#endif
+
+#ifndef VK_SHIFT
+#define VK_SHIFT 0x10
+#endif
+
+#ifndef VK_CONTROL
+#define VK_CONTROL 0x11
+#endif
+
+#ifndef VK_MENU
+#define VK_MENU 0x12
+#endif
+
+#ifndef VK_PAUSE
+#define VK_PAUSE 0x13
+#endif
+
+#ifndef VK_ESCAPE
+#define VK_ESCAPE 0x1B
+#endif
+
+#ifndef VK_SPACE
+#define VK_SPACE 0x20
+#endif
+
+#ifndef VK_PRIOR
+#define VK_PRIOR 0x21
+#endif
+
+#ifndef VK_NEXT
+#define VK_NEXT 0x22
+#endif
+
+#ifndef VK_END
+#define VK_END 0x23
+#endif
+
+#ifndef VK_HOME
+#define VK_HOME 0x24
+#endif
+
+#ifndef VK_LEFT
+#define VK_LEFT 0x25
+#endif
+
+#ifndef VK_UP
+#define VK_UP 0x26
+#endif
+
+#ifndef VK_RIGHT
+#define VK_RIGHT 0x27
+#endif
+
+#ifndef VK_DOWN
+#define VK_DOWN 0x28
+#endif
+
+#ifndef VK_INSERT
+#define VK_INSERT 0x2D
+#endif
+
+#ifndef VK_DELETE
+#define VK_DELETE 0x2E
+#endif
+
+#ifndef VK_0
+#define VK_0 0x30
+#endif
+
+#ifndef VK_1
+#define VK_1 0x31
+#endif
+
+#ifndef VK_2
+#define VK_2 0x32
+#endif
+
+#ifndef VK_3
+#define VK_3 0x33
+#endif
+
+#ifndef VK_4
+#define VK_4 0x34
+#endif
+
+#ifndef VK_5
+#define VK_5 0x35
+#endif
+
+#ifndef VK_6
+#define VK_6 0x36
+#endif
+
+#ifndef VK_7
+#define VK_7 0x37
+#endif
+
+#ifndef VK_8
+#define VK_8 0x38
+#endif
+
+#ifndef VK_9
+#define VK_9 0x39
+#endif
+
+#ifndef VK_A
+#define VK_A 0x41
+#endif
+
+#ifndef VK_B
+#define VK_B 0x42
+#endif
+
+#ifndef VK_C
+#define VK_C 0x43
+#endif
+
+#ifndef VK_D
+#define VK_D 0x44
+#endif
+
+#ifndef VK_E
+#define VK_E 0x45
+#endif
+
+#ifndef VK_F
+#define VK_F 0x46
+#endif
+
+#ifndef VK_G
+#define VK_G 0x47
+#endif
+
+#ifndef VK_H
+#define VK_H 0x48
+#endif
+
+#ifndef VK_I
+#define VK_I 0x49
+#endif
+
+#ifndef VK_J
+#define VK_J 0x4A
+#endif
+
+#ifndef VK_K
+#define VK_K 0x4B
+#endif
+
+#ifndef VK_L
+#define VK_L 0x4C
+#endif
+
+#ifndef VK_M
+#define VK_M 0x4D
+#endif
+
+#ifndef VK_N
+#define VK_N 0x4E
+#endif
+
+#ifndef VK_O
+#define VK_O 0x4F
+#endif
+
+#ifndef VK_P
+#define VK_P 0x50
+#endif
+
+#ifndef VK_Q
+#define VK_Q 0x51
+#endif
+
+#ifndef VK_R
+#define VK_R 0x52
+#endif
+
+#ifndef VK_S
+#define VK_S 0x53
+#endif
+
+#ifndef VK_T
+#define VK_T 0x54
+#endif
+
+#ifndef VK_U
+#define VK_U 0x55
+#endif
+
+#ifndef VK_V
+#define VK_V 0x56
+#endif
+
+#ifndef VK_W
+#define VK_W 0x57
+#endif
+
+#ifndef VK_X
+#define VK_X 0x58
+#endif
+
+#ifndef VK_Y
+#define VK_Y 0x59
+#endif
+
+#ifndef VK_Z
+#define VK_Z 0x5A
+#endif
+
+SDL_Scancode VKToSDLScancode(int key)
+{
+    if (key >= VK_A && key <= VK_Z)
+        return (SDL_Scancode)(SDL_SCANCODE_A + (key - VK_A));
+
+    if (key >= VK_0 && key <= VK_9)
+        return (SDL_Scancode)(SDL_SCANCODE_0 + (key - VK_0));
+
+    switch (key)
+    {
+    case VK_SPACE:   return SDL_SCANCODE_SPACE;
+    case VK_ESCAPE:  return SDL_SCANCODE_ESCAPE;
+    case VK_SHIFT:   return SDL_SCANCODE_LSHIFT;
+    case VK_CONTROL: return SDL_SCANCODE_LCTRL;
+    case VK_MENU:    return SDL_SCANCODE_LALT;
+    case VK_HOME:    return SDL_SCANCODE_HOME;
+    case VK_END:     return SDL_SCANCODE_END;
+    case VK_INSERT:  return SDL_SCANCODE_INSERT;
+    case VK_DELETE:  return SDL_SCANCODE_DELETE;
+    case VK_BACK:   return SDL_SCANCODE_BACKSPACE;
+    case VK_TAB:    return SDL_SCANCODE_TAB;
+    case VK_RETURN: return SDL_SCANCODE_RETURN;
+    case VK_LEFT:   return SDL_SCANCODE_LEFT;
+    case VK_UP:     return SDL_SCANCODE_UP;
+    case VK_RIGHT:  return SDL_SCANCODE_RIGHT;
+    case VK_DOWN:   return SDL_SCANCODE_DOWN;
+    }
+
+    return SDL_SCANCODE_UNKNOWN;
+}
+
 short MU_GetAsyncKeyState(int key) {
 
     if (overlayblocktouch)
@@ -703,7 +1198,11 @@ short MU_GetAsyncKeyState(int key) {
     // Keyboard
     const Uint8* state = SDL_GetKeyboardState(nullptr);
 
-    SDL_Scancode scan = SDL_GetScancodeFromKey(key);
+    //SDL_Scancode scan = SDL_GetScancodeFromKey(key);
+    SDL_Scancode scan = VKToSDLScancode(key);
+
+    if (scan == SDL_SCANCODE_UNKNOWN)
+        return 0;
 
     return state[scan] ? (short)0x8000 : 0;
 }
