@@ -264,7 +264,7 @@ void MU_TextOut(float x, float y, const char* text,
 }
 
 void MU_TextOutEx(int fontSlot, float x, float y, const char* text,
-                  unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+    unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
     if (!g_ready || !g_drawTexturedQuad)
         return;
@@ -276,9 +276,6 @@ void MU_TextOutEx(int fontSlot, float x, float y, const char* text,
     if (!font)
         return;
 
-    /*
-        Render white text, then colorize through your shader callback.
-    */
     SDL_Color white = { 255, 255, 255, 255 };
 
     SDL_Surface* surf = TTF_RenderUTF8_Blended(font, text, white);
@@ -288,17 +285,45 @@ void MU_TextOutEx(int fontSlot, float x, float y, const char* text,
     int tw = surf->w;
     int th = surf->h;
 
-    GLuint tex = MU_CreateTextureFromSurface(surf);
+    SDL_Surface* surface =
+        SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
+
+    if (!surface)
+        return;
+
+    GLint oldTexture = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
+
+    GLuint tex = 0;
+    glGenTextures(1, &tex);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        surface->w,
+        surface->h,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        surface->pixels
+    );
+
     SDL_FreeSurface(surf);
 
     if (!tex)
         return;
 
-
     g_drawTexturedQuad(tex, x, y, (float)tw, (float)th, r, g, b, a);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
     glDeleteTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, oldTexture);
 }
 
 bool MU_MeasureTextEx(int fontSlot, const char* text, int* outW, int* outH)
