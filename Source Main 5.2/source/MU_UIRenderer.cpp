@@ -338,6 +338,7 @@ void MU_TextOutEx(int fontSlot, float x, float y, const char* text,
 
     glDeleteTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, oldTexture);
+
 }
 
 bool MU_MeasureTextEx(int fontSlot, const char* text, int* outW, int* outH)

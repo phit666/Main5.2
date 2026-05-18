@@ -281,8 +281,11 @@ conn_eventcb(struct bufferevent* bev, short events, void* user_data)
         g_bev = NULL;
         g_ErrorReport.Write("> conn_eventcb - BEV_EVENT_EOF");
         SocketClient.Close();
+
+#ifdef NEW_ENCDEC
         g_CryptoSessionCS.Close(0);
         g_CryptoSessionSC.Close(0);
+#endif
     }
     else if (events & BEV_EVENT_ERROR)
     {
@@ -290,8 +293,12 @@ conn_eventcb(struct bufferevent* bev, short events, void* user_data)
         g_bev = NULL;
         g_ErrorReport.Write("> conn_eventcb - BEV_EVENT_ERROR");
         SocketClient.Close();
+
+#ifdef NEW_ENCDEC
         g_CryptoSessionCS.Close(0);
         g_CryptoSessionSC.Close(0);
+#endif
+
     }
     else if (events & BEV_EVENT_CONNECTED)
     {
@@ -332,8 +339,10 @@ int MU_Connect(char* serverip, unsigned short port)
     bufferevent_setcb(bev, conn_readcb, NULL, conn_eventcb, NULL);
     bufferevent_enable(bev, EV_READ | EV_WRITE);
 
+#ifdef NEW_ENCDEC
     g_CryptoSessionCS.Open(0);
     g_CryptoSessionSC.Open(0);
+#endif
 
     g_bev = bev;
     bufferlen = 0;
@@ -365,8 +374,10 @@ void MU_CloseBev()
 
     bufferevent_free(bev);
 
+#ifdef NEW_ENCDEC
     g_CryptoSessionCS.Close(0);
     g_CryptoSessionSC.Close(0);
+#endif
 
     bufferlen = 0;
 }
