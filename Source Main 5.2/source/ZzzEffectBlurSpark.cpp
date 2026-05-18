@@ -14,6 +14,7 @@
 #include "DSPlaySound.h"
 #include "WSClient.h"
 #include "mu_gles2_matrix.h"
+#include "wt.h"
 
 #define MAX_BLURS      100
 #define MAX_BLUR_TAILS 30
@@ -178,28 +179,65 @@ void RenderBlurs()
 					trailBuffer.push_back({ b->p1[j + 1][0], b->p1[j + 1][1], b->p1[j + 1][2], texU2, 1.0f, b->Light[0] * light2, b->Light[1] * light2, b->Light[2] * light2, 1.0f });
 				}
 
-				// 2. Set Attributes (Position, Tex, Color)
+				glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+				glBufferData(
+					GL_ARRAY_BUFFER,
+					trailBuffer.size() * sizeof(SpriteVertexFull),
+					&trailBuffer[0],
+					GL_STREAM_DRAW
+				);
+
 				safe_enable_attr(g_aPosLoc);
-				glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].x);
+				glVertexAttribPointer(
+					g_aPosLoc,
+					3,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(SpriteVertexFull),
+					(void*)offsetof(SpriteVertexFull, x)
+				);
 
 				safe_enable_attr(g_aTexLoc);
-				glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].u);
+				glVertexAttribPointer(
+					g_aTexLoc,
+					2,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(SpriteVertexFull),
+					(void*)offsetof(SpriteVertexFull, u)
+				);
 
 				safe_enable_attr(g_aColorLoc);
-				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &trailBuffer[0].r);
+				glVertexAttribPointer(
+					g_aColorLoc,
+					4,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(SpriteVertexFull),
+					(void*)offsetof(SpriteVertexFull, r)
+				);
 
 				MU_ApplyMatrices();
-				myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-				// 3. Draw each quad
-				// GLES2 doesn't have GL_QUADS, so we draw each 4-vertex block as a FAN
-				for (int i = 0; i < (b->Number - 1); i++) {
+				myShader.setVec4(
+					g_uColorLoc,
+					1.0f,
+					1.0f,
+					1.0f,
+					1.0f
+				);
+
+				for (int i = 0; i < (b->Number - 1); i++)
+				{
 					glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
 				}
 
 				glDisableVertexAttribArray(g_aColorLoc);
 				glDisableVertexAttribArray(g_aTexLoc);
 				glDisableVertexAttribArray(g_aPosLoc);
+
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 			}
 		}
@@ -384,25 +422,55 @@ void RenderObjectBlurs()
 					vao[3].u = texU2;         vao[3].v = 1.0f;
 					vao[3].r = b->Light[0] * light2; vao[3].g = b->Light[1] * light2; vao[3].b = b->Light[2] * light2; vao[3].a = 1.0f;
 
-					// 2. Set Attributes
+					glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+					glBufferData(
+						GL_ARRAY_BUFFER,
+						sizeof(vao),
+						vao,
+						GL_STREAM_DRAW
+					);
+
 					safe_enable_attr(g_aPosLoc);
-					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+					glVertexAttribPointer(
+						g_aPosLoc,
+						3,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(SpriteVertexFull),
+						(void*)offsetof(SpriteVertexFull, x)
+					);
 
 					safe_enable_attr(g_aTexLoc);
-					glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+					glVertexAttribPointer(
+						g_aTexLoc,
+						2,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(SpriteVertexFull),
+						(void*)offsetof(SpriteVertexFull, u)
+					);
 
 					safe_enable_attr(g_aColorLoc);
-					glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+					glVertexAttribPointer(
+						g_aColorLoc,
+						4,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(SpriteVertexFull),
+						(void*)offsetof(SpriteVertexFull, r)
+					);
 
 					MU_ApplyMatrices();
 					myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-					// 3. Draw
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 					glDisableVertexAttribArray(g_aColorLoc);
 					glDisableVertexAttribArray(g_aTexLoc);
 					glDisableVertexAttribArray(g_aPosLoc);
+
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 				}
 			}
@@ -696,25 +764,55 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 		vao[i].z = Position[2];
 	}
 
-	// 2. Set Attributes
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vao),
+		vao,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
 
 	safe_enable_attr(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, u)
+	);
 
 	safe_enable_attr(g_aColorLoc);
-	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
 
 	MU_ApplyMatrices();
 	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, n);
 
 	glDisableVertexAttribArray(g_aColorLoc);
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 	BindTexture(Tex1);
@@ -753,26 +851,55 @@ void RenderFlagFace(OBJECT *o,int x,int y,vec3_t Light,int Tex1,int Tex2)
 		count2++;
 	}
 
-	// 2. Set Attributes using vao2
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vao2),
+		vao2,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].x);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
 
 	safe_enable_attr(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].u);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, u)
+	);
 
 	safe_enable_attr(g_aColorLoc);
-	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
 
 	MU_ApplyMatrices();
 	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, count2);
 
 	glDisableVertexAttribArray(g_aColorLoc);
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aPosLoc);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 

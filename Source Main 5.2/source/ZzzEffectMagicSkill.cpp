@@ -14,7 +14,7 @@
 #include "DSPlaySound.h"
 #include "WSClient.h"
 #include "SkillManager.h"
-
+#include "wt.h"
 
 void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTop,float Height,float Rotation,float LightTop,float TextureV) // TODO-TEST
 {
@@ -80,29 +80,62 @@ void RenderCircle(int Type,vec3_t ObjectPosition,float ScaleBottom,float ScaleTo
 			vao[i].a = 1.0f;
 		}
 
-		// 2. Set Attributes
-		// Position
+		glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			sizeof(vao),
+			vao,
+			GL_STREAM_DRAW
+		);
+
 		safe_enable_attr(g_aPosLoc);
-		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+		glVertexAttribPointer(
+			g_aPosLoc,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, x)
+		);
 
-		// Texture UV
 		safe_enable_attr(g_aTexLoc);
-		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+		glVertexAttribPointer(
+			g_aTexLoc,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, u)
+		);
 
-		// Color / Light
 		safe_enable_attr(g_aColorLoc);
-		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+		glVertexAttribPointer(
+			g_aColorLoc,
+			4,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, r)
+		);
 
 		MU_ApplyMatrices();
-		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-		// 3. Draw
-		// GL_TRIANGLE_FAN is the direct GLES2 replacement for GL_QUADS
+		myShader.setVec4(
+			g_uColorLoc,
+			1.0f,
+			1.0f,
+			1.0f,
+			1.0f
+		);
+
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 		glDisableVertexAttribArray(g_aColorLoc);
 		glDisableVertexAttribArray(g_aTexLoc);
 		glDisableVertexAttribArray(g_aPosLoc);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	}
 }

@@ -332,27 +332,53 @@ void CSprite::Render()
 		}
 
 
-		// 3. Set Attributes
-		// Position
-		safe_enable_attr(g_aPosLoc);
-		glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].x);
+		glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
 
-		// Texture
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			sizeof(vao),
+			vao,
+			GL_STREAM_DRAW
+		);
+
+		safe_enable_attr(g_aPosLoc);
+		glVertexAttribPointer(
+			g_aPosLoc,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertex),
+			(void*)offsetof(SpriteVertex, x)
+		);
+
 		safe_enable_attr(g_aTexLoc);
-		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), &vao[0].u);
+		glVertexAttribPointer(
+			g_aTexLoc,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertex),
+			(void*)offsetof(SpriteVertex, u)
+		);
 
 		safe_disable_attr(g_aColorLoc);
-		//glColor4f(cr, cg, cb, ca);
 
-		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
+		glVertexAttrib4f(
+			g_aColorLoc,
+			cr,
+			cg,
+			cb,
+			ca
+		);
 
 		MU_ApplyMatrices();
 
-		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
 
 		glDisableVertexAttribArray(g_aTexLoc);
 		glDisableVertexAttribArray(g_aPosLoc);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	}
 	else
@@ -374,23 +400,44 @@ void CSprite::Render()
 			count++;
 		}
 
-		// 3. Set Attributes
-		// Position is required
+		glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			sizeof(vao),
+			vao,
+			GL_STREAM_DRAW
+		);
+
 		safe_enable_attr(g_aPosLoc);
-		glVertexAttribPointer(g_aPosLoc, 2, GL_FLOAT, GL_FALSE, 0, vao);
+
+		glVertexAttribPointer(
+			g_aPosLoc,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*)0
+		);
 
 		safe_disable_attr(g_aTexLoc);
-
 		safe_disable_attr(g_aColorLoc);
 
-		glVertexAttrib4f(g_aColorLoc, cr, cg, cb, ca);
+		glVertexAttrib4f(
+			g_aColorLoc,
+			cr,
+			cg,
+			cb,
+			ca
+		);
 
 		MU_ApplyMatrices();
 
-		// 4. Draw
 		glDrawArrays(GL_TRIANGLE_FAN, 0, count);
 
 		glDisableVertexAttribArray(g_aPosLoc);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	}
 }

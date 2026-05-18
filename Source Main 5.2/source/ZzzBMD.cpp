@@ -1904,14 +1904,44 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 	// 2. Set Attributes and Draw
 	if (!meshVao.empty())
 	{
+		glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			meshVao.size() * sizeof(SpriteVertexFull),
+			&meshVao[0],
+			GL_STREAM_DRAW
+		);
+
 		safe_enable_attr(g_aPosLoc);
-		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].x);
+		glVertexAttribPointer(
+			g_aPosLoc,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, x)
+		);
 
 		safe_enable_attr(g_aTexLoc);
-		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].u);
+		glVertexAttribPointer(
+			g_aTexLoc,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, u)
+		);
 
 		safe_enable_attr(g_aColorLoc);
-		glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &meshVao[0].r);
+		glVertexAttribPointer(
+			g_aColorLoc,
+			4,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, r)
+		);
 
 		MU_ApplyMatrices();
 		myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -1921,6 +1951,8 @@ void BMD::RenderMeshTranslate(int i,int RenderFlag,float Alpha,int BlendMesh,flo
 		glDisableVertexAttribArray(g_aColorLoc);
 		glDisableVertexAttribArray(g_aTexLoc);
 		glDisableVertexAttribArray(g_aPosLoc);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	}
 
@@ -2012,22 +2044,39 @@ void BMD::RenderBodyShadow(int BlendMesh,int HiddenMesh,int StartMeshNumber, int
 
 				if (!shadowVao.empty())
 				{
-					// 2. Set Attributes
-					safe_enable_attr(g_aPosLoc);
-					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &shadowVao[0].x);
+					glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
 
-					// 3. Disable UV and Color attributes (Shadows are usually a solid color)
+					glBufferData(
+						GL_ARRAY_BUFFER,
+						shadowVao.size() * sizeof(SpriteVertex3D),
+						&shadowVao[0],
+						GL_STREAM_DRAW
+					);
+
+					safe_enable_attr(g_aPosLoc);
+					glVertexAttribPointer(
+						g_aPosLoc,
+						3,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(SpriteVertex3D),
+						(void*)offsetof(SpriteVertex3D, x)
+					);
+
 					safe_disable_attr(g_aTexLoc);
 					safe_disable_attr(g_aColorLoc);
 
-					// 4. Set Shadow Color (Usually black or dark grey with alpha)
-					// You can set this before the function or right here:
-					// MU_glColor4f(0.0f, 0.0f, 0.0f, 0.5f); 
 					MU_ApplyMatrices();
-					// 5. Draw the entire list of triangles
-					glDrawArrays(GL_TRIANGLES, 0, (GLsizei)shadowVao.size());
+
+					glDrawArrays(
+						GL_TRIANGLES,
+						0,
+						(GLsizei)shadowVao.size()
+					);
 
 					glDisableVertexAttribArray(g_aPosLoc);
+
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 				}
 

@@ -15,6 +15,7 @@
 #include "WSClient.h"
 #include "CSPetSystem.h"
 #include "GMBattleCastle.h"
+#include "wt.h"
 
 extern float g_fBoneSave[10][3][4];
 
@@ -7201,23 +7202,45 @@ void RenderJoints( BYTE bRenderOneMore )
 					vao[3].x = o->Tails[j + 1][0][0]; vao[3].y = o->Tails[j + 1][0][1]; vao[3].z = o->Tails[j + 1][0][2];
 					vao[3].u = Light2;              vao[3].v = 0.0f;
 
-					// 2. Set Attributes
+					glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+					glBufferData(
+						GL_ARRAY_BUFFER,
+						sizeof(vao),
+						vao,
+						GL_STREAM_DRAW
+					);
+
 					safe_enable_attr(g_aPosLoc);
-					glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+					glVertexAttribPointer(
+						g_aPosLoc,
+						3,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(SpriteVertex3D),
+						(void*)offsetof(SpriteVertex3D, x)
+					);
 
 					safe_enable_attr(g_aTexLoc);
-					glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+					glVertexAttribPointer(
+						g_aTexLoc,
+						2,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(SpriteVertex3D),
+						(void*)offsetof(SpriteVertex3D, u)
+					);
 
-					// Ensure the color is set to white (or whatever your current global color is)
 					safe_disable_attr(g_aColorLoc);
-					// If you want the tail to be tinted, use your setVec4(g_uColorLoc, ...) before this
-					//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 					MU_ApplyMatrices();
-					// 3. Draw
+
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 					glDisableVertexAttribArray(g_aTexLoc);
 					glDisableVertexAttribArray(g_aPosLoc);
+
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 				}
 				else
@@ -7423,25 +7446,45 @@ void RenderJoints( BYTE bRenderOneMore )
 						vao[3].z = o->Tails[j + 1][2][2];
 						vao[3].u = L2; vao[3].v = V2;
 
-						// ... then use glVertexAttribPointer as before ...
+						glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
 
+						glBufferData(
+							GL_ARRAY_BUFFER,
+							sizeof(vao),
+							vao,
+							GL_STREAM_DRAW
+						);
 
-						// 2. Set Attributes
 						safe_enable_attr(g_aPosLoc);
-						glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+						glVertexAttribPointer(
+							g_aPosLoc,
+							3,
+							GL_FLOAT,
+							GL_FALSE,
+							sizeof(SpriteVertex3D),
+							(void*)offsetof(SpriteVertex3D, x)
+						);
 
 						safe_enable_attr(g_aTexLoc);
-						glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+						glVertexAttribPointer(
+							g_aTexLoc,
+							2,
+							GL_FLOAT,
+							GL_FALSE,
+							sizeof(SpriteVertex3D),
+							(void*)offsetof(SpriteVertex3D, u)
+						);
 
-						// Ensure constant color is set (uses the Luminosity color you just set)
 						safe_disable_attr(g_aColorLoc);
 
 						MU_ApplyMatrices();
-						// 3. Draw
+
 						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 						glDisableVertexAttribArray(g_aTexLoc);
 						glDisableVertexAttribArray(g_aPosLoc);
+
+						glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 					}
 
@@ -7473,21 +7516,45 @@ void RenderJoints( BYTE bRenderOneMore )
 						vao[3].x = o->Tails[j + 1][0][0]; vao[3].y = o->Tails[j + 1][0][1]; vao[3].z = o->Tails[j + 1][0][2];
 						vao[3].u = L2; vao[3].v = V1;
 
-						// 2. Set Attributes
+						glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+						glBufferData(
+							GL_ARRAY_BUFFER,
+							sizeof(vao),
+							vao,
+							GL_STREAM_DRAW
+						);
+
 						safe_enable_attr(g_aPosLoc);
-						glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+						glVertexAttribPointer(
+							g_aPosLoc,
+							3,
+							GL_FLOAT,
+							GL_FALSE,
+							sizeof(SpriteVertex3D),
+							(void*)offsetof(SpriteVertex3D, x)
+						);
 
 						safe_enable_attr(g_aTexLoc);
-						glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+						glVertexAttribPointer(
+							g_aTexLoc,
+							2,
+							GL_FLOAT,
+							GL_FALSE,
+							sizeof(SpriteVertex3D),
+							(void*)offsetof(SpriteVertex3D, u)
+						);
 
-						// Constant color was set by myShader.setVec4(g_uColorLoc, Luminosity...) earlier
 						safe_disable_attr(g_aColorLoc);
+
 						MU_ApplyMatrices();
-						// 3. Draw
+
 						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 						glDisableVertexAttribArray(g_aTexLoc);
 						glDisableVertexAttribArray(g_aPosLoc);
+
+						glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 					}
 				}

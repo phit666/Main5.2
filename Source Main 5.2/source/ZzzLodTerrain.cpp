@@ -1249,28 +1249,55 @@ void RenderFace(int Texture,int mx,int my)
 	vao[3].u = TerrainTextureCoord[3][0]; vao[3].v = TerrainTextureCoord[3][1];
 	vao[3].r = PrimaryTerrainLight[TerrainIndex4][0]; vao[3].g = PrimaryTerrainLight[TerrainIndex4][1]; vao[3].b = PrimaryTerrainLight[TerrainIndex4][2]; vao[3].a = 1.0f;
 
-	// 2. Set Attributes
-	// Position
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vao),
+		vao,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
 
-	// Texture
 	safe_enable_attr(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, u)
+	);
 
-	// Color (Terrain Light)
 	safe_enable_attr(g_aColorLoc);
-	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
 
 	MU_ApplyMatrices();
 	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(g_aColorLoc);
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 
@@ -1308,28 +1335,62 @@ void RenderFace_After(int Texture, int mx, int my)
 	vao[3].u = TerrainTextureCoord[3][0]; vao[3].v = TerrainTextureCoord[3][1];
 	vao[3].r = PrimaryTerrainLight[TerrainIndex4][0]; vao[3].g = PrimaryTerrainLight[TerrainIndex4][1]; vao[3].b = PrimaryTerrainLight[TerrainIndex4][2]; vao[3].a = 1.0f;
 
-	// 2. Set Attributes
-	// Position
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vao),
+		vao,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
 
-	// Texture
 	safe_enable_attr(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, u)
+	);
 
-	// Color (Terrain Light)
 	safe_enable_attr(g_aColorLoc);
-	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
 
 	MU_ApplyMatrices();
-	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	// 3. Draw
+	myShader.setVec4(
+		g_uColorLoc,
+		1.0f,
+		1.0f,
+		1.0f,
+		1.0f
+	);
+
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(g_aColorLoc);
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 
@@ -1373,27 +1434,61 @@ void RenderFaceAlpha(int Texture,int mx,int my)
 	vao[3].b = PrimaryTerrainLight[TerrainIndex4][2];
 	vao[3].a = TerrainMappingAlpha[TerrainIndex4];
 
-	// 2. Set Attributes
-	// Position
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vao),
+		vao,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
 
-	// Texture
 	safe_enable_attr(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, u)
+	);
 
-	// Color (RGBA - now including Terrain Alpha)
 	safe_enable_attr(g_aColorLoc);
-	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
 
 	MU_ApplyMatrices();
-	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	// 3. Draw
+	myShader.setVec4(
+		g_uColorLoc,
+		1.0f,
+		1.0f,
+		1.0f,
+		1.0f
+	);
+
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 
@@ -1429,28 +1524,62 @@ void RenderFaceBlend(int Texture,int mx,int my)
 	float l3 = TerrainMappingAlpha[TerrainIndex4];
 	vao[3].r = l3; vao[3].g = l3; vao[3].b = l3; vao[3].a = 1.0f;
 
-	// 2. Set Attributes
-	// Position
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vao),
+		vao,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
 
-	// Texture UV
 	safe_enable_attr(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, u)
+	);
 
-	// Color (Mapping Alpha used as RGB Light)
 	safe_enable_attr(g_aColorLoc);
-	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
 
 	MU_ApplyMatrices();
-	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	// 3. Draw
+	myShader.setVec4(
+		g_uColorLoc,
+		1.0f,
+		1.0f,
+		1.0f,
+		1.0f
+	);
+
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(g_aColorLoc);
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 
@@ -1645,25 +1774,62 @@ void RenderTerrainFace(float xf,float yf,int xi,int yi,float lodf)
 				vao[3].u = TerrainTextureCoord[3][0]; vao[3].v = TerrainTextureCoord[3][1];
 				vao[3].r = PrimaryTerrainLight[TerrainIndex4][0]; vao[3].g = PrimaryTerrainLight[TerrainIndex4][1]; vao[3].b = PrimaryTerrainLight[TerrainIndex4][2]; vao[3].a = 1.0f;
 
-				// 2. Set Attributes
+				glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+				glBufferData(
+					GL_ARRAY_BUFFER,
+					sizeof(vao),
+					vao,
+					GL_STREAM_DRAW
+				);
+
 				safe_enable_attr(g_aPosLoc);
-				glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+				glVertexAttribPointer(
+					g_aPosLoc,
+					3,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(SpriteVertexFull),
+					(void*)offsetof(SpriteVertexFull, x)
+				);
 
 				safe_enable_attr(g_aTexLoc);
-				glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+				glVertexAttribPointer(
+					g_aTexLoc,
+					2,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(SpriteVertexFull),
+					(void*)offsetof(SpriteVertexFull, u)
+				);
 
 				safe_enable_attr(g_aColorLoc);
-				glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+				glVertexAttribPointer(
+					g_aColorLoc,
+					4,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(SpriteVertexFull),
+					(void*)offsetof(SpriteVertexFull, r)
+				);
 
 				MU_ApplyMatrices();
-				myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-				// 3. Draw using GL_TRIANGLE_FAN (direct replacement for GL_QUADS)
+				myShader.setVec4(
+					g_uColorLoc,
+					1.0f,
+					1.0f,
+					1.0f,
+					1.0f
+				);
+
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				glDisableVertexAttribArray(g_aColorLoc);
 				glDisableVertexAttribArray(g_aTexLoc);
 				glDisableVertexAttribArray(g_aPosLoc);
+
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 				if (gMapManager.IsPKField() || IsDoppelGanger2())
 					DisableAlphaBlend();
@@ -1825,28 +1991,55 @@ void RenderTerrainBitmapTile(float xf, float yf, float lodf, int lodi,
 		}
 	}
 
-	// 2. Set Attributes
-	// Position
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vao),
+		vao,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].x);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, x)
+	);
 
-	// Texture UV
 	safe_enable_attr(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].u);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, u)
+	);
 
-	// Color/Light (this is the per-vertex lighting)
 	safe_enable_attr(g_aColorLoc);
-	glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao[0].r);
+	glVertexAttribPointer(
+		g_aColorLoc,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertexFull),
+		(void*)offsetof(SpriteVertexFull, r)
+	);
 
 	MU_ApplyMatrices();
 	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	// 3. Draw
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(g_aColorLoc);
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 

@@ -92,22 +92,45 @@ void    CSWaterTerrain::Render ( void )
         vao[j].v = g_chrome[offset][0];
     }
 
-    // 3. Set Attributes and Draw
+    glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        vao.size() * sizeof(SpriteVertex3D),
+        &vao[0],
+        GL_STREAM_DRAW
+    );
+
     safe_enable_attr(g_aPosLoc);
-    glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+    glVertexAttribPointer(
+        g_aPosLoc,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SpriteVertex3D),
+        (void*)offsetof(SpriteVertex3D, x)
+    );
 
     safe_enable_attr(g_aTexLoc);
-    glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+    glVertexAttribPointer(
+        g_aTexLoc,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SpriteVertex3D),
+        (void*)offsetof(SpriteVertex3D, u)
+    );
 
-    glDisableVertexAttribArray(g_aColorLoc);
+    safe_disable_attr(g_aColorLoc);
 
     MU_ApplyMatrices();
 
-    // 4. One draw call for the entire list
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
 
     glDisableVertexAttribArray(g_aTexLoc);
     glDisableVertexAttribArray(g_aPosLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     EnableAlphaBlend();
     BindTexture(BITMAP_MAPTILE + 1);
@@ -139,27 +162,62 @@ void    CSWaterTerrain::Render ( void )
         vao2[j].a = 1.0f; // glColor3f implies opaque alpha
     }
 
-    // 2. Setup Attributes
+    glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        vao2.size() * sizeof(SpriteVertexFull),
+        &vao2[0],
+        GL_STREAM_DRAW
+    );
+
     safe_enable_attr(g_aPosLoc);
-    glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].x);
+    glVertexAttribPointer(
+        g_aPosLoc,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SpriteVertexFull),
+        (void*)offsetof(SpriteVertexFull, x)
+    );
 
     safe_enable_attr(g_aTexLoc);
-    glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].u);
+    glVertexAttribPointer(
+        g_aTexLoc,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SpriteVertexFull),
+        (void*)offsetof(SpriteVertexFull, u)
+    );
 
-    // IMPORTANT: Enable the color attribute for per-vertex lighting
     safe_enable_attr(g_aColorLoc);
-    glVertexAttribPointer(g_aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &vao2[0].r);
+    glVertexAttribPointer(
+        g_aColorLoc,
+        4,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(SpriteVertexFull),
+        (void*)offsetof(SpriteVertexFull, r)
+    );
 
     MU_ApplyMatrices();
 
-    myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+    myShader.setVec4(
+        g_uColorLoc,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f
+    );
 
-    // 3. Draw
     glDrawArrays(GL_TRIANGLES, 0, m_iTriangleListNum);
 
     glDisableVertexAttribArray(g_aColorLoc);
     glDisableVertexAttribArray(g_aTexLoc);
     glDisableVertexAttribArray(g_aPosLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 

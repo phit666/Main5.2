@@ -12,7 +12,7 @@
 #include "zzzTexture.h"
 #include "SideHair.h"
 #include "ZzzCharacter.h"
-
+#include "wt.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -182,20 +182,44 @@ void CSideHair::RenderLine( vec3_t v1, vec3_t v2, vec3_t c1, vec3_t c2)
 	vao[3].u = 1.0f;
 	vao[3].v = texV_Start;
 
-	// 2. Set Attributes
+	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		sizeof(vao),
+		vao,
+		GL_STREAM_DRAW
+	);
+
 	safe_enable_attr(g_aPosLoc);
-	glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].x);
+	glVertexAttribPointer(
+		g_aPosLoc,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertex3D),
+		(void*)offsetof(SpriteVertex3D, x)
+	);
 
 	safe_enable_attr(g_aTexLoc);
-	glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex3D), &vao[0].u);
+	glVertexAttribPointer(
+		g_aTexLoc,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(SpriteVertex3D),
+		(void*)offsetof(SpriteVertex3D, u)
+	);
 
 	safe_disable_attr(g_aColorLoc);
 
 	MU_ApplyMatrices();
-	// 3. Draw (Using the persistent shader state from BeginOpengl)
+
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDisableVertexAttribArray(g_aTexLoc);
 	glDisableVertexAttribArray(g_aPosLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }

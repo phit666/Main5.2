@@ -10,6 +10,7 @@
 #include "MapManager.h"
 #include "mu_sdl.h"
 #include "mu_gles2_matrix.h"
+#include "wt.h"
 
 #define RENDER_CLOTH
 #define ADD_COLLISION
@@ -862,21 +863,49 @@ void CPhysicsCloth::RenderFace(BOOL bFront, int iTexture, vec3_t* pvRenderPos)
 
 	// Render the buffer
 	if (!clothBuffer.empty()) {
-		safe_enable_attr(g_aPosLoc);
-		glVertexAttribPointer(g_aPosLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &clothBuffer[0].x);
-		safe_enable_attr(g_aTexLoc);
-		glVertexAttribPointer(g_aTexLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertexFull), &clothBuffer[0].u);
 
-		// Disable per-vertex color since we're using your Uniform wrapper MU_glColor
+		glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
+
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			clothBuffer.size() * sizeof(SpriteVertexFull),
+			&clothBuffer[0],
+			GL_STREAM_DRAW
+		);
+
+		safe_enable_attr(g_aPosLoc);
+		glVertexAttribPointer(
+			g_aPosLoc,
+			3,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, x)
+		);
+
+		safe_enable_attr(g_aTexLoc);
+		glVertexAttribPointer(
+			g_aTexLoc,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(SpriteVertexFull),
+			(void*)offsetof(SpriteVertexFull, u)
+		);
+
 		safe_disable_attr(g_aColorLoc);
-		//glVertexAttrib4f(g_aColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+
 		MU_ApplyMatrices();
-		for (int q = 0; q < clothBuffer.size() / 4; q++) {
+
+		for (int q = 0; q < clothBuffer.size() / 4; q++)
+		{
 			glDrawArrays(GL_TRIANGLE_FAN, q * 4, 4);
 		}
 
 		glDisableVertexAttribArray(g_aTexLoc);
 		glDisableVertexAttribArray(g_aPosLoc);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	}
 
