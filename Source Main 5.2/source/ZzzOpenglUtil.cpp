@@ -2453,7 +2453,6 @@ void MU_DrawTexturedQuadCallback(
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-
 	myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 	myShader.setVec4(g_uColorLoc, 1.f, 1.f, 1.f, 1.f);
 
@@ -2510,7 +2509,7 @@ void MU_DrawTexturedQuadCallback(
 	glDisableVertexAttribArray(g_aPosLoc);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	//glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void MU_FillRectCallback(
