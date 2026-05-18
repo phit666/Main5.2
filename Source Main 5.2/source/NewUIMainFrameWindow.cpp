@@ -724,25 +724,25 @@ void SEASON3B::CNewUIMainFrameWindow::RenderFriendButton()
 
 void SEASON3B::CNewUIMainFrameWindow::RenderFriendButtonState()
 {
-#ifdef PBG_ADD_INGAMESHOP_UI_MAINFRAME
-	if(g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_FRIEND) == true)
+	//#ifdef PBG_ADD_INGAMESHOP_UI_MAINFRAME
+	if (g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_FRIEND) == true)
 	{
-		RenderImage(IMAGE_MENU_BTN_FRIEND, 489+(30*3), 480-51, 30, 41, 0.0f, 123.f);
+		RenderImage(IMAGE_MENU_BTN_FRIEND, 489 + (30 * 3), 480 - 51, 30, 41, 0.0f, 123.f);
 	}
 	else
 	{
-		RenderImage(IMAGE_MENU_BTN_FRIEND, 489+(30*3), 480-51, 30, 41, 0.0f, 41.f);
+		RenderImage(IMAGE_MENU_BTN_FRIEND, 489 + (30 * 3), 480 - 51, 30, 41, 0.0f, 41.f);
 	}
-#else //defined PBG_ADD_INGAMESHOP_UI_MAINFRAME
-	if(g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_FRIEND) == true)
-	{
-		RenderImage(IMAGE_MENU_BTN_FRIEND, 488+76, 480-51, 38, 42, 0.0f, 126.f);
-	}
-	else
-	{
-		RenderImage(IMAGE_MENU_BTN_FRIEND, 488+76, 480-51, 38, 42, 0.0f, 42.f);
-	}
-#endif//defined PBG_ADD_INGAMESHOP_UI_MAINFRAME
+	/*#else //defined PBG_ADD_INGAMESHOP_UI_MAINFRAME
+		if(g_pNewUISystem->IsVisible(SEASON3B::INTERFACE_FRIEND) == true)
+		{
+			RenderImage(IMAGE_MENU_BTN_FRIEND, 488+76, 480-51, 38, 42, 0.0f, 126.f);
+		}
+		else
+		{
+			RenderImage(IMAGE_MENU_BTN_FRIEND, 488+76, 480-51, 38, 42, 0.0f, 42.f);
+		}
+	#endif//defined PBG_ADD_INGAMESHOP_UI_MAINFRAME*/
 }
 
 bool SEASON3B::CNewUIMainFrameWindow::UpdateMouseEvent()
