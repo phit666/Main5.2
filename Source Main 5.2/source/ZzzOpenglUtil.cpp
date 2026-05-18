@@ -1602,11 +1602,11 @@ void RenderColor(float x, float y, float Width, float Height, float Alpha, int F
 
 void EndRenderColor()
 {
-	// Reset shader to white and re-enable texture sampling logic
-	myShader.setVec4(g_uColorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	myShader.setFloat(g_uTexEnabledLoc, 1.0);
 }
-//???
+
+
 void RenderColorBitmap(int Texture, float x, float y, float Width, float Height, float u, float v, float uWidth, float vHeight, unsigned int color)
 {
 	x = ConvertX(x);
