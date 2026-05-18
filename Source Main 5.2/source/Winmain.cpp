@@ -76,6 +76,7 @@
 #include "ZzzAI.h"
 
 #include "MU_EditControl.h"
+#include "ComplexModulus.h"
 
 CUIMercenaryInputBox * g_pMercenaryInputBox = NULL;
 CUITextInputBox * g_pSingleTextInputBox = NULL;
@@ -1598,13 +1599,20 @@ int main(int argc, char* argv[])
 		return false;
 	}
 
+
+#ifdef ENHANCE_ENCDEC
+	g_CryptoSessionCS.InitKey("98132003732920532106543021784355");
+	g_CryptoSessionSC.InitKey("98132003732920532106543021784355");
+	g_CryptoSessionSC.EnableEncryptChange(); // decrypt
+	g_CryptoSessionCS.EnableEncryptChange(); // encrypt
+#else
     g_ErrorReport.Write(">LoadEncryptionKey Enc");
 	g_SimpleModulusCS.LoadEncryptionKey( "Data\\Enc1.dat");
 
 
     g_ErrorReport.Write(">LoadEncryptionKey Dec");
 	g_SimpleModulusSC.LoadDecryptionKey( "Data\\Dec2.dat");
-
+#endif
 
 	g_ErrorReport.Write( "> To read config.ini.\r\n");
 	if( OpenInitFile() == FALSE )

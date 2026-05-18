@@ -376,3 +376,5 @@ bool LoadQuickLogin(char* usernameOut, int usernameOutSize,
     char* passwordOut, int passwordOutSize);
 
 extern GLuint g_meshVBO;
+
+#define ENHANCE_ENCDEC
