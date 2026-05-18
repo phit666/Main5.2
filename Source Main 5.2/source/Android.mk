@@ -10,6 +10,7 @@ SDL_PATH := ../SDL
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \
 $(LOCAL_PATH)/../SDL2_mixer/include \
+$(LOCAL_PATH)/../SDL2_ttf \
 $(LOCAL_PATH)/common \
 $(LOCAL_PATH)/../libevent/include \
 $(LOCAL_PATH)/../jpeg/include \
@@ -350,7 +351,9 @@ LOCAL_SRC_FILES := \
     zzzpath.cpp \
     ZzzScene.cpp \
     ZzzTexture.cpp \
-    _GlobalFunctions.cpp
+    _GlobalFunctions.cpp \
+    MU_UIRenderer.cpp \
+    MU_EditControl.cpp
 
 LOCAL_LDLIBS := -llog -landroid -lmediandk
 LOCAL_LDLIBS += -lGLESv2
@@ -363,7 +366,7 @@ LOCAL_CPPFLAGS += \
     -Wno-error=format-security \
     -Wno-format-security
 
-LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer event2 jpeg
+LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf SDL2_mixer event2 jpeg
 LOCAL_STATIC_LIBRARIES := curl
 
 include $(BUILD_SHARED_LIBRARY)

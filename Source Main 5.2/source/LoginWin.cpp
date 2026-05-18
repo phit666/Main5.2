@@ -185,13 +185,12 @@ void CLoginWin::UpdateWhileActive(double dDeltaTick)
 void CLoginWin::UpdateWhileShow(double dDeltaTick)
 {
 #ifdef __ANDROID__
-	if ((g_focusinputwindow == "login-password" || g_focusinputwindow == "login-username") && g_focusinputresize == 0) {
+	if ((MU_EditHasFocus(m_pIDInputBox->ec) || MU_EditHasFocus(m_pPassInputBox->ec)) && g_focusinputresize == 0) {
 		int _diffypos = 260.0f * g_fScreenRate_y - CWin::GetHeight() - 8;
 		g_focusinputresize = CWin::GetYPos();
 		this->SetPosition(CWin::GetXPos(), _diffypos);
-		g_refocusinputresize = 1;
 	}
-	else if (g_focusinputwindow.length() == 0 && g_focusinputresize != 0) {
+	else if (!MU_EditHasFocus(m_pIDInputBox->ec) && !MU_EditHasFocus(m_pPassInputBox->ec) && g_focusinputresize != 0) {
 		this->SetPosition(CWin::GetXPos(), g_focusinputresize);
 		g_focusinputresize = 0;
 	}

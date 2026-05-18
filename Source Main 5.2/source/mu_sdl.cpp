@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#define NK_IMPLEMENTATION
-#ifdef _WIN32
-#include "w_nuklear.h"
-#else
-#include "nuklear.h"
-#endif
+//#define NK_IMPLEMENTATION
+//#ifdef _WIN32
+//#include "w_nuklear.h"
+//#else
+//#include "nuklear.h"
+//#endif
 //#define NK_SDL_GLES2_IMPLEMENTATION
 //#include "nuklear_sdl_gles2.h"
 #include "MU_UIRenderer.h"
@@ -1178,31 +1178,10 @@ short MU_GetAsyncKeyState(int key) {
 
 #ifndef _WIN32
 BOOL TextOutW(HDC hdc, int nXStart, int nYStart, LPCWSTR lpString, int cbString){
-
-    if (nk_begin(g_nk_ctx, "Canvas", nk_rect(0, 0, WindowWidth, WindowHeight), NK_WINDOW_NO_SCROLLBAR)) {
-        struct nk_command_buffer *canvas = nk_window_get_canvas(g_nk_ctx);
-        //struct nk_user_font *font = g_nk_ctx->style.font;
-        struct nk_rect text_rect = nk_rect(nXStart, nYStart, 200, 20);
-        nk_draw_text(canvas, text_rect, "Hello", 5, g_nk_ctx->style.font,
-                     nk_rgb(255,255,255), nk_rgba(0,0,0,0));
-    }
-    nk_end(g_nk_ctx);
-
     return 1;
 }
 
 bool GetTextExtentPoint32W(HDC hdc, LPCWSTR text, int len, SIZE *lpsz) {
-
-    if (!g_nk_ctx || !text || !lpsz) return false;
-
-    const struct nk_user_font *font = g_nk_ctx->style.font; // Currently selected font
-
-    // Calculate width using Nuklear's internal font callback
-    lpsz->cx = (long)font->width(font->userdata, font->height, reinterpret_cast<const char *>(text), len);
-
-    // Height is constant for the font in Nuklear
-    lpsz->cy = (long)font->height;
-
     return true;
 }
 

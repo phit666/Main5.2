@@ -75,6 +75,7 @@ public:
 
 	void ShowWin(CWin* pWin);
 	void HideWin(CWin* pWin);
+	bool IsShow(CWin* pWin);
 
 	bool IsCursorOnUI() { return m_bCursorOnUI; }
 	void PopUpMsgWin(int nMsgCode, char* pszMsg = NULL);

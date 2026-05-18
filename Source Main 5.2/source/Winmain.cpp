@@ -2133,7 +2133,15 @@ void MU_ProcessSDLEvents()
 	{
 		bool consumed = false;
 		for (auto iter = vUITextInputs.begin(); iter != vUITextInputs.end(); iter++) {
+
 			CUITextInputBox* ti = *iter;
+
+			if(ti->ec->lastrendertick != g_editcontroltick) {
+				continue;
+			}
+
+			//g_ErrorReport.Write("> debugwin %s %d", ti->m_title.c_str(), CUIMng::Instance().IsShow((CWin*)&ti) ? 1: 0);
+
 			if (MU_EditHandleEvent(ti->ec, &e)) {
 				consumed = true;
 				break;
@@ -2430,5 +2438,7 @@ void MU_ProcessSDLEvents()
 	if (!overlayblocktouch && touchtick != 0 && (SDL_GetTicks64() - touchtick) > 500) {
 		MouseLButtonPush = true;
 	}
+
+	g_editcontroltick = SDL_GetTicks64();
 }
 

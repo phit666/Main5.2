@@ -77,6 +77,8 @@ struct MU_EditControl
     Uint32 caretBlinkMs;
 
     MU_EditStyle style;
+
+    Uint64 lastrendertick;
 };
 
 /*
@@ -136,11 +138,11 @@ void MU_EditRender(MU_EditControl* e);
 /*
     Helpers.
 */
-bool MU_EditHitTest(const MU_EditControl* e, int mx, int my);
+bool MU_EditHitTest(const MU_EditControl* e, int mx, int my, bool poscheckonly=false);
 void MU_EditAppendText(MU_EditControl* e, const char* input);
 void MU_EditBackspace(MU_EditControl* e);
 
-
+extern uint64_t g_editcontroltick;
 #ifdef __cplusplus
 }
 #endif

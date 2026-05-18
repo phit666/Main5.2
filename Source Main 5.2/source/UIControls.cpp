@@ -3581,6 +3581,7 @@ void CUITextInputBox::GiveFocus(BOOL SelectText)
 #ifdef MU_USE_SDL
 	m_bFocused = true;
 	m_bShow = true;
+	textboxfocused = SelectText;
 	//SDL_StartTextInput();
 #else
 	if (m_hEditWnd == NULL) return;
@@ -3856,7 +3857,6 @@ void CUITextInputBox::WriteText(int iOffset, int iWidth, int iHeight)
 #endif
 }
 
-
 void CUITextInputBox::Render()
 {
 #ifdef MU_USE_SDL
@@ -3864,7 +3864,7 @@ void CUITextInputBox::Render()
 	stColor text = GetRGBA(m_dwTextColor);
 
 	ec->x = m_iPos_x * g_fScreenRate_x;
-	ec->y = (m_iPos_y * g_fScreenRate_y) - 3;
+	ec->y = (m_iPos_y * g_fScreenRate_y) - (3 * WindowHeight / 480);
 	ec->w = m_iWidth * g_fScreenRate_x;
 	ec->h = m_iHeight * g_fScreenRate_y;
 
@@ -3895,7 +3895,7 @@ void CUITextInputBox::Render()
 	MU_2DRenderer_Begin(WindowWidth, WindowHeight);
 	MU_EditRender(ec);
 	MU_2DRenderer_End();
-
+	ec->lastrendertick = g_editcontroltick;
 #else
 	m_bIsReady = TRUE;
 	if (m_hEditWnd == NULL || IsWindowVisible(m_hEditWnd) == FALSE) return;

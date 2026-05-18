@@ -354,6 +354,10 @@ void CUIMng::ShowWin(CWin* pWin)
 	SetActiveWin(pWin);
 }
 
+bool CUIMng::IsShow(CWin* pWin) {
+	return pWin->IsShow();
+}
+
 void CUIMng::HideWin(CWin* pWin)
 {
 	if (!m_WinList.RemoveAt(m_WinList.Find(pWin)))

@@ -1241,7 +1241,6 @@ void SEASON3B::CNewUIMyInventory::RenderEquippedItem()
 			int iLevel = (pEquipmentItemSlot->Level>>3)&15;
 			int iMaxDurability = calcMaxDurability(pEquipmentItemSlot, pItemAttr, iLevel);
 			
-			// ���/�����ǹ��� ����ó��
 			if( i == EQUIPMENT_RING_LEFT || i == EQUIPMENT_RING_RIGHT)
 			{
 				if( pEquipmentItemSlot->Type == ITEM_HELPER+20 && iLevel == 1 

@@ -3,6 +3,7 @@
 #include <cstring>
 
 static MU_EditControl* g_muFocusedEdit = nullptr;
+uint64_t g_editcontroltick = 0;
 
 static int MU_StrLenSafe(const char* s)
 {
@@ -106,6 +107,8 @@ void MU_EditInit(MU_EditControl* e,
     e->text[0] = '\0';
     e->placeholder[0] = '\0';
     e->len = 0;
+
+    e->lastrendertick = 0;
 }
 
 void MU_EditSetRect(MU_EditControl* e, int x, int y, int w, int h)
@@ -216,10 +219,12 @@ MU_EditControl* MU_EditGetFocused()
     return g_muFocusedEdit;
 }
 
-bool MU_EditHitTest(const MU_EditControl* e, int mx, int my)
+bool MU_EditHitTest(const MU_EditControl* e, int mx, int my, bool poscheckonly)
 {
-    if (!e || !e->visible || !e->enabled)
-        return false;
+    if (!poscheckonly) {
+        if (!e || !e->visible || !e->enabled)
+            return false;
+    }
 
     return mx >= e->x &&
            mx <= e->x + e->w &&
@@ -292,6 +297,9 @@ bool MU_EditHandleEvent(MU_EditControl* e, const SDL_Event* ev)
 
             if (MU_EditHitTest(e, mx, my))
             {
+                if (MU_EditHasFocus(e))
+                    return true;
+
                 MU_EditSetFocus(e);
                 return true;
             }
@@ -330,6 +338,9 @@ bool MU_EditHandleEvent(MU_EditControl* e, const SDL_Event* ev)
 
         if (MU_EditHitTest(e, mx, my))
         {
+            if (MU_EditHasFocus(e))
+                return true;
+
             MU_EditSetFocus(e);
             return true;
         }
