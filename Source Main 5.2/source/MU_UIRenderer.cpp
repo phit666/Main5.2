@@ -2,6 +2,7 @@
 #include "MU_UIRenderer.h"
 #include "Utilities/Log/ErrorReport.h"
 #include <cstring>
+#include "wt.h"
 
 static TTF_Font* g_fonts[MU_FONT_MAX] = { nullptr, nullptr, nullptr, nullptr };
 
@@ -46,7 +47,9 @@ static GLuint MU_CreateTextureFromSurface(SDL_Surface* src)
     /*
         ABGR8888 gives byte order compatible with GL_RGBA on SDL.
     */
-    SDL_Surface* surface = SDL_ConvertSurfaceFormat(src, SDL_PIXELFORMAT_ABGR8888, 0);
+    SDL_Surface* surface =
+        SDL_ConvertSurfaceFormat(src, SDL_PIXELFORMAT_RGBA32, 0);
+
     if (!surface)
         return 0;
 
@@ -290,6 +293,7 @@ void MU_TextOutEx(int fontSlot, float x, float y, const char* text,
 
     if (!tex)
         return;
+
 
     g_drawTexturedQuad(tex, x, y, (float)tw, (float)th, r, g, b, a);
 

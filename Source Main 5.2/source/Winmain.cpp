@@ -2140,8 +2140,6 @@ void MU_ProcessSDLEvents()
 				continue;
 			}
 
-			//g_ErrorReport.Write("> debugwin %s %d", ti->m_title.c_str(), CUIMng::Instance().IsShow((CWin*)&ti) ? 1: 0);
-
 			if (MU_EditHandleEvent(ti->ec, &e)) {
 				consumed = true;
 				break;

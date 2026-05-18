@@ -2454,9 +2454,11 @@ void MU_DrawTexturedQuadCallback(
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 
-	myShader.use(); // if needed
 	myShader.setFloat(g_uTexEnabledLoc, 1.0f);
 	myShader.setVec4(g_uColorLoc, 1.f, 1.f, 1.f, 1.f);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glBindBuffer(GL_ARRAY_BUFFER, g_meshVBO);
 

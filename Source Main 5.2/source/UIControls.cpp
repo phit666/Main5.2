@@ -2998,8 +2998,6 @@ void CUIRenderTextOriginal::RenderText(int iPos_x, int iPos_y, const unicode::t_
 		MU_2DRenderer_Begin(WindowWidth, WindowHeight);
 		stColor textcolor = GetRGBA(m_dwTextColor);
 		MU_TextOut(RealBoxPos.x + iTab, RealBoxPos.y - 2, pszText, textcolor.r, textcolor.g, textcolor.b, textcolor.a);
-		//stColor bgcolor = GetRGBA(m_dwBackColor);
-		//MU_FillRect(RealBoxPos.x, RealBoxPos.y, RealBoxSize.cx, RealBoxSize.cy, bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
 		MU_2DRenderer_End();
 #else
 		SetBkColor(m_hFontDC, RGB(0, 0, 0));
