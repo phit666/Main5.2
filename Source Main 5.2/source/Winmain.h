@@ -1,6 +1,8 @@
 #ifndef __WINMAIN_H__
 #define __WINMAIN_H__
 
+
+
 #define FOR_WORK
 /*--------------------------------------------------------------------------------------*/
 
@@ -58,6 +60,8 @@
 #ifndef HFONT
 #define HFONT int
 #endif
+
+#include "mu_win_compat.h"
 
 extern bool ashies;
 extern int weather;

@@ -27,6 +27,8 @@
 #include "Winmain.h"
 #include "MU_EditControl.h"
 
+#include "ComplexModulus.h"
+
 typedef struct
 {
     BYTE c;
@@ -279,6 +281,8 @@ conn_eventcb(struct bufferevent* bev, short events, void* user_data)
         g_bev = NULL;
         g_ErrorReport.Write("> conn_eventcb - BEV_EVENT_EOF");
         SocketClient.Close();
+        g_CryptoSessionCS.Close(0);
+        g_CryptoSessionSC.Close(0);
     }
     else if (events & BEV_EVENT_ERROR)
     {
@@ -286,6 +290,8 @@ conn_eventcb(struct bufferevent* bev, short events, void* user_data)
         g_bev = NULL;
         g_ErrorReport.Write("> conn_eventcb - BEV_EVENT_ERROR");
         SocketClient.Close();
+        g_CryptoSessionCS.Close(0);
+        g_CryptoSessionSC.Close(0);
     }
     else if (events & BEV_EVENT_CONNECTED)
     {
@@ -326,6 +332,9 @@ int MU_Connect(char* serverip, unsigned short port)
     bufferevent_setcb(bev, conn_readcb, NULL, conn_eventcb, NULL);
     bufferevent_enable(bev, EV_READ | EV_WRITE);
 
+    g_CryptoSessionCS.Open(0);
+    g_CryptoSessionSC.Open(0);
+
     g_bev = bev;
     bufferlen = 0;
     return 1;
@@ -355,6 +364,9 @@ void MU_CloseBev()
         shutdown(fd, SD_BOTH);
 
     bufferevent_free(bev);
+
+    g_CryptoSessionCS.Close(0);
+    g_CryptoSessionSC.Close(0);
 
     bufferlen = 0;
 }

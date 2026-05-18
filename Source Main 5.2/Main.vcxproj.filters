@@ -1213,6 +1213,9 @@
     <ClCompile Include="source\MU_EditControl.cpp">
       <Filter>MU\Client\wrappers</Filter>
     </ClCompile>
+    <ClCompile Include="source\ComplexModulus.cpp">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\BlackWin.h">
@@ -2329,6 +2332,9 @@
       <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="source\MU_EditControl.h">
+      <Filter>MU\Client\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ComplexModulus.h">
       <Filter>MU\Client\wrappers</Filter>
     </ClInclude>
   </ItemGroup>

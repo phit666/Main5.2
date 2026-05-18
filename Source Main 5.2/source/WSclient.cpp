@@ -11669,13 +11669,15 @@ void ProtocolCompiler( CWsctlc *pSocketClient, int iTranslation, int iParam)
 				{
 					LPPBMSG_ENCRYPTED lpHeader = (LPPBMSG_ENCRYPTED)ReceiveBuffer;
 					Size     = lpHeader->Size;
-					iSize = g_SimpleModulusSC.Decrypt( byDec + 2, ReceiveBuffer + 2, Size - 2);
+					//iSize = g_SimpleModulusSC.Decrypt( byDec + 2, ReceiveBuffer + 2, Size - 2);
+					iSize = g_CryptoSessionSC.Decrypt(0, byDec + 2, ReceiveBuffer + 2, Size - 2);
 				}
 				else
 				{
 					LPWBMSG_ENCRYPTED lpHeader = (LPWBMSG_ENCRYPTED)ReceiveBuffer;
 					Size     = ((int)(lpHeader->SizeH)<<8) + lpHeader->SizeL;
-					iSize = g_SimpleModulusSC.Decrypt( byDec + 2, ReceiveBuffer + 3, Size - 3);
+					//iSize = g_SimpleModulusSC.Decrypt( byDec + 2, ReceiveBuffer + 3, Size - 3);
+					iSize = g_CryptoSessionSC.Decrypt(0, byDec + 2, ReceiveBuffer + 3, Size - 3);
 				}
 				bEncrypted = TRUE;
 				

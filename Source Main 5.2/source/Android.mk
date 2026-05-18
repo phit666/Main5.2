@@ -14,6 +14,7 @@ $(LOCAL_PATH)/../SDL2_ttf \
 $(LOCAL_PATH)/common \
 $(LOCAL_PATH)/../libevent/include \
 $(LOCAL_PATH)/../jpeg/include \
+$(LOCAL_PATH)/../cryptopp \
 $(LOCAL_PATH)/../jpeg/libjpeg-turbo-201 \
 $(LOCAL_PATH)/../curl/$(TARGET_ARCH_ABI)/include \
 $(LOCAL_PATH)/../glm \
@@ -21,7 +22,6 @@ $(LOCAL_PATH)
 
 # Add your application source files here...
 LOCAL_SRC_FILES := \
-    BlackWin.cpp \
     BoneManager.cpp \
     Builder.cpp \
     Button.cpp \
@@ -353,20 +353,21 @@ LOCAL_SRC_FILES := \
     ZzzTexture.cpp \
     _GlobalFunctions.cpp \
     MU_UIRenderer.cpp \
-    MU_EditControl.cpp
+    MU_EditControl.cpp \
+    ComplexModulus.cpp
 
 LOCAL_LDLIBS := -llog -landroid -lmediandk
 LOCAL_LDLIBS += -lGLESv2
 
 LOCAL_CPP_FEATURES = exceptions
 
-LOCAL_CFLAGS += -frtti -DANDROID -DMU_USE_SDL=1 -DUSE_LIBEVENT=1 -DMU_USE_SDL_AUDIO=1 -D_MU_SDL_FILE
+LOCAL_CFLAGS += -frtti -DCRYPTOPP_NO_CPU_FEATURE_PROBES -DANDROID -DMU_USE_SDL=1 -DUSE_LIBEVENT=1 -DMU_USE_SDL_AUDIO=1 -D_MU_SDL_FILE
 
 LOCAL_CPPFLAGS += \
     -Wno-error=format-security \
     -Wno-format-security
 
-LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf SDL2_mixer event2 jpeg
+LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf SDL2_mixer event2 jpeg cryptopp_static
 LOCAL_STATIC_LIBRARIES := curl
 
 include $(BUILD_SHARED_LIBRARY)
