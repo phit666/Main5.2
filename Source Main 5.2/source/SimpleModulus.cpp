@@ -29,9 +29,6 @@ VOID CSimpleModulus::Init()	// Completed
 
 int CSimpleModulus::Encrypt(void * lpDest, void * lpSource, int iSize)	// Emulated - Completed
 {
-#ifdef ENHANCE_ENCDEC
-	return g_CryptoSessionCS.Encrypt(0, lpDest, lpSource, iSize);
-#else
 	int iTempSize = iSize;
 	int iTempSize2;
 	int iOriSize ;
@@ -55,15 +52,11 @@ int CSimpleModulus::Encrypt(void * lpDest, void * lpSource, int iSize)	// Emulat
 	}
 
 	return iSize;
-#endif
 }
 
 
 int CSimpleModulus::Decrypt(void * lpDest, void * lpSource, int iSize)
 {
-#ifdef ENHANCE_ENCDEC
-	return g_CryptoSessionSC.Decrypt(0, lpDest, lpSource, iSize);
-#else
 	if ( lpDest == NULL)
 	{
 		return iSize*8/11;
@@ -96,7 +89,6 @@ int CSimpleModulus::Decrypt(void * lpDest, void * lpSource, int iSize)
 	}
 
 	return iResult;
-#endif
 }
 
 int CSimpleModulus::EncryptBlock(void*lpDest,void*lpSource,int iSize)

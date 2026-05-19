@@ -123,18 +123,10 @@ public:
                 }
             }
 
-			if (outLen < 0 && Config.extra.enable_debug_packet == 1)
-			{
-				LogAddC(2, "[Decrypt-4] Decrypt iSize = -1 (InSize %d)", inLen);
-			}
 
             return outLen;
         }
 
-		if (Config.extra.enable_debug_packet == 1)
-		{
-			LogAddC(2, "[Decrypt-5] Decrypt iSize = -1 (InSize %d)", inLen);
-		}
 
         return -1;
     }

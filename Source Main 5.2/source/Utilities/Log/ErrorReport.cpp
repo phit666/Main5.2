@@ -198,7 +198,8 @@ void CErrorReport::HexWrite( void *pBuffer, int iSize)
 		if(i > 0 && i < iSize-1) {
 			if(i%16 == 15) {	//. new line
 				offset += sprintf(szLine+offset, "\r\n");
-				WriteFile( m_hFile, szLine, strlen( szLine), &dwWritten, NULL);
+				//WriteFile( m_hFile, szLine, strlen( szLine), &dwWritten, NULL);
+				Write(szLine);
 				offset = 0;
 				offset += sprintf(szLine+offset, "           : ");
 			}
@@ -208,7 +209,8 @@ void CErrorReport::HexWrite( void *pBuffer, int iSize)
 		}
 	}
 	offset += sprintf(szLine+offset, "\r\n");
-	WriteFile( m_hFile, szLine, strlen( szLine), &dwWritten, NULL);
+	Write(szLine);
+	//WriteFile( m_hFile, szLine, strlen( szLine), &dwWritten, NULL);
 }
 
 void CErrorReport::AddSeparator( void)

@@ -322,8 +322,6 @@ bool CCryptoModulus::LoadDecryptionKey(char *lpszFileName)
 CSessionCryptor g_CryptoSessionCS;
 CSessionCryptor g_CryptoSessionSC;
 
-CSessionCryptor g_AuthCryptoSessionCS;
-CSessionCryptor g_AuthCryptoSessionSC;
 
 CSessionCryptor::CSessionCryptor()
 {

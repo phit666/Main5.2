@@ -377,4 +377,3 @@ bool LoadQuickLogin(char* usernameOut, int usernameOutSize,
 
 extern GLuint g_meshVBO;
 
-#define ENHANCE_ENCDEC

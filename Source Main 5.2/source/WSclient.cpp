@@ -77,6 +77,7 @@
 #include "mu_socket.h"
 #include "mu_sdl.h"
 #include "wt.h"
+#include "ComplexModulus.h"
 
 #define MAX_DEBUG_MAX 10
 
@@ -11669,15 +11670,35 @@ void ProtocolCompiler( CWsctlc *pSocketClient, int iTranslation, int iParam)
 				{
 					LPPBMSG_ENCRYPTED lpHeader = (LPPBMSG_ENCRYPTED)ReceiveBuffer;
 					Size     = lpHeader->Size;
-					iSize = g_SimpleModulusSC.Decrypt( byDec + 2, ReceiveBuffer + 2, Size - 2);
+#ifdef ENHANCE_ENCDEC
+					iSize = g_CryptoSessionSC.Decrypt(0, byDec + 2, ReceiveBuffer + 2, Size - 2);
+					iSize += 2;
+#else
+					iSize = g_SimpleModulusSC.Decrypt(byDec + 2, ReceiveBuffer + 2, Size - 2);
+#endif
 				}
 				else
 				{
 					LPWBMSG_ENCRYPTED lpHeader = (LPWBMSG_ENCRYPTED)ReceiveBuffer;
 					Size     = ((int)(lpHeader->SizeH)<<8) + lpHeader->SizeL;
-					iSize = g_SimpleModulusSC.Decrypt( byDec + 2, ReceiveBuffer + 3, Size - 3);
+#ifdef ENHANCE_ENCDEC
+					iSize = g_CryptoSessionSC.Decrypt(0, byDec + 3, ReceiveBuffer + 3, Size - 3);
+					iSize += 3;
+#else
+					iSize = g_SimpleModulusSC.Decrypt(byDec + 2, ReceiveBuffer + 3, Size - 3);
+#endif
 				}
+
 				bEncrypted = TRUE;
+
+		/*
+				BYTE* pDecBuf = byDec + 1;
+				byDec[1] = 0xC2;
+				WORD wsize = ((WORD)iSize) + 3;
+				byDec[2] = SET_NUMBERH(wsize);
+				byDec[3] = SET_NUMBERL(wsize);
+				headcode = pDecBuf[2];
+		*/
 				
 				if ( iSize < 0)
 				{
@@ -11686,21 +11707,57 @@ void ProtocolCompiler( CWsctlc *pSocketClient, int iTranslation, int iParam)
 					continue;
 				}
 				
-				if ( ( g_byPacketSerialRecv) != byDec[2])
+#ifdef ENHANCE_ENCDEC
+				if ( ( g_byPacketSerialRecv) != byDec[2] && ReceiveBuffer[0] == 0xC3)
 				{
 					bEncrypted = FALSE;
-					g_byPacketSerialRecv = byDec[2];
-					
+
 					g_ErrorReport.Write("Decrypt error : g_byPacketSerialRecv(0x%02X), byDec(0x%02X)\r\n", g_byPacketSerialRecv, byDec[2]);
 					g_ErrorReport.Write("Dump : \r\n");
 					g_ErrorReport.HexWrite(ReceiveBuffer, Size);
 					g_ErrorReport.Write("\r\n");
-					g_ErrorReport.HexWrite(byDec+2, iSize);
+					g_ErrorReport.HexWrite(byDec + 1, iSize);
+
+					g_byPacketSerialRecv = byDec[2];
+
+				}
+				else if ((g_byPacketSerialRecv) != byDec[3] && ReceiveBuffer[0] == 0xC4)
+				{
+					bEncrypted = FALSE;
+
+					g_ErrorReport.Write("Decrypt error : g_byPacketSerialRecv(0x%02X), byDec(0x%02X)\r\n", g_byPacketSerialRecv, byDec[3]);
+					g_ErrorReport.Write("Dump : \r\n");
+					g_ErrorReport.HexWrite(ReceiveBuffer, Size);
+					g_ErrorReport.Write("\r\n");
+					g_ErrorReport.HexWrite(byDec + 1, iSize);
+
+					g_byPacketSerialRecv = byDec[3];
+
 				}
 				else
 				{
 					g_byPacketSerialRecv++;
 				}
+#else
+				if ((g_byPacketSerialRecv) != byDec[2])
+				{
+					bEncrypted = FALSE;
+
+					g_ErrorReport.Write("Decrypt error : g_byPacketSerialRecv(0x%02X), byDec(0x%02X)\r\n", g_byPacketSerialRecv, byDec[2]);
+					g_ErrorReport.Write("Dump : \r\n");
+					g_ErrorReport.HexWrite(ReceiveBuffer, Size);
+					g_ErrorReport.Write("\r\n");
+					g_ErrorReport.HexWrite(byDec + 2, iSize);
+
+					g_byPacketSerialRecv = byDec[2];
+
+				}
+				else
+				{
+					g_byPacketSerialRecv++;
+				}
+#endif
+
 
 				if ( ReceiveBuffer[0] == 0xC3)
 				{
@@ -11709,18 +11766,31 @@ void ProtocolCompiler( CWsctlc *pSocketClient, int iTranslation, int iParam)
 					pHeader->Size = ( BYTE)iSize;
 					HeadCode = pHeader->HeadCode;
 					ReceiveBuffer = (BYTE*)pHeader;
+
+					//g_ErrorReport.Write("Dump C3: 0x%X\r\n", HeadCode);
+					//g_ErrorReport.HexWrite(ReceiveBuffer, iSize);
+
 				}
 				else
 				{
+#ifdef ENHANCE_ENCDEC
+					LPPWMSG_HEADER pHeader = (LPPWMSG_HEADER) & (byDec[1]);
+#else
 					LPPWMSG_HEADER pHeader = (LPPWMSG_HEADER)byDec;
+#endif
 					pHeader->Code = 0xC2;
 					pHeader->SizeH = ( BYTE)( iSize / 256);
 					pHeader->SizeL = ( BYTE)( iSize % 256);
 					HeadCode = pHeader->HeadCode;
 					ReceiveBuffer = (BYTE*)pHeader;
+
+					//g_ErrorReport.Write("Dump C4: 0x%X\r\n", HeadCode);
+					//g_ErrorReport.HexWrite(ReceiveBuffer, iSize);
+
 				}
 				Size = iSize;
 			}
+
 			TotalPacketSize += Size;       
 #ifdef SAVE_PACKET
 			SOCKET socket = pSocketClient->GetSocket();

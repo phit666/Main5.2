@@ -20,7 +20,7 @@
 #include "ProtocolSend.h" 
 #include "Utilities\Log\DebugAngel.h"
 //#include "UIManager.h"
-
+#include "ComplexModulus.h"
 
 #define PACKET_MOVE         0xD4
 #define PACKET_POSITION     0x15
@@ -98,12 +98,11 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 	PBMSG_ENCRYPTED bc;
 	PWMSG_ENCRYPTED wc;
 
-	//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-0...");
-
-	int iSize = g_SimpleModulusCS.Encrypt( NULL, byBuffer + iSkip, len - iSkip);
-
-	//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-0...done");
-
+#ifdef ENHANCE_ENCDEC
+	int iSize = g_CryptoSessionCS.Encrypt(0, NULL, byBuffer + iSkip, len - iSkip);
+#else
+	int iSize = g_SimpleModulusCS.Encrypt(NULL, byBuffer + iSkip, len - iSkip);
+#endif
 	
 	if ( iSize < 256 && bForceC4 == FALSE)
 	{
@@ -112,14 +111,11 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 		bc.Code = 0xC3;
 		bc.Size = iLength;
 
-		//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-1...");
-
-
-		g_SimpleModulusCS.Encrypt( bc.byBuffer, byBuffer + iSkip, len - iSkip);
-
-		//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-1...done");
-
-
+#ifdef ENHANCE_ENCDEC
+		g_CryptoSessionCS.Encrypt(0, bc.byBuffer, byBuffer + iSkip, len - iSkip);
+#else
+		g_SimpleModulusCS.Encrypt(bc.byBuffer, byBuffer + iSkip, len - iSkip);
+#endif
 		assert( iSize < 256);
 
 		return ( g_pSocketClient->sSend( ( char*)&bc, iLength));
@@ -132,12 +128,11 @@ __forceinline int SendPacket( char *buf, int len, BOOL bEncrypt = FALSE, BOOL bF
 		wc.SizeL = iLength % 256;
 		wc.SizeH = iLength / 256;
 
-		//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-2...");
-
-		g_SimpleModulusCS.Encrypt( wc.byBuffer, byBuffer + iSkip, len - iSkip);
-
-		//OutputDebugString("[SDL-DEBUG] g_SimpleModulusCS.Encrypt-2...done");
-
+#ifdef ENHANCE_ENCDEC
+		g_CryptoSessionCS.Encrypt(0, wc.byBuffer, byBuffer + iSkip, len - iSkip);
+#else
+		g_SimpleModulusCS.Encrypt(wc.byBuffer, byBuffer + iSkip, len - iSkip);
+#endif
 
 		assert( iSize <= MAX_SPE_BUFFERSIZE_);
 		return ( g_pSocketClient->sSend( ( char*)&wc, iLength));
